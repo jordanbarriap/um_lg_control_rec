@@ -1,0 +1,57 @@
+{
+    "incentives": {
+        "report_mode": "topic_level",
+        "topic_overall": {
+            "resource_ids":["Coding Problems", "Tracing Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [1,1],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        "topic_specific": [{
+            "topicOrder":14,
+            "resource_ids":["Coding Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [2],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        {
+            "topicOrder":15,
+            "resource_ids":["Coding Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [2],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        {
+            "topicOrder":16,
+            "resource_ids":["Coding Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [2],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        {
+            "topicOrder":17,
+            "resource_ids":["Tracing Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [2],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        }],
+        "text_messages": {
+            "help_title": "Requirements per Topic",
+            "full_credit_text": "means that you completed the requirements in this topic by solving at least 2 problems (1 Tracing problem and 1 Coding problem).",
+            "half_credit_text": "means that you completed half of the requirements in this topic by solving at least 1 problem (1 Tracing problem or 1 Coding problem).",
+            "no_credit_text": "means that you have not solved any problem in this topic.",
+            "extra_height": 25
+            
+        }
+    }
+}

@@ -1,2 +1,4 @@
-# um_lg_control_rec
-Control over the user (student) model and the learning goal so better recommendations can be generated
+﻿# mastery_grids_um-vis-dev2-uc
+Mastery Grids client code for controllable social comparison.
+
+This code should be under www/um-vis-dev2-uc folder. 

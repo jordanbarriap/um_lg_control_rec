@@ -1,0 +1,22 @@
+{
+    "incentives": {
+        "report_mode": "topic_level",
+        "topic_overall": {
+            "resource_ids":["Codificacion", "rec582"],
+            "mode": "resource_type",
+            "activity_per_resource": [1,1],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        "topic_specific": [],
+        "text_messages": {
+            "help_title": "Requisitos por tema",
+            "full_credit_text": "significa que completaste los requisitos de este tema resolviendo al menos 2 problemas (1 problema de 'Reordena el codigo' y 1 problema de Codificacion)..",
+            "half_credit_text": "significa que completaste la mitad de los requisitos de este tema resolviendo al menos 1 problema (1 problema de 'Reordena el codigo' o 1 problema de Codificacion).",
+            "no_credit_text": "significa que no has completado los ejercicios requeridos en ese tema.",
+            "extra_height": 25
+            
+        }
+    }
+}
