@@ -2186,6 +2186,8 @@ function loadData() {
     ? $call("GET", CONST.uriServer + "GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=all&models=" + (state.args.dataReqOtherLearners ? "-1" : "0") + "&avgtop=" + state.args.dataTopNGrp, null, loadData_cb, true, false) + "&updatesm=false"
     : $call("GET", "/um-vis-dev/data.js", null, loadData_cb, true, false)
   );
+
+  visStudyPlanPath();
 }
 // ----^----
 function loadData_cb(res) {
@@ -7422,3 +7424,71 @@ count = function (ary, classifier) {
   }, {});
 };
 
+// Study Plan - added by @Rafaella
+
+const mockedJson = {
+  "nodes": [
+    { "id": 1, "label": "Problem X" },
+    { "id": 2, "label": "Problem Y" },
+    { "id": 3, "label": "Problem E" },
+    { "id": 4, "label": "Problem W" },
+    { "id": 5, "label": "Problem T" },
+    { "id": 6, "label": "Problem R" }
+  ]
+};
+
+
+function visStudyPlanPath() {
+  const width = 500,
+    height = 200;
+
+
+  // #156082
+
+
+  var svg = d3.select("#study-plan-path").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+  function plotChart(json) {
+    edges = [];
+    if (json?.nodes?.length && json.nodes.length > 1) {
+      for (let i = 0; i < json.nodes.length - 1; i++) {
+        edges.push({ "start": json.nodes[i], "end": json.nodes[i + 1] });
+      }
+    }
+
+
+    /* Define the data for the circles */
+    var elem = svg.selectAll("g myCircleText")
+      .data(json.nodes);
+
+
+    /*Create and place the "blocks" containing the circle and the text */
+    var elemEnter = elem.enter()
+      .append("g")
+      .attr("class", "node-group")
+      .attr("transform", function (d) { return "translate(" + d.id * 75 + ",80)"; });
+
+
+    /*Create the circle for each block */
+    elemEnter.append("circle")
+      .attr("r", 20)
+      .attr("stroke", "#ffc000")
+      .attr("fill", "#ffc000");
+
+
+    /* Create the text for each block */
+    elemEnter.append("text")
+      .text(function (d) { return d.id; })
+      .attr({
+        "text-anchor": "middle",
+        "font-size": 16,
+        "dy": 5
+      });
+  };
+
+
+  plotChart(mockedJson);
+}

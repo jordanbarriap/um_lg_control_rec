@@ -1153,3 +1153,42 @@ img.info-icon {
 .inactive {
   background-color: #D3D3D3;
 }
+
+/* Study Plan - added by @Rafaella */
+
+#generate-study-plan {
+  background-color: #B25628;
+  color: #FFFFFF;
+  border: 2px solid #0D2332;
+  border-radius: 8px;
+  padding: 0.5rem 1.5rem;
+}
+
+
+#study-plan {
+  display: flex;
+  width: fit-content;
+  border: 1px solid #888888;
+  margin: 0.625rem;
+  padding: 0.5rem;
+  -webkit-box-shadow: 0px 0px 4px #444444;
+  -moz-box-shadow: 0px 0px 4px #444444;
+  box-shadow: 0px 0px 4px #444444;
+}
+
+
+#study-plan-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  width: 8.75rem;
+}
+
+
+#study-plan-list {
+  display: flex;
+}
+
+
+#study-plan-list ol {
+  margin: 0;
+}
