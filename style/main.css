@@ -335,3 +335,576 @@ img.info-icon{position:relative;display:block;float:right;}
 .text-div-detail-kcmap{margin-top:0px;margin-bottom:0px;}
 .active{background-color: #bbddaa;}
 .inactive{background-color: #D3D3D3;}
+
+/* Programming Concepts Display Styles */
+#div-edit-sm { 
+  display: none;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+  height: fit-content;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.concept-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.concept-info {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.concept-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.concept-bar-container {
+  width: 180px;
+  height: 30px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.concept-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  transition: width 0.3s ease;
+}
+
+.concept-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+}
+
+.concept-actions {
+  display: flex;
+  gap: 10px;
+  align-self: center;
+}
+
+.thumbs-btn {
+  background: none;
+  border: 2px solid #dee2e6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.thumbs-btn:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.thumbs-btn.active {
+  border-color: #007bff;
+  background-color: #007bff;
+  color: white;
+}
+
+.thumbs-btn.thumbs-down.active {
+  border-color: #dc3545;
+  background-color: #dc3545;
+}
+
+.thumbs-btn.thumbs-up.active {
+  border-color: #28a745;
+  background-color: #28a745;
+}
+
+.thumbs-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Learning Goals Section Styles */
+#learning-goals-div {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin: 10px;
+  padding: 15px;
+}
+
+.learning-goals-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* .learning-goals-label {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  min-width: 120px;
+} */
+
+.learning-goals-options {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.learning-goals-options input[type="radio"] {
+  margin-right: 5px;
+}
+
+.learning-goals-options label {
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+}
+
+.learning-goals-options input[type="radio"]:checked + label {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Concept Selection Section Styles */
+#concept-selection-div {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin: 10px;
+  padding: 15px;
+}
+
+.concept-selection-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* .concept-selection-label {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  min-width: 120px;
+} */
+
+.concept-selection-options {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.concept-checkbox-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.concept-checkbox-item input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.concept-checkbox-item label {
+  font-size: 12px;
+  color: #555;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.concept-mastery-bar {
+  width: 100px;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #dee2e6;
+}
+
+.concept-mastery-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.concept-mastery-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: bold;
+  color: #333;
+  text-shadow: 1px 1px 1px rgba(255,255,255,0.8);
+}
+
+/* Inspect Concepts Button */
+.inspect-concepts-btn {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.inspect-concepts-btn:hover {
+  background-color: #138496;
+}
+
+/* KCS Inspection Panel Styles */
+.kcs-inspection-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 25%;
+  height: 100vh;
+  background-color: white;
+  border-left: 2px solid #dee2e6;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kcs-inspection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.kcs-inspection-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.kcs-inspection-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.kcs-inspection-close-btn:hover {
+  color: #333;
+  background-color: #e9ecef;
+}
+
+.kcs-inspection-body {
+  flex: 1;
+  padding: 15px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Bar Chart Styles */
+#concepts-bar-chart {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+}
+
+.concept-bar {
+  fill: #007bff;
+  transition: fill 0.3s ease;
+}
+
+.concept-bar:hover {
+  fill: #0056b3;
+}
+
+.concept-bar-original {
+  fill: #6c757d;
+  opacity: 0.7;
+}
+
+.concept-bar-edition-positive {
+  fill: #28a745;
+  opacity: 0.8;
+}
+
+.concept-bar-edition-negative {
+  fill: #dc3545;
+  opacity: 0.8;
+}
+
+.concept-label {
+  font-size: 10px;
+  font-weight: bold;
+  fill: #333;
+}
+
+.concept-value {
+  font-size: 9px;
+  fill: #666;
+}
+
+.concept-original-line {
+  stroke: #6c757d;
+  stroke-width: 2;
+  stroke-dasharray: 5,5;
+}
+
+.concept-edition-line {
+  stroke: #28a745;
+  stroke-width: 2;
+}
+
+.concept-edition-line-negative {
+  stroke: #dc3545;
+  stroke-width: 2;
+}
+
+/* Learning Path Section Styles */
+#learning-path-section {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin: 10px;
+  padding: 15px;
+}
+
+.learning-path-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.learning-path-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  align-self: flex-start;
+  transition: background-color 0.2s ease;
+}
+
+.learning-path-btn:hover {
+  background-color: #218838;
+}
+
+.learning-path-btn:active {
+  background-color: #1e7e34;
+}
+
+#learning-path-graph {
+  width: 100%;
+  height: 200px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* D3 Graph Styles */
+.learning-path-node {
+  fill: #007bff;
+  stroke: #0056b3;
+  stroke-width: 2px;
+  cursor: default;
+}
+
+.learning-path-node:hover {
+  fill: #0056b3;
+}
+
+.learning-path-node text {
+  fill: white;
+  font-size: 8px;
+  font-weight: bold;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.learning-path-link {
+  stroke: #6c757d;
+  stroke-width: 2px;
+  fill: none;
+  marker-end: url(#arrowhead);
+}
+
+.learning-path-level-label {
+  fill: #6c757d;
+  font-size: 12px;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+/* Add to your CSS file or <style> tag */
+.concepts-bar-chart-html {
+  width: 100%;
+  font-family: sans-serif;
+}
+.concept-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+.concept-checkbox-html {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  border: 2px solid #888;
+  border-radius: 3px;
+  text-align: center;
+  line-height: 14px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  background: #fff;
+  color: #4caf50;
+}
+.concept-checkbox-html.checked {
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+}
+.concept-label-html {
+  min-width: 70px;
+  max-width: 90px;
+  font-size: 11px;
+  margin-right: 8px;
+  cursor: pointer;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-container-html {
+  position: relative;
+  flex: 1;
+  height: 12px; /* was 18px */
+  margin-left: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+}
+.bar-main-html {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  height: 14px;
+  background: #2196f3;
+  border-radius: 2px;
+  z-index: 1;
+}
+.bar-original-html {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  height: 14px;
+  background: #bbb;
+  border-radius: 2px;
+  opacity: 0.6;
+  z-index: 0;
+}
+.bar-edition-positive-html {
+  position: absolute;
+  top: 2px;
+  height: 14px;
+  background: #4caf50;
+  border-radius: 2px;
+  z-index: 2;
+}
+.bar-edition-negative-html {
+  position: absolute;
+  top: 2px;
+  height: 14px;
+  background: #f44336;
+  border-radius: 2px;
+  z-index: 2;
+}
+.concept-value-html {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  font-size: 10px;
+  color: #222;
+  z-index: 3;
+  background: rgba(255,255,255,0.7);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.concepts-legend-html {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.legend-box {
+  display: inline-block;
+  width: 14px;
+  height: 12px;
+  margin: 0 4px 0 12px;
+  vertical-align: middle;
+  border-radius: 2px;
+}
+.bar-main-html,
+.bar-original-html,
+.bar-edition-positive-html,
+.bar-edition-negative-html {
+  top: 1px;         /* was 2px */
+  height: 10px;     /* was 14px */
+}
+.concept-value-html {
+  top: 1px;         /* was 2px */
+  font-size: 9px;   /* slightly smaller */
+}
+.bar-main-html.legend-box { background: #2196f3; }
+.bar-original-html.legend-box { background: #bbb; opacity: 0.6; }
+.bar-edition-positive-html.legend-box { background: #4caf50; }
+.bar-edition-negative-html.legend-box { background: #f44336; }
+.concept-selection-label,.learning-goals-label{
+  font-size: 13px;
+  text-wrap:wrap;
+  width: 150px;
+}

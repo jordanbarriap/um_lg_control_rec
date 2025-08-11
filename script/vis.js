@@ -183,6 +183,7 @@ $.getJSON("./data/pcex_sets_info.json", function(json) {
 var data = null;  // the data requested from the server
 var kcs_success_rates = []; //kcs success rate
 var kcs_lastk_success_rates = []; //kcs last k attempts success rate
+var kcs_attempts = [];//kcs number of attempts
 var kcs_estimates = []; // kcs estimation requested from @Roya's developed service (bn_general) 
 var item_kc_estimates = {};//data structure used for storing student model coming from bn_general (added by @Jordan)
 
@@ -220,6 +221,7 @@ var set_outcomes;
  */
 var vis = {
   actDone: function (res) {
+    
     if(data.configprops.agg_kc_student_modeling=="cumulate"){
       var uri = CONST.uriServer + "GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=user&sid=" + state.curr.sid + "&lastActivityId=" + state.vis.act.act.id + "&res=" + res + "&updatesm=false";
       $call("GET", uri, null, actDone_cb, true, false);
@@ -333,6 +335,9 @@ function actClose() {
   state.vis.act.recIdx     = -1;
   state.vis.act.doUpdState = false;
 
+  // Hide programming concepts when activity window closes
+  hideProgrammingConcepts();
+
 }
 
 
@@ -343,6 +348,7 @@ function actClose() {
  * small priority as it wouldn't improve the performance by much (not even sure if it'd be noticeable).
  */
 function actDone_cb(rsp) {
+  
   state.vis.act.rsp.result = rsp.lastActivityRes;
   //state.vis.act.rsp.rec    = rsp.recommendation;
   state.vis.act.rsp.fb     = rsp.feedback;
@@ -432,7 +438,7 @@ function actDone_cb(rsp) {
   }
   
   
-  // (3) Activity feedback:
+  // (3.1) Activity feedback:
   if (state.vis.act.rsp.result === 1 && state.vis.act.rsp.fb && state.vis.act.rsp.fb.id) {
     $show(ui.vis.act.fbDiffCont);
     ui.vis.act.fbDiffBtns[0].prop("checked", false).button("refresh");
@@ -442,6 +448,19 @@ function actDone_cb(rsp) {
   else {
     $hide(ui.vis.act.fbDiffCont);
   }
+
+  // (3.2) Ask the student if they want to update their student model @Jordan
+  var current_act = getAct()
+  console.log(getAct())
+  console.log(data.kcs)
+  
+  var kcs_ids = current_act.kcs;
+
+  // Compute intersection: objects whose 'id' is in the ids array
+  var curr_act_ids = data.kcs.filter(item => kcs_ids.includes(item.id));
+
+  //show list of concept where student can edit the SM beliefs
+  populateConceptsDiv(curr_act_ids)
   
   // (4) Update the activity grids:
   var res = getRes(state.vis.act.resId);
@@ -523,6 +542,7 @@ function actDone_cb(rsp) {
       var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
       kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
       kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
       kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
       
       var kc_obj = data.kcs.find(kc => {
@@ -1085,9 +1105,9 @@ function actLstShow(doMe, doVs, doGrp) {
     });
 
     //end of code added by @Jordan
-    if(data.configprops.agg_reactiverec_enabled) {
+    //if(data.configprops.agg_reactiverec_enabled) {
       pawswebsocket.ensureSocketIsOpen(state.curr, websocketCallback);
-    }
+    //}
     
   }
 
@@ -1531,6 +1551,7 @@ function actOpen(resId, actIdx) {
     "activity-id"          + CONST.log.sep02 + getAct().id,
     true
   );
+
   
   // NOTE: Old way by opening an activity in a new tab (useful as an example if more tab-code needs to be developed):
   /*
@@ -1612,6 +1633,7 @@ function updateLearnerData(rsp){
         var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
         kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
         kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+        kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
         kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
         
         var kc_obj = data.kcs.find(kc => {
@@ -2175,17 +2197,19 @@ function initUI() {
 // ------------------------------------------------------------------------------------------------------
 function loadData() {
   vis.loadingShow();
-  
+
   log("action" + CONST.log.sep02 + "data-load-start", false);
   
   (state.args.dataLive
     ? $call("GET", CONST.uriServer+"GetContentLevels?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid + "&mod=all&models=" + (state.args.dataReqOtherLearners ? "-1" : "0") + "&avgtop=" + state.args.dataTopNGrp, null, loadData_cb, true, false) + "&updatesm=false"
     : $call("GET", "/um-vis-dev/data.js", null, loadData_cb, true, false)
   );
+
+  
 }
 // ----^----
 function loadData_cb(res) {
-  // (1) Process the data:
+  // (1) Process the data:∫
   data = res;
   
   //@Kamil moved here because I need to have kcResouceIds parameters to filter kcs which we do not want to show
@@ -2230,14 +2254,17 @@ function processData() {
   var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
 	all_resource_kcs = new Set([...all_resource_kcs,...resource_kcs])
   });
+
   
   data.kcs = data.kcs.filter(function(kc){return all_resource_kcs.has(kc.id)})
   //end @Kamil
 
+  //@Jordan Update the current estimates in data.kcs with the SM editions coming from state.args.editSM
+  console.log("add editions SM processdata")
+  loadEditionsSM(state.args.editSM)
+
   //@AALTOSQL21
   total_attempts_problems = getTotalAttempts(["Query Analysis","Query Execution"]);
-
-  
 
   //Calculate concept weights per topic
   for(var i=0;i<data.kcs.length;i++){
@@ -2419,6 +2446,7 @@ function processData() {
         var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
         kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
         kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+        kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
         kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
         
         var kc_obj = data.kcs.find(kc => {
@@ -2720,6 +2748,7 @@ function loadDataOthers_cb(res) {
       var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
       kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
       kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
       kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
       
       var kc_obj = data.kcs.find(kc => {
@@ -3048,6 +3077,7 @@ function stateArgsSet02() {
   state.args.kcResouceIds = data.resources.map(res => res.id)
   state.args.showKcmap = false;//check if fine-grained OLM is shown or not
   state.args.controlKcmap = false;//check if users have access to choose if fine-grained OLM is shown or not
+  state.args.learningGoal = "";
   //end of code added by @Jordan
   
   // @@@@
@@ -3138,7 +3168,11 @@ function stateArgsSet02() {
       state.args.difficultyMsg          = (data.vis.ui.params.user.difficultyMsg != undefined ? data.vis.ui.params.user.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.user.effortMsg != undefined ? data.vis.ui.params.user.effortMsg : state.args.effortMsg);
       state.args.recExp                 = (data.vis.ui.params.user.recExp != undefined ? data.vis.ui.params.user.recExp : state.args.recExp);//added for rec_exp
-	  state.args.kcResouceIds			= (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
+	    state.args.kcResouceIds			= (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
+      
+      //@Jordan edition of the student model (SM)
+      emptyEditSM = "" //in case there are no editions made by the user
+      state.args.editSM = parseCustomStringToJSON(data.vis.ui.params.user.editSM != undefined ? data.vis.ui.params.user.editSM : emptyEditSM);
       //end of code added by @Jordan
 
       state.args.dbqaExplanations       = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);
@@ -7412,4 +7446,398 @@ count = function (ary, classifier) {
         return counter;
     }, {})
 };
+
+function populateConceptsDiv(concepts) {
+    var divEditSm = document.getElementById('div-edit-sm');
+    divEditSm.style.display = 'block';
+    divEditSm.innerHTML = '';
+    
+    // Add a title for the sidebar
+    var titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
+    titleDiv.textContent = 'Programming Concepts';
+    divEditSm.appendChild(titleDiv);
+    
+    concepts.forEach(function(concept, index) {
+        var conceptItem = document.createElement('div');
+        conceptItem.className = 'concept-item';
+        conceptItem.innerHTML = `
+            <div class="concept-info">
+                <div class="concept-name">${concept.dn}</div>
+                <div class="concept-bar-container">
+                    <div class="concept-bar" style="width: ${concept.uk * 100}%"></div>
+                    <div class="concept-value">${Math.round(concept.uk * 100)}%</div>
+                </div>
+            </div>
+            <div class="concept-actions">
+                <button class="thumbs-btn thumbs-down" onclick="handleThumbsClick(${concept.id}, 'down')">
+                    <span class="thumbs-icon">👎</span>
+                </button>
+                <button class="thumbs-btn thumbs-up" onclick="handleThumbsClick(${concept.id}, 'up')">
+                    <span class="thumbs-icon">👍</span>
+                </button>
+            </div>
+        `;
+        divEditSm.appendChild(conceptItem);
+    });
+}
+
+function handleThumbsClick(conceptId, direction) {
+    console.log("modified concept")
+    console.log(conceptId)
+    // Remove active class from all buttons in this concept item
+    var conceptItem = event.target.closest('.concept-item');
+    var buttons = conceptItem.querySelectorAll('.thumbs-btn');
+    buttons.forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked button
+    var clickedButton = event.target.closest('.thumbs-btn');
+    clickedButton.classList.add('active');
+
+    //We have three cases here, we compare with the previous one and seeing if before it was neg, none or pos
+    //state.args.editSM
+    var value_change = 0.0
+    if(direction=="up"){
+      value_change = 0.2
+    }else{
+      value_change = -0.2
+    }
+    //replace the value of confidence by the value clicked by the student
+    state.args.editSM[conceptId]=value_change
+    
+    // Log the user's feedback
+    console.log('User feedback:', {
+        conceptIndex: conceptId,
+        direction: direction,
+        timestamp: new Date().toISOString()
+    });
+    
+    //@Jordan Add the editions made by the student to the data.kcs
+    console.log("add editions SM")
+    loadEditionsSM(state.args.editSM)
+
+    //update the concept bar if the value was different than the previous one (with an animation and a tooltip message)
+    //if they add a second modification we should nudge to regenerate the learning path recommendation
+
+    //@Jordan save edition of the SM in the database
+    $call("GET", CONST.uriServer+"UserPreference?usr=" + state.curr.usr + 
+      "&grp=" + state.curr.grp + 
+      "&sid=" + state.curr.sid + 
+      "&parameter-name=editSM&parameter-value="+ convertJsonToCustomString(state.args.editSM)+
+      "&app-name=MasteryGrids&user-context="+ convertJsonToCustomString(state.args.editSM));
+
+   //if it is a new modification the change should be reflected in the SM (bar graph with animation and mark of the original calculation)
+}
+
+function loadConceptsFromJSON(jsonData) {
+    // This function will be used to load concepts from a JSON file
+    // The JSON structure should be:
+    // [
+    //   { "name": "Concept Name", "value": 0.75 },
+    //   ...
+    // ]
+    populateConceptsDiv(jsonData);
+}
+
+// Function to hide the concepts display
+function hideProgrammingConcepts() {
+    var divEditSm = document.getElementById('div-edit-sm');
+    divEditSm.style.display = 'none';
+}
+
+function parseCustomStringToJSON(input) {
+  // Split by commas to separate each key-value pair
+  const pairs = input.split(',');
+  
+  // Build an object from the pairs
+  const obj = {};
+  for (const pair of pairs) {
+    const [key, value] = pair.split(':');
+    if (key && value) {
+      obj[key.trim()] = parseFloat(value);
+    }
+  }
+  //return the object
+  return obj
+}
+
+function convertJsonToCustomString(jsonInput) {
+  // If input is a JSON string, parse it
+  const obj = typeof jsonInput === 'string' ? JSON.parse(jsonInput) : jsonInput;
+
+  // Convert to desired format: number1:float1,number2:float2,...
+  const result = Object.entries(obj)
+    .map(([key, value]) => `${key}:${value}`)
+    .join(',');
+
+  return result;
+}
+
+// Function to load and apply student model editions
+function loadEditionsSM(objEditionsSM) {
+  // Validate input
+  if (!objEditionsSM || typeof objEditionsSM !== 'object') {
+    console.error('loadEditionsSM: Invalid input object');
+    return;
+  }
+  
+  // Update data.kcs with the editions
+  if (data && data.kcs) {
+    Object.keys(objEditionsSM).forEach(conceptId => {
+      const editionValue = objEditionsSM[conceptId];
+    
+      const concept = data.kcs.find(kc => kc.id == conceptId);
+      if (concept) {
+        // Add or update the edition attribute
+        concept.edition = editionValue;
+        
+        console.log(`Updated concept ${conceptId} with edition value: ${editionValue}`);
+      } else {
+        console.warn(`Concept with id ${conceptId} not found in data.kcs now`);
+      }
+    });
+    
+    console.log('Student model editions loaded successfully');
+  } else {
+    console.error('loadEditionsSM: data.kcs is not available');
+  }
+}
+
+// Function to update concept mastery bars
+function updateConceptMastery(conceptId, masteryValue) {
+  const conceptItem = document.querySelector(`#concept-${conceptId}`);
+  if (conceptItem) {
+    const masteryFill = conceptItem.querySelector('.concept-mastery-fill');
+    const masteryValueSpan = conceptItem.querySelector('.concept-mastery-value');
+    
+    if (masteryFill && masteryValueSpan) {
+      masteryFill.style.width = `${masteryValue}%`;
+      masteryValueSpan.textContent = `${masteryValue}%`;
+    }
+  }
+}
+
+// Function to populate concept selection with dynamic data
+function populateConceptSelection(concepts) {
+  const conceptSelectionDiv = document.getElementById('concept-selection-div');
+  const optionsContainer = conceptSelectionDiv.querySelector('.concept-selection-options');
+  
+  // Clear existing options
+  optionsContainer.innerHTML = '';
+  
+  concepts.forEach((concept, index) => {
+    const conceptItem = document.createElement('div');
+    conceptItem.className = 'concept-checkbox-item';
+    conceptItem.innerHTML = `
+      <input type="checkbox" id="concept-${index + 1}" name="concept-selection" value="${concept.id}" />
+      <label for="concept-${index + 1}">${concept.name}</label>
+      <div class="concept-mastery-bar">
+        <div class="concept-mastery-fill" style="width: ${concept.mastery}%;"></div>
+        <span class="concept-mastery-value">${concept.mastery}%</span>
+      </div>
+    `;
+    optionsContainer.appendChild(conceptItem);
+  });
+}
+
+// Learning Path Generation Functions
+function showLearningPathSection() {
+  // Show the learning path section
+  const learningPathSection = document.getElementById('learning-path-section');
+  learningPathSection.style.display = 'block';
+  
+  // Generate the D3 graph
+  createLearningPathGraph();
+  
+  console.log('Learning path section shown');
+}
+
+function generateLearningPath() {
+    createLearningPathGraph();
+    alert("generateLearningPath")
+    const generateRecFunction = "generate" + state.args.learningGoal;
+    console.log(generateRecFunction)
+    if (typeof window[generateRecFunction] === 'function') {
+      if(state.args.learningGoal != ""){
+        if(state.args.learningGoal == "remedialReccommendations"){
+          var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+          console.log("usr_index: "+usr_index)
+          window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+        }else{
+          window[generateRecFunction]();
+        }
+      }
+    }
+    console.log('Learning path generated');
+}
+
+function createLearningPathGraph() {
+  // Clear previous graph
+  const graphContainer = document.getElementById('learning-path-graph');
+  graphContainer.innerHTML = '';
+  
+  // Define the learning path data
+  const learningPathData = {
+    nodes: [
+      // Level 1 - Foundation
+      { id: '1-1', name: 'Variables', level: 1, x: 80, y: 40 },
+      { id: '1-2', name: 'Data Types', level: 1, x: 80, y: 80 },
+      { id: '1-3', name: 'Basic Syntax', level: 1, x: 80, y: 120 },
+      
+      // Level 2 - Control Flow
+      { id: '2-1', name: 'If Statements', level: 2, x: 200, y: 40 },
+      { id: '2-2', name: 'Loops', level: 2, x: 200, y: 80 },
+      { id: '2-3', name: 'Switch Cases', level: 2, x: 200, y: 120 },
+      
+      // Level 3 - Functions
+      { id: '3-1', name: 'Function Basics', level: 3, x: 320, y: 40 },
+      { id: '3-2', name: 'Parameters', level: 3, x: 320, y: 80 },
+      { id: '3-3', name: 'Return Values', level: 3, x: 320, y: 120 },
+      
+      // Level 4 - Data Structures
+      { id: '4-1', name: 'Arrays', level: 4, x: 440, y: 40 },
+      { id: '4-2', name: 'Objects', level: 4, x: 440, y: 80 },
+      { id: '4-3', name: 'Lists', level: 4, x: 440, y: 120 },
+      
+      // Level 5 - Advanced
+      { id: '5-1', name: 'OOP Basics', level: 5, x: 560, y: 40 },
+      { id: '5-2', name: 'Inheritance', level: 5, x: 560, y: 80 },
+      { id: '5-3', name: 'Polymorphism', level: 5, x: 560, y: 120 }
+    ],
+    links: [
+      // Level 1 to Level 2 connections
+      { source: '1-1', target: '2-1' },
+      { source: '1-2', target: '2-2' },
+      { source: '1-3', target: '2-3' },
+      
+      // Level 2 to Level 3 connections
+      { source: '2-1', target: '3-1' },
+      { source: '2-2', target: '3-2' },
+      { source: '2-3', target: '3-3' },
+      
+      // Level 3 to Level 4 connections
+      { source: '3-1', target: '4-1' },
+      { source: '3-2', target: '4-2' },
+      { source: '3-3', target: '4-3' },
+      
+      // Level 4 to Level 5 connections
+      { source: '4-1', target: '5-1' },
+      { source: '4-2', target: '5-2' },
+      { source: '4-3', target: '5-3' },
+      
+      // Cross-level connections for more complex paths
+      { source: '1-1', target: '2-2' },
+      { source: '2-1', target: '3-2' },
+      { source: '3-1', target: '4-2' },
+      { source: '4-1', target: '5-2' }
+    ]
+  };
+  
+  // Set up the SVG
+  const width = graphContainer.offsetWidth;
+  const height = graphContainer.offsetHeight;
+  
+  const svg = d3.select('#learning-path-graph')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+  
+  // Add arrow marker
+  svg.append('defs').append('marker')
+    .attr('id', 'arrowhead')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 8)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', '#6c757d');
+  
+  // Add level labels
+  const levelLabels = ['Foundation', 'Control Flow', 'Functions', 'Data Structures', 'Advanced'];
+  levelLabels.forEach((label, i) => {
+    svg.append('text')
+      .attr('class', 'learning-path-level-label')
+      .attr('x', 80 + (i * 120))
+      .attr('y', 20)
+      .text(label);
+  });
+  
+  // Create the links
+  const links = svg.selectAll('.learning-path-link')
+    .data(learningPathData.links)
+    .enter()
+    .append('path')
+    .attr('class', 'learning-path-link')
+    .attr('d', function(d) {
+      const sourceNode = learningPathData.nodes.find(n => n.id === d.source);
+      const targetNode = learningPathData.nodes.find(n => n.id === d.target);
+      return `M${sourceNode.x},${sourceNode.y} L${targetNode.x},${targetNode.y}`;
+    });
+  
+  // Create the nodes
+  const nodes = svg.selectAll('.learning-path-node')
+    .data(learningPathData.nodes)
+    .enter()
+    .append('g')
+    .attr('class', 'learning-path-node')
+    .attr('transform', function(d) {
+      return `translate(${d.x},${d.y})`;
+    });
+  
+  // Add circles to nodes
+  nodes.append('circle')
+    .attr('r', 9)
+    .attr('class', 'learning-path-node');
+  
+  // Add text to nodes
+  nodes.append('text')
+    .text(function(d) {
+      return d.name.split(' ')[0]; // Show first word only
+    })
+    .attr('class', 'learning-path-node text');
+  
+  // Add tooltips
+  nodes.append('title')
+    .text(function(d) {
+      return d.name;
+    });
+}
+
+// Function to load and apply student model editions
+function loadEditionsSM(objEditionsSM) {
+
+  // Validate input
+  if (!objEditionsSM || typeof objEditionsSM !== 'object') {
+    console.error('loadEditionsSM: Invalid input object');
+    return;
+  }
+  
+  // Update data.kcs with the editions
+  if (data && data.kcs) {
+    Object.keys(objEditionsSM).forEach(conceptId => {
+      const editionValue = objEditionsSM[conceptId];
+      
+      // Find the concept in data.kcs that matches the conceptId
+      const concept = data.kcs.find(kc => kc.id == conceptId);
+      console.log(concept)
+      if (concept) {
+        // Add or update the edition attribute
+        concept.edition = editionValue;
+        
+        console.log(`Updated concept ${conceptId} with edition value: ${editionValue}`);
+      } else {
+        console.warn(`Concept with id ${conceptId} not found in data.kcs`);
+      }
+    });
+    
+    console.log('Student model editions loaded successfully');
+  } else {
+    console.error('loadEditionsSM: data.kcs is not available');
+  }
+}
 

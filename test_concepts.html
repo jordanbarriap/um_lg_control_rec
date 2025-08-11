@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Programming Concepts Test</title>
+    <link rel="stylesheet" type="text/css" href="style/main.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Programming Concepts Display Test</h1>
+        <p>This page tests the programming concepts display functionality.</p>
+        
+        <button class="test-button" onclick="showProgrammingConcepts()">Show Programming Concepts</button>
+        <button class="test-button" onclick="hideProgrammingConcepts()">Hide Programming Concepts</button>
+        <button class="test-button" onclick="loadConceptsFromJSONFile()">Load from JSON File</button>
+        
+        <div id="div-edit-sm"></div>
+    </div>
+
+    <script>
+        // Programming Concepts Display Functions
+        function showProgrammingConcepts() {
+            // Load concepts from JSON file
+            loadConceptsFromJSONFile();
+        }
+
+        function loadConceptsFromJSONFile() {
+            // Fetch the JSON file
+            fetch('data/programming_concepts.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    populateConceptsDiv(data);
+                })
+                .catch(error => {
+                    console.error('Error loading concepts from JSON:', error);
+                    // Fallback to sample data if JSON loading fails
+                    var concepts = [
+                        { name: "Variables", value: 0.75 },
+                        { name: "Loops", value: 0.45 },
+                        { name: "Functions", value: 0.60 },
+                        { name: "Arrays", value: 0.30 },
+                        { name: "Object-Oriented Programming", value: 0.20 }
+                    ];
+                    populateConceptsDiv(concepts);
+                });
+        }
+
+        function populateConceptsDiv(concepts) {
+            var divEditSm = document.getElementById('div-edit-sm');
+            divEditSm.style.display = 'block';
+            divEditSm.innerHTML = '';
+            
+            // Add a title for the sidebar
+            var titleDiv = document.createElement('div');
+            titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
+            titleDiv.textContent = 'Programming Concepts';
+            divEditSm.appendChild(titleDiv);
+            
+            concepts.forEach(function(concept, index) {
+                var conceptItem = document.createElement('div');
+                conceptItem.className = 'concept-item';
+                conceptItem.innerHTML = `
+                    <div class="concept-info">
+                        <div class="concept-name">${concept.name}</div>
+                        <div class="concept-bar-container">
+                            <div class="concept-bar" style="width: ${concept.value * 100}%"></div>
+                            <div class="concept-value">${Math.round(concept.value * 100)}%</div>
+                        </div>
+                    </div>
+                    <div class="concept-actions">
+                        <button class="thumbs-btn thumbs-down" onclick="handleThumbsClick(${index}, 'down')">
+                            <span class="thumbs-icon">👎</span>
+                        </button>
+                        <button class="thumbs-btn thumbs-up" onclick="handleThumbsClick(${index}, 'up')">
+                            <span class="thumbs-icon">👍</span>
+                        </button>
+                    </div>
+                `;
+                divEditSm.appendChild(conceptItem);
+            });
+        }
+
+        function handleThumbsClick(conceptIndex, direction) {
+            // Remove active class from all buttons in this concept item
+            var conceptItem = event.target.closest('.concept-item');
+            var buttons = conceptItem.querySelectorAll('.thumbs-btn');
+            buttons.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            var clickedButton = event.target.closest('.thumbs-btn');
+            clickedButton.classList.add('active');
+            
+            // Log the user's feedback
+            console.log('User feedback:', {
+                conceptIndex: conceptIndex,
+                direction: direction,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Here you can add code to send the feedback to a server
+            // For example: sendFeedbackToServer(conceptIndex, direction);
+        }
+
+        function loadConceptsFromJSON(jsonData) {
+            // This function will be used to load concepts from a JSON file
+            // The JSON structure should be:
+            // [
+            //   { "name": "Concept Name", "value": 0.75 },
+            //   ...
+            // ]
+            populateConceptsDiv(jsonData);
+        }
+
+        // Function to hide the concepts display
+        function hideProgrammingConcepts() {
+            var divEditSm = document.getElementById('div-edit-sm');
+            divEditSm.style.display = 'none';
+        }
+    </script>
+</body>
+</html> 

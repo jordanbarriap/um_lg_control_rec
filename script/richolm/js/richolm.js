@@ -2816,6 +2816,7 @@ function initBipartite(){
             if(data.configprops.agg_kc_student_modeling=="cumulate"){
               learner_kcs[i]["sr"] = kcs_success_rates[learner_kcs[i].n];
               learner_kcs[i]["lastk-sr"] = kcs_lastk_success_rates[learner_kcs[i].n];
+              learner_kcs[i]["a"] = kcs_attempts[learner_kcs[i].n];
             }
           }
 

@@ -251,6 +251,7 @@ var vis = {
   },
   
   actSubmit: function () {
+    alert("Panaka")
     $clsAdd(document.body, "loading");
   },
   
@@ -524,6 +525,7 @@ function actDone_cb(rsp) {
       kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
       kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
       kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
+      kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
       
       var kc_obj = data.kcs.find(kc => {
         return kc.n === kc_name
@@ -2720,6 +2722,7 @@ function loadDataOthers_cb(res) {
       var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
       kcs_estimates[kc_name] = data.learners[usr_index].state.kcs[kc_id].k;
       kcs_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id].sr;
+      kcs_attempts[kc_name] = data.learners[usr_index].state.kcs[kc_id].a;
       kcs_lastk_success_rates[kc_name] = data.learners[usr_index].state.kcs[kc_id]["lastk-sr"];
       
       var kc_obj = data.kcs.find(kc => {
@@ -3138,7 +3141,9 @@ function stateArgsSet02() {
       state.args.difficultyMsg          = (data.vis.ui.params.user.difficultyMsg != undefined ? data.vis.ui.params.user.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.user.effortMsg != undefined ? data.vis.ui.params.user.effortMsg : state.args.effortMsg);
       state.args.recExp                 = (data.vis.ui.params.user.recExp != undefined ? data.vis.ui.params.user.recExp : state.args.recExp);//added for rec_exp
-	  state.args.kcResouceIds			= (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
+	    state.args.kcResouceIds			      = (data.vis.ui.params.user.kcResouceIds != undefined ? data.vis.ui.params.user.kcResouceIds : state.args.kcResouceIds);
+      //@Jordan edition of the student model (SM)
+      state.args.editSM                 = (data.vis.ui.params.user.editSM != undefined ? data.vis.ui.params.user.editSM : state.args.editSM);
       //end of code added by @Jordan
 
       state.args.dbqaExplanations       = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);

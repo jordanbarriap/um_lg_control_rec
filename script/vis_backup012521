@@ -185,6 +185,7 @@ var kcs_success_rates = []; //kcs success rate
 var kcs_lastk_success_rates = []; //kcs last k attempts success rate
 var kcs_estimates = []; // kcs estimation requested from @Roya's developed service (bn_general) 
 var item_kc_estimates = {};//data structure used for storing student model coming from bn_general (added by @Jordan)
+var kcs_attempts = []; //kcs number of attempts
 
 var map_kcs_id_info = []; // helps to get the info from the kc name (added by @Jordan)
 var topics_concepts = [];//maps concepts and the topic that they first appear in (added by @Jordan)

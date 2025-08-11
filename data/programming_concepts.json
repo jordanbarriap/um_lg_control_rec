@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Variables",
+    "value": 0.75,
+    "description": "Understanding of variable declaration, assignment, and scope"
+  },
+  {
+    "name": "Loops",
+    "value": 0.45,
+    "description": "Knowledge of for, while, and do-while loops"
+  },
+  {
+    "name": "Functions",
+    "value": 0.60,
+    "description": "Function definition, parameters, and return values"
+  },
+  {
+    "name": "Arrays",
+    "value": 0.30,
+    "description": "Array creation, indexing, and manipulation"
+  },
+  {
+    "name": "Object-Oriented Programming",
+    "value": 0.20,
+    "description": "Classes, objects, inheritance, and polymorphism"
+  }
+] 

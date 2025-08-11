@@ -29,6 +29,7 @@
   <script type="text/javascript" src="script/vis.js?v=202203151743"></script>
   <script type="text/javascript" src="script/richolm/js/richolm.js?v=202103111255"></script>
   <script type="text/javascript" src="script/js-cookie/src/js.cookie.js"></script>
+  <script type="text/javascript" src="concepts_modal_functions.js"></script>
 </head>
 
 
@@ -134,7 +135,163 @@
   <span id="tbar-manual"></span> 
 </div>
 
-<!--div id="color-legend">
+<!-- Learning Goals Section -->
+<!-- <div id="learning-goals-div">
+  <div class="learning-goals-container">
+    <span class="learning-goals-label">1. What to focus on in this study session?</span>
+    <div class="learning-goals-options">
+      <input type="radio" id="goal-a" name="learning-goals" value="goalA" onchange="goalARecommendations()" />
+      <label for="goal-a">Goal A</label>
+      
+      <input type="radio" id="goal-b" name="learning-goals" value="goalB" onchange="goalBRecommendations()" />
+      <label for="goal-b">Goal B</label>
+      
+      <input type="radio" id="goal-c" name="learning-goals" value="goalC" onchange="goalCRecommendations()" />
+      <label for="goal-c">Goal C</label>
+      
+      <input type="radio" id="goal-d" name="learning-goals" value="goalD" onchange="goalDRecommendations()" />
+      <label for="goal-d">Goal D</label>
+    </div>
+  </div>
+</div> -->
+
+<!-- Learning Goals Section -->
+<div id="learning-goals-div">
+  <div class="learning-goals-container">
+    <span class="learning-goals-label">1. What to focus on in this study session?</span>
+    <div class="learning-goals-options"></div>
+  </div>
+</div>
+<!-- Place this before </body> -->
+<script>
+function loadLearningGoals() {
+  fetch('./data/learning_goals_data.json')
+    .then(response => response.json())
+    .then(goals => {
+      const container = document.querySelector('.learning-goals-options');
+      container.innerHTML = ''; // Clear existing
+
+      goals.forEach((goal, idx) => {
+        // Create radio input
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.id = `goal-${idx}`;
+        input.name = 'learning-goals';
+        input.value = `goal${idx}`;
+        const prepareRecFunction = "prepare"+goal.recFunction
+        input.onchange = function() {
+          if (typeof window[prepareRecFunction] === 'function') {
+            state.args.learningGoal = goal.recFunction;
+            window[prepareRecFunction]();
+            
+          }
+        };
+
+        // Create label
+        const label = document.createElement('label');
+        label.htmlFor = input.id;
+        label.textContent = goal.name || `Goal ${idx}`;
+
+        container.appendChild(input);
+        container.appendChild(label);
+      });
+    })
+    .catch(err => {
+      console.error('Could not load learning goals:', err);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadLearningGoals);
+</script>
+
+<!-- Concept Selection Section -->
+<div id="concept-selection-div">
+  <div class="concept-selection-container">
+    <span class="concept-selection-label">2. What specific concepts would you like to focus on? (these are the 5 concepts you ...)</span>
+    <div class="concept-selection-options">
+      <div class="concept-checkbox-item">
+        <input type="checkbox" id="concept-1" name="concept-selection" value="concept1" />
+        <label for="concept-1">Concept 1</label>
+        <div class="concept-mastery-bar">
+          <div class="concept-mastery-fill" style="width: 75%;"></div>
+          <span class="concept-mastery-value">75%</span>
+        </div>
+      </div>
+      
+      <div class="concept-checkbox-item">
+        <input type="checkbox" id="concept-2" name="concept-selection" value="concept2" />
+        <label for="concept-2">Concept 2</label>
+        <div class="concept-mastery-bar">
+          <div class="concept-mastery-fill" style="width: 45%;"></div>
+          <span class="concept-mastery-value">45%</span>
+        </div>
+      </div>
+      
+      <div class="concept-checkbox-item">
+        <input type="checkbox" id="concept-3" name="concept-selection" value="concept3" />
+        <label for="concept-3">Concept 3</label>
+        <div class="concept-mastery-bar">
+          <div class="concept-mastery-fill" style="width: 60%;"></div>
+          <span class="concept-mastery-value">60%</span>
+        </div>
+      </div>
+      
+      <div class="concept-checkbox-item">
+        <input type="checkbox" id="concept-4" name="concept-selection" value="concept4" />
+        <label for="concept-4">Concept 4</label>
+        <div class="concept-mastery-bar">
+          <div class="concept-mastery-fill" style="width: 30%;"></div>
+          <span class="concept-mastery-value">30%</span>
+        </div>
+      </div>
+      
+      <div class="concept-checkbox-item">
+        <input type="checkbox" id="concept-5" name="concept-selection" value="concept5" />
+        <label for="concept-5">Concept 5</label>
+        <div class="concept-mastery-bar">
+          <div class="concept-mastery-fill" style="width: 85%;"></div>
+          <span class="concept-mastery-value">85%</span>
+        </div>
+      </div>
+      
+      <div class="concept-checkbox-item">
+        <button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">
+          Inspect more concepts
+        </button>
+      </div>
+            </div>
+      </div>
+    </div>
+
+    <!-- Generate Learning Path Button -->
+    <div style="margin: 10px; text-align: center;">
+      <button id="show-learning-path-btn" class="learning-path-btn" onclick="generateLearningPath()">
+        Generate Learning Path
+      </button>
+    </div>
+
+    <!-- Learning Path Section -->
+    <div id="learning-path-section" style="display: none;">
+      <div class="learning-path-container">
+        <button id="generate-learning-path-btn" class="learning-path-btn" onclick="generateLearningPath()">
+          Generate Learning Path
+        </button>
+        <div id="learning-path-graph"></div>
+      </div>
+    </div>
+
+    <!-- Concepts Inspection Panel -->
+    <div id="div-kcs-inspection" class="kcs-inspection-panel" style="display: none;">
+      <div class="kcs-inspection-header">
+        <h3>All Concepts Mastery</h3>
+        <button class="kcs-inspection-close-btn" onclick="closeConceptsInspection()">&times;</button>
+      </div>
+      <div class="kcs-inspection-body">
+        <div id="concepts-bar-chart"></div>
+      </div>
+    </div>
+
+    <!--div id="color-legend">
 
 </div-->
 
@@ -175,8 +332,13 @@
           <div class="title" title="This list below shows activities which might help you with the activity you have just had an incorrect result with. This selection is based on the history of your interaction with activities (including the very last one).">2. Recommended activities</div>
         </td>
         <td>
-          <iframe src="empty.html" id="act-frame"></iframe>
-          <iframe src="empty.html" id="act-frame-rec"></iframe>
+          <div style="display: flex; gap: 20px; align-items: flex-start;">
+            <div style="flex: 1;">
+              <iframe src="empty.html" id="act-frame"></iframe>
+              <iframe src="empty.html" id="act-frame-rec"></iframe>
+            </div>
+            <div id="div-edit-sm" style="width: 300px; min-width: 300px;"> </div>
+          </div>
         </td>
       </tr>
       </table>
@@ -206,6 +368,7 @@
   <tr>
     <td id="act-td-btns">
       <span id="act-other-link"></span>
+      <input type="button" id="show-concepts-btn" value="Show Programming Concepts" onclick="showProgrammingConcepts()" style="margin-right: 10px;" />
       <input type="button" id="act-close" value="Close window" />
     </td>
   </tr>

@@ -7,15 +7,86 @@ var knowledge_level_limit = .5
 
 // ------------------------------------------------------------------------------------------------------
 /**
+ * Recommendation approach: Fill knowledge gaps
+ * Generate a list of content covering concepts that the student has not yet attempted
+ * or where the student has not shown or modified their proficiency. Hence priority is given 
+ * to examples first and then more complex content
+**/
+function prepareFillKnowledgeGapRecommendations(){
+	alert("prepare fill knowledge gaps recommendations");
+	sortKCSByLearningGoal(1)
+	setTopConceptsForRecommendations(6);
+}
+
+function prepareRemedialRecommendations(){
+	alert("prepare remedial recommendations");
+	sortKCSByLearningGoal(0)
+	setTopConceptsForRecommendations(6);
+}
+
+function generateFillKnowledgeGapRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr,selected_kcs_ids){
+	var recommendations = [];
+	var topics = data_topics_acts_kcs;
+	var n_topics = topics.length;
+
+	for(var i=1; i<n_topics;i++){
+		var topic = topics[i];
+		//var topic_name = topic.name;
+		var topic_name = topic.id;
+		var resources = Object.keys(topic.activities);
+		var n_resources = resources.length;
+
+		var topic_activities = user_state["activities"][topic_name];
+		for (var j=0; j<n_resources;j++){
+			var resource_id = resources[j];
+			var activities = topic.activities[resource_id];
+			var n_activities = activities.length;
+			for (var k=0;k<n_activities;k++){
+				var activity = activities[k];
+				var kcs = activity["kcs"];
+				var rec_score = 0;
+				var weights_sum = 0;
+				var helpful_kcs_number = 0;
+				var problematic_kcs = 0;
+				var slip_kcs = 0;
+
+				var act_progress = topic_activities[resource_id][activity.id].values.p;
+
+				//Total number of concepts needed for solving the problem / understanding the example
+				var total_kcs = 0;
+				var kcs_for_recommendation = []
+
+				var misconception_kcs = []
+				var helpful_kcs = []
+
+				for (var l=0;l<kcs.length;l++){
+					var kc_id = kcs[l];
+					if (kc_id in kc_levels){
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
+// ------------------------------------------------------------------------------------------------------
+/**
  * Recommendation approach: Remedial
  * Generate a list of recommended content list based on problematic concepts and  
  * knowledge level infered for kcs
  */
 function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr){
+	alert("remedial recommendations");
+	console.log(user_state);
 	kc_levels = user_state.kcs
 	topic_levels = user_state.topics
 
 	var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
+	//further filter the kc_levels to keep only those that have been selected by the users
+	filtered_kcs = filtered_kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec});
 	var filtered_kc_levels = {};
 	for (var i=0; i<filtered_kcs.length;i++){
 		var kc_id = filtered_kcs[i];
@@ -928,4 +999,240 @@ function generateProactiveRecommendations(method){
 			});
 		}
 	  }
+}
+
+function sortKCSByLearningGoal(learningGoal){
+	/**
+	 * Sort the kcs by their learning goal
+	 * 0: remedial recommendations - sort from low level of knowledge to high level of knowledge
+	 * if zero, we need to verify if the number of attempts is greater than 0 (if not, the concept matches best with the goal
+	 * filling knowledge gaps	
+	 *  * 
+	 * 1: filling knowledge gaps - sort based on the knowledge level either estimated or edited by the students
+	 * first the ones with zero knowledge level and zero attempts, then the ones with zero estimated knowledge but edited positiviely by the student
+	 * and then all the rest sorted incrementally basedd on the knowledge level
+	 */
+	//remedial recommendations
+	if (learningGoal==0){
+		data.kcs.forEach(function(kc) {
+            let uk = typeof kc.uk === 'number' ? kc.uk : 0;
+			let att = typeof kc.a === 'number' ? kc.a : 0;
+            let edition = typeof kc.edition === 'number' ? kc.edition : 0;
+            let total_uk = uk + edition;
+            if (isNaN(total_uk)) total_uk = 0;
+            if (total_uk < 0) total_uk = 0;
+            if (total_uk > 1) total_uk = 1;
+            kc.total_uk = total_uk;
+			if(att==0 || (att==0 && total_uk==0 && edition<0)){
+				kc.disabledForRec = true;
+			}
+        });
+
+        data.kcs.sort(function(a, b) {
+            return a.total_uk - b.total_uk;
+        });
+	}
+	//knowledge gaps
+	if(learningGoal==1){
+		data.kcs.forEach(function(kc) {
+            let uk = typeof kc.uk === 'number' ? kc.uk : 0;
+			let att = typeof kc.a === 'number' ? kc.a : 0;
+            let edition = typeof kc.edition === 'number' ? kc.edition : 0;
+            let total_uk = uk + edition;
+            if (isNaN(total_uk)) total_uk = 0;
+            if (total_uk < 0) total_uk = 0;
+            if (total_uk > 1) total_uk = 1;
+            kc.total_uk = total_uk;
+			if(total_uk==0){
+				kc.disabledForRec = true;
+			}
+        });
+
+        data.kcs.sort(function(a, b) {
+            return a.total_uk - b.total_uk;
+        });
+	}
+
+	/*if(learningGoal==2){
+
+	}*/
+}
+function setTopConceptsForRecommendations(num_concepts){
+    // Get the container div
+    const container = document.querySelector('.concept-selection-options');
+    if (!container) return;
+    container.innerHTML = ''; // Clear previous content
+
+    // Defensive: sort by total_uk descending (if not already sorted)
+	// Only include kcs that do not have disabledForRec or have it set to false
+	const filteredKcs = data.kcs.filter(kc => !kc.hasOwnProperty('disabledForRec') || kc.disabledForRec === false);
+	const sortedKcs = [...filteredKcs].sort((a, b) => (a.total_uk || 0) - (b.total_uk || 0));
+	const topKcs = sortedKcs.slice(0, num_concepts);
+
+    topKcs.forEach((kc, idx) => {
+        // Calculate values
+        const uk = typeof kc.uk === 'number' ? kc.uk : 0;
+        const edition = typeof kc.edition === 'number' ? kc.edition : 0;
+        let total = uk + edition;
+        if (isNaN(total)) total = 0;
+        if (total < 0) total = 0;
+        if (total > 1) total = 1;
+		console.log(edition)
+		console.log(kc.dn+" "+total)
+
+        // Create row
+        const row = document.createElement('div');
+        row.className = 'concept-bar-row';
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '6px';
+        row.style.marginBottom = '2px';
+
+        // Checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'concept-checkbox-html';
+        checkbox.style.marginRight = '4px';
+        checkbox.checked = !!kc.selectedForRec;
+        checkbox.onclick = function() {
+            selectConceptForRecommendation(kc.id, checkbox.checked);
+        };
+        row.appendChild(checkbox);
+
+        // Label
+        const label = document.createElement('span');
+        label.className = 'concept-label-html';
+        label.title = kc.dn || kc.name || `Concept ${idx + 1}`;
+        label.innerText = (kc.dn || kc.name || `Concept ${idx + 1}`).length > 12
+            ? (kc.dn || kc.name || `Concept ${idx + 1}`).substring(0, 12) + '...'
+            : (kc.dn || kc.name || `Concept ${idx + 1}`);
+        row.appendChild(label);
+
+        // Bar container (flex-based, no absolute positioning)
+		const barContainer = document.createElement('div');
+		barContainer.className = 'concept-mastery-bar';
+		barContainer.style.display = 'flex';
+		barContainer.style.height = '12px';
+		barContainer.style.width = '75px';
+		barContainer.style.background = '#f0f0f0';
+		barContainer.style.borderRadius = '3px';
+		barContainer.style.overflow = 'hidden';
+		barContainer.style.position = 'relative';
+
+		// Original value bar (uk)
+		if (uk > 0) {
+			const origBar = document.createElement('div');
+			//origBar.className = 'bar-original-html';
+			origBar.className = 'concept-mastery-fill';
+			origBar.style.width = (uk*100)+'%';
+			origBar.style.background = '#bbb';
+			origBar.style.opacity = '0.6';
+			origBar.style.height = '100%';
+			barContainer.appendChild(origBar);
+		}
+
+		// Edition bar (positive or negative) with hatching pattern
+		if (edition !== 0) {
+			const editionBar = document.createElement('div');
+			editionBar.style.flex = Math.abs(edition);
+			editionBar.style.height = '100%';
+			editionBar.style.position = 'relative';
+			editionBar.style.background = 'none';
+
+			// Create SVG for hatching
+			const svgNS = "http://www.w3.org/2000/svg";
+			const svg = document.createElementNS(svgNS, "svg");
+			svg.setAttribute('width', '100%');
+			svg.setAttribute('height', '100%');
+			svg.setAttribute('viewBox', '0 0 10 12');
+			svg.style.position = 'absolute';
+			svg.style.top = '0';
+			svg.style.left = '0';
+			svg.style.width = '100%';
+			svg.style.height = '100%';
+			svg.style.pointerEvents = 'none';
+
+			// Define pattern
+			const pattern = document.createElementNS(svgNS, "pattern");
+			pattern.setAttribute('id', `hatch-${kc.id}-${idx}`);
+			pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+			pattern.setAttribute('width', '3');
+			pattern.setAttribute('height', '6');
+			pattern.setAttribute('patternTransform', 'rotate(45)');
+
+			const color = edition > 0 ? '#4caf50' : '#f44336';
+
+			// Draw lines for hatching
+			const line = document.createElementNS(svgNS, "rect");
+			line.setAttribute('x', '0');
+			line.setAttribute('y', '0');
+			line.setAttribute('width', '2');
+			line.setAttribute('height', '6');
+			line.setAttribute('fill', color);
+			line.setAttribute('opacity', '0.5');
+			pattern.appendChild(line);
+
+			svg.appendChild(pattern);
+
+			// Use pattern as fill
+			const rect = document.createElementNS(svgNS, "rect");
+			rect.setAttribute('x', '0');
+			rect.setAttribute('y', '0');
+			rect.setAttribute('width', '100%');
+			rect.setAttribute('height', '100%');
+			rect.setAttribute('fill', `url(#hatch-${kc.id}-${idx})`);
+			svg.appendChild(rect);
+
+			editionBar.appendChild(svg);
+
+			// Assign class for possible further styling
+			editionBar.className = edition > 0 ? 'bar-edition-positive-html' : 'bar-edition-negative-html';
+
+			barContainer.appendChild(editionBar);
+		}
+
+		// Fill the rest with empty space if total < 1
+		if (total < 1) {
+			const emptyBar = document.createElement('div');
+			emptyBar.style.flex = 1 - total;
+			emptyBar.style.height = '100%';
+			emptyBar.style.background = 'transparent';
+			barContainer.appendChild(emptyBar);
+		}
+
+		// Value label (positioned absolutely over the bar)
+		const valueLabel = document.createElement('span');
+		valueLabel.className = 'concept-value-html';
+		valueLabel.innerText = `${Math.round(total * 100)}%`;
+		valueLabel.style.position = 'absolute';
+		valueLabel.style.right = '4px';
+		valueLabel.style.top = '1px';
+		valueLabel.style.fontSize = '10px';
+		valueLabel.style.color = '#222';
+		valueLabel.style.background = 'rgba(255,255,255,0.7)';
+		valueLabel.style.padding = '0 2px';
+		valueLabel.style.borderRadius = '2px';
+		barContainer.appendChild(valueLabel);
+
+		row.appendChild(barContainer);
+
+		
+
+		container.appendChild(row);
+
+		
+
+    });
+
+	let moreKCsButtonDiv = document.createElement('div')
+	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">Inspect more concepts</button>'
+	container.appendChild(moreKCsButtonDiv)
+}
+
+// Helper function to update data.kcs when a checkbox is toggled
+function selectConceptForRecommendation(conceptId, isChecked) {
+    const kc = data.kcs.find(k => k.id == conceptId);
+    if (kc) {
+        kc.selectedForRec = !!isChecked;
+    }
 }
