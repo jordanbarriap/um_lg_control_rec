@@ -7661,12 +7661,14 @@ function generateLearningPath() {
     console.log(generateRecFunction)
     if (typeof window[generateRecFunction] === 'function') {
       if(state.args.learningGoal != ""){
-        if(state.args.learningGoal == "remedialReccommendations"){
+        if(state.args.learningGoal == "RemedialRecommendations"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-          console.log("usr_index: "+usr_index)
-          window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+          var recs = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+          console.log("remedial recs")
+          console.log(recs)
+          addRecommendationsToUI()
         }else{
-          window[generateRecFunction]();
+          var recs = window[generateRecFunction]();
         }
       }
     }

@@ -79,14 +79,21 @@ function generateFillKnowledgeGapRecommendations(data_topics_acts_kcs, user_stat
  * knowledge level infered for kcs
  */
 function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr){
-	alert("remedial recommendations");
-	console.log(user_state);
 	kc_levels = user_state.kcs
 	topic_levels = user_state.topics
 
 	var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
+	console.log(filtered_kcs)
+	//get the ids from the selected kcs
+	selected_kcs_ids = data.kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec}).map(function(d){return d.id});
+
 	//further filter the kc_levels to keep only those that have been selected by the users
-	filtered_kcs = filtered_kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec});
+	// further filter the kc_levels to keep only those that have been selected by the users
+	filtered_kcs = selected_kcs_ids //filtered_kcs.filter(function(d){ return selected_kcs_ids.includes(d); });
+
+	console.log(selected_kcs_ids)
+	
+	
 	var filtered_kc_levels = {};
 	for (var i=0; i<filtered_kcs.length;i++){
 		var kc_id = filtered_kcs[i];
@@ -132,6 +139,8 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 
 					var misconception_kcs = []
 					var helpful_kcs = []
+					console.log("act")
+					console.log(activity)
 	
 					for (var l=0;l<kcs.length;l++){
 						var kc_id = kcs[l];
@@ -146,9 +155,12 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								var kc_level = kc_levels[kc_id]["k"];
 								var kc_lastksr= kc_levels[kc_id]["lastk-sr"];
 								var kc_lastk_att = kc_levels[kc_id]["lastk-att"];
+								var kc_sr = kc_levels[kc_id]["sr"];
+								var kc_att = kc_levels[kc_id]["a"];
 								
 								if(kc_level>= knowledge_level_limit){
-									if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
+									if(kc_att > 0 && kc_sr <= last_success_rate_limit){
+									//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
 										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
 										//if (kc_level < proficiency_threshold){
 										problematic_kcs ++;
@@ -740,7 +752,7 @@ function addRecommendationsToUI(){
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
 
-	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial"){
+	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 		if(top_recommended_activities && top_recommended_activities.length > 0) {
 			
 			//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
