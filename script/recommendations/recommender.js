@@ -12,7 +12,7 @@ var knowledge_level_limit = .5
  * or where the student has not shown or modified their proficiency. Hence priority is given 
  * to examples first and then more complex content
 **/
-function prepareFillKnowledgeGapRecommendations(){
+function prepareFillKnowledgeGapsRecommendations(){
 	alert("prepare fill knowledge gaps recommendations");
 	sortKCSByLearningGoal(1)
 	setTopConceptsForRecommendations(6);
@@ -24,10 +24,16 @@ function prepareRemedialRecommendations(){
 	setTopConceptsForRecommendations(6);
 }
 
-function generateFillKnowledgeGapRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr,selected_kcs_ids){
+function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr,selected_kcs_ids){
 	var recommendations = [];
 	var topics = data_topics_acts_kcs;
 	var n_topics = topics.length;
+
+	var selected_kcs_ids = data.kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec}).map(function(d){return d.id});
+	console.log("Selected kcs ids for fill knowledge gaps recommendations:");
+	console.log(selected_kcs_ids);
+
+	var ranking_acts_per_type = {}
 
 	for(var i=1; i<n_topics;i++){
 		var topic = topics[i];
@@ -35,38 +41,41 @@ function generateFillKnowledgeGapRecommendations(data_topics_acts_kcs, user_stat
 		var topic_name = topic.id;
 		var resources = Object.keys(topic.activities);
 		var n_resources = resources.length;
-
+		
 		var topic_activities = user_state["activities"][topic_name];
 		for (var j=0; j<n_resources;j++){
 			var resource_id = resources[j];
+			console.log(resource_id)
 			var activities = topic.activities[resource_id];
 			var n_activities = activities.length;
+			var ranking_act_curr_type = []
 			for (var k=0;k<n_activities;k++){
 				var activity = activities[k];
 				var kcs = activity["kcs"];
-				var rec_score = 0;
-				var weights_sum = 0;
-				var helpful_kcs_number = 0;
-				var problematic_kcs = 0;
-				var slip_kcs = 0;
+				var covered = kcs.filter(function(kc_id) {
+					return selected_kcs_ids.includes(kc_id);
+				});
+				console.log("Covered kcs for activity " + activity.id + ": " + covered.length);
+				var ratio_covered_selected_kcs = selected_kcs_ids.length > 0 ? covered.length / selected_kcs_ids.length : 0;
+				activity.ratio_covered_selected_kcs = ratio_covered_selected_kcs;
+				ranking_act_curr_type.push(activity);
+			}
+			console.log("current type")
+			console.log(ranking_act_curr_type)
 
-				var act_progress = topic_activities[resource_id][activity.id].values.p;
-
-				//Total number of concepts needed for solving the problem / understanding the example
-				var total_kcs = 0;
-				var kcs_for_recommendation = []
-
-				var misconception_kcs = []
-				var helpful_kcs = []
-
-				for (var l=0;l<kcs.length;l++){
-					var kc_id = kcs[l];
-					if (kc_id in kc_levels){
-					}
-				}
+			if (resource_id in ranking_acts_per_type){
+				ranking_acts_per_type[resource_id] = ranking_acts_per_type[resource_id].concat(ranking_act_curr_type);
+			}else{
+				ranking_acts_per_type[resource_id] = ranking_act_curr_type;
 			}
 		}
 	}
+
+	console.log("Ranking activities per type:");
+	console.log(ranking_acts_per_type)
+
+	return ranking_acts_per_type
+
 }
 
 

@@ -7668,7 +7668,13 @@ function generateLearningPath() {
           console.log(recs)
           addRecommendationsToUI()
         }else{
-          var recs = window[generateRecFunction]();
+          if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
+            console.log("FillKnowledgeGapsRecommendations")
+            var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+            var recs = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+          }else{
+            var recs = window[generateRecFunction]();
+          }
         }
       }
     }

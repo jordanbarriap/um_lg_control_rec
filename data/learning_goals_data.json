@@ -6,7 +6,7 @@
 {"name":"Fill knowledge gaps",
 "id":1,
 "name_es":"Aprender conceptos faltantes",
-"recFunction": "FillKnowledgeGapRecommendations",
+"recFunction": "FillKnowledgeGapsRecommendations",
 "conceptFocus": "no evidence of mastery or success"},
 {"name":"Practice learned concepts",
 "id":2,
