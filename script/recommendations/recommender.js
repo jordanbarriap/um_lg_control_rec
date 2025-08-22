@@ -3,7 +3,172 @@ var non_recommended_topics = ["Table Creation", "Table Deletion and Alteration",
 var proficiency_threshold = .5;
 var topic_progress_limit = .1
 var last_success_rate_limit = .5
-var knowledge_level_limit = .5
+var knowledge_level_limit = .6
+
+function generateLearningPathGraph(learningPathObj, containerId = 'learning-path-graph') {
+    // Remove previous graph if exists
+    let container = document.getElementById(containerId);
+    if (!container) {
+        container = document.createElement('div');
+        container.id = containerId;
+        document.body.appendChild(container);
+    }
+	container.style.display = 'block'; // Ensure container is visible
+    container.innerHTML = '';
+
+	let main_container = document.getElementById("learning-path-section");
+	main_container.style.display = 'block'; // Ensure container is visible
+
+    // SVG setup
+    const svgNS = "http://www.w3.org/2000/svg";
+    const width = 1000;
+    const nodeRadius = 15;
+    const nodeMargin = 20;
+    const colMargin = 80;
+    const arrowColor = "#888";
+    const heightPadding = 30;
+    const labelHeight = 16;
+
+    // Parse and sort columns by order
+    const columns = Object.entries(learningPathObj)
+        .map(([id, obj]) => ({ id, order: obj.order, recs: obj.recs }))
+        .sort((a, b) => a.order - b.order);
+
+    // Calculate max column height
+    const maxColHeight = Math.max(...columns.map(col => col.recs.length));
+    const svgHeight = maxColHeight * (2 * nodeRadius + nodeMargin) + heightPadding + labelHeight;
+    const svgWidth = columns.length * (2 * nodeRadius + colMargin) + colMargin;
+
+    // Create SVG
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", svgWidth);
+    svg.setAttribute("height", svgHeight);
+    svg.style.background = "#fff";
+    container.appendChild(svg);
+
+    // Store node positions for drawing arrows
+    const nodePositions = [];
+
+    columns.forEach((col, colIdx) => {
+        const x = colMargin + colIdx * (2 * nodeRadius + colMargin) + nodeRadius;
+        const recs = col.recs;
+        nodePositions[colIdx] = [];
+
+        // Column label (resource/activity type)
+        const colLabel = document.createElementNS(svgNS, "text");
+        colLabel.setAttribute("x", x);
+        colLabel.setAttribute("y", labelHeight - 8);
+        colLabel.setAttribute("text-anchor", "middle");
+        colLabel.setAttribute("font-size", "16px");
+        colLabel.setAttribute("fill", "#333");
+        colLabel.setAttribute("font-weight", "bold");
+        colLabel.textContent = col.id;
+        svg.appendChild(colLabel);
+
+        // Draw nodes (bottom to top)
+       // ...inside generateLearningPathGraph, in the forEach where nodes are created...
+		for (let i = 0; i < recs.length; i++) {
+			const y = svgHeight - ((i + 1) * (2 * nodeRadius + nodeMargin));
+			// Node circle
+			const circle = document.createElementNS(svgNS, "circle");
+			circle.setAttribute("cx", x);
+			circle.setAttribute("cy", y);
+			circle.setAttribute("r", nodeRadius);
+			circle.setAttribute("fill", "#2196f3");
+			circle.setAttribute("stroke", "#1565c0");
+			circle.setAttribute("stroke-width", "2");
+
+			// Show explanation as tooltip on mouseover
+			const explanation = recs[i].explanation || "";
+			circle.addEventListener("mouseenter", function() {
+				circle.setAttribute("title", explanation);
+			});
+
+			svg.appendChild(circle);
+
+			// Sequential order label (1, 2, 3, ...)
+			const seqLabel = document.createElementNS(svgNS, "text");
+			seqLabel.setAttribute("x", x);
+			seqLabel.setAttribute("y", y - nodeRadius - 8);
+			seqLabel.setAttribute("text-anchor", "middle");
+			seqLabel.setAttribute("font-size", "13px");
+			seqLabel.setAttribute("fill", "#666");
+			seqLabel.textContent = (i + 1);
+			svg.appendChild(seqLabel);
+
+			// Node label (activity name/id)
+			const label = document.createElementNS(svgNS, "text");
+			label.setAttribute("x", x);
+			label.setAttribute("y", y + 6);
+			label.setAttribute("text-anchor", "middle");
+			label.setAttribute("font-size", "13px");
+			label.setAttribute("fill", "#fff");
+			label.textContent = recs[i].name || recs[i].id || `Activity ${i + 1}`;
+
+			// Show explanation as tooltip on mouseover for label
+			label.addEventListener("mouseenter", function() {
+				label.setAttribute("title", explanation);
+			});
+
+			svg.appendChild(label);
+
+			// Save position for arrows
+			nodePositions[colIdx].push({ x, y, radius: nodeRadius });
+		}
+    });
+
+    // Draw arrows within each column (bottom to top)
+    columns.forEach((col, colIdx) => {
+        for (let i = 0; i < nodePositions[colIdx].length - 1; i++) {
+            const from = nodePositions[colIdx][i];
+            const to = nodePositions[colIdx][i + 1];
+            drawArrow(svg, from.x, from.y - from.radius, to.x, to.y + to.radius, arrowColor);
+        }
+    });
+
+    // Draw arrows between columns (top of previous to bottom of next)
+    for (let colIdx = 0; colIdx < columns.length - 1; colIdx++) {
+        const prevCol = nodePositions[colIdx];
+        const nextCol = nodePositions[colIdx + 1];
+        if (prevCol.length > 0 && nextCol.length > 0) {
+            const from = prevCol[prevCol.length - 1]; // top node of previous column
+            const to = nextCol[0]; // bottom node of next column
+            drawArrow(svg, from.x, from.y - from.radius, to.x, to.y + to.radius, "#43a047");
+        }
+    }
+
+    // Helper to draw an arrow between two points
+    function drawArrow(svg, x1, y1, x2, y2, color = "#888") {
+        const arrow = document.createElementNS(svgNS, "line");
+        arrow.setAttribute("x1", x1);
+        arrow.setAttribute("y1", y1);
+        arrow.setAttribute("x2", x2);
+        arrow.setAttribute("y2", y2);
+        arrow.setAttribute("stroke", color);
+        arrow.setAttribute("stroke-width", "3");
+        arrow.setAttribute("marker-end", "url(#arrowhead)");
+        svg.appendChild(arrow);
+    }
+
+    // Add arrowhead marker definition
+    const defs = document.createElementNS(svgNS, "defs");
+    const marker = document.createElementNS(svgNS, "marker");
+    marker.setAttribute("id", "arrowhead");
+    marker.setAttribute("markerWidth", "10");
+    marker.setAttribute("markerHeight", "7");
+    marker.setAttribute("refX", "5");
+    marker.setAttribute("refY", "3.5");
+    marker.setAttribute("orient", "auto");
+    marker.setAttribute("markerUnits", "strokeWidth");
+    const arrowPath = document.createElementNS(svgNS, "path");
+    arrowPath.setAttribute("d", "M0,0 L10,3.5 L0,7 Z");
+    arrowPath.setAttribute("fill", "#888");
+    marker.appendChild(arrowPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+	
+}
 
 // ------------------------------------------------------------------------------------------------------
 /**
@@ -15,13 +180,19 @@ var knowledge_level_limit = .5
 function prepareFillKnowledgeGapsRecommendations(){
 	alert("prepare fill knowledge gaps recommendations");
 	sortKCSByLearningGoal(1)
-	setTopConceptsForRecommendations(6);
+	setTopConceptsForRecommendations(4);
 }
 
 function prepareRemedialRecommendations(){
 	alert("prepare remedial recommendations");
 	sortKCSByLearningGoal(0)
-	setTopConceptsForRecommendations(6);
+	setTopConceptsForRecommendations(4);
+}
+
+function prepareKeepMeUpWithTheClassRecommendations(){
+	alert("prepare remedial recommendations");
+	sortKCSByLearningGoal(2)
+	setTopConceptsForRecommendations(4);
 }
 
 function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr,selected_kcs_ids){
@@ -33,7 +204,6 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 	console.log("Selected kcs ids for fill knowledge gaps recommendations:");
 	console.log(selected_kcs_ids);
 
-	var ranking_acts_per_type = {}
 
 	for(var i=1; i<n_topics;i++){
 		var topic = topics[i];
@@ -56,8 +226,11 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 					return selected_kcs_ids.includes(kc_id);
 				});
 				console.log("Covered kcs for activity " + activity.id + ": " + covered.length);
+				console.log(activity)
 				var ratio_covered_selected_kcs = selected_kcs_ids.length > 0 ? covered.length / selected_kcs_ids.length : 0;
 				activity.ratio_covered_selected_kcs = ratio_covered_selected_kcs;
+				activity.topic_name = topic_name;
+				activity.topic_id = i;
 				ranking_act_curr_type.push(activity);
 			}
 			console.log("current type")
@@ -71,10 +244,72 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		}
 	}
 
+	
+	
+	//sort each of the activities per source based on different criteria
+	//0. if not an example and not a quizpet, the candidate for recommendation should be activities that have not been solved correctly in the past
+	//1. Sort by ratio of covered selected kcs (higher the better) -> done
+	//2. Student should not be proficient in the target covered selected kcs (the lowest avg knowledge the better)
+	//3. Higher avg level of proficiency in the not target covered selected kcs (the higher the better)
+	//4. Priority if the activity covers one or more concepts of the week
+
+	for (var resource_id in ranking_acts_per_type){
+		var ranking_acts = ranking_acts_per_type[resource_id];
+		// Sort by ratio_covered_selected_kcs descending
+		ranking_acts.sort(function(a, b) {
+			return (b.ratio_covered_selected_kcs || 0) - (a.ratio_covered_selected_kcs || 0);
+		});
+		ranking_acts_per_type[resource_id] = ranking_acts;
+		console.log(resource_id + " ranking activities:");
+	}
+
 	console.log("Ranking activities per type:");
 	console.log(ranking_acts_per_type)
+	//Ejecucion -> quizpet
+	//ee615 -> pcex examples
+	//rec582 -> parsons
+	const max_num_rec_quizpet=3
+	const max_num_rec_examples=4
+	const max_num_rec_parsons=3
 
-	return ranking_acts_per_type
+	//final order in the recommended learning path
+	var final_recs ={"Ejecucion":{"order":1},"ee615":{"order":0},"rec582":{"order":2}}
+
+	for (var resource_id in ranking_acts_per_type){
+		var ranking_acts = ranking_acts_per_type[resource_id];
+		var resource_rec_acts =[]
+		if (ranking_acts.length>0){
+			if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion") || resource_id.includes("ee615")){
+				max_num_recs = max_num_rec_quizpet
+			}
+			if (resource_id.includes("Example") || resource_id.includes("ee615")){
+				max_num_recs = max_num_rec_examples
+			}
+			if (resource_id.includes("Parson") || resource_id.includes("rec582")){
+				max_num_recs = max_num_rec_parsons
+			}
+			for(var i=0;i<ranking_acts.length && i<max_num_recs;i++){
+				var rec_explanation = "This activity is recommended because it covers <b>"+ranking_acts[i].ratio_covered_selected_kcs+"</b> of the concept(s) that you have not attempted yet.";
+				if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion")){
+					rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
+				}
+				if (resource_id.includes("Example") || resource_id.includes("ee615")){
+					rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
+				}
+				if (resource_id.includes("Parson") || resource_id.includes("rec582")){
+					rec_explanation = rec_explanation + " It is a parsons problem that will help you practice these concepts.";
+				}
+				ranking_acts[i].explanation = rec_explanation;
+				resource_rec_acts.push(ranking_acts[i]);
+			}
+		}
+		var recs_obj = final_recs[resource_id]
+		recs_obj["recs"]=resource_rec_acts
+		final_recs[resource_id]=recs_obj
+	}
+	console.log("Final recommendations for fill knowledge gaps:");
+	console.log(final_recs)
+	return  final_recs
 
 }
 
@@ -147,9 +382,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 					var kcs_for_recommendation = []
 
 					var misconception_kcs = []
-					var helpful_kcs = []
-					console.log("act")
-					console.log(activity)
+					var helpful_kcs = [] 
 	
 					for (var l=0;l<kcs.length;l++){
 						var kc_id = kcs[l];
@@ -189,7 +422,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 										helpful_kcs_number ++;
 									}
 								}else{
-									//console.log(kc_id + " on-learning concept");
+									console.log(kc_id + " on-learning concept");
 
 								}
 								
@@ -750,6 +983,33 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
+  console.log("KC difficulty scores:");
+  console.log(kc_levels);
+}
+
+//Calculate difficulty scores for all the kcs by using overall success rates
+function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
+  var kcs_ids = Object.keys(kc_levels);
+  for(var i=0;i<kcs_ids.length;i++){
+  	var kc_id = kcs_ids[i];
+  	var kc_level = kc_levels[kc_id]["k"];
+  	var lastk_sr = kc_levels[kc_id]["lastk-sr"];
+  	var overall_sr = kc_levels[kc_id]["sr"];
+  	var kc_difficulty_score = - 1;
+  	if(lastk_sr>0){
+  		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
+  	}else{
+  		if(overall_sr>0){
+  			kc_difficulty_score = 1 - (overall_sr*weight_sr + kc_level*weight_kcs);
+  		}else{
+  			kc_difficulty_score = 1;
+  		}
+  	}
+	console.log(kc_difficulty_score)
+  	kc_levels[kc_id]["diff"]=kc_difficulty_score;
+  }
+  console.log("KC difficulty scores:");
+  console.log(kc_levels);
 }
 
 
@@ -1038,6 +1298,7 @@ function sortKCSByLearningGoal(learningGoal){
 		data.kcs.forEach(function(kc) {
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
+			let sr = typeof kc.sr === 'number' ? kc.sr : 0;
             let edition = typeof kc.edition === 'number' ? kc.edition : 0;
             let total_uk = uk + edition;
             if (isNaN(total_uk)) total_uk = 0;
@@ -1050,11 +1311,16 @@ function sortKCSByLearningGoal(learningGoal){
         });
 
         data.kcs.sort(function(a, b) {
-            return a.total_uk - b.total_uk;
+            return a.sr - b.sr;
         });
 	}
 	//knowledge gaps
 	if(learningGoal==1){
+		//lower limit attempts to consider a concept as a knowledge gap
+		let lower_limit_attempts = 1;
+		//lower limit knowledge gap to consider a concept as a knowledge gap
+		let lower_limit_kc_knowledge_gap = 0.0
+		//filling knowledge gaps
 		data.kcs.forEach(function(kc) {
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
@@ -1064,19 +1330,56 @@ function sortKCSByLearningGoal(learningGoal){
             if (total_uk < 0) total_uk = 0;
             if (total_uk > 1) total_uk = 1;
             kc.total_uk = total_uk;
-			if(total_uk==0){
+			if(total_uk>lower_limit_kc_knowledge_gap || (total_uk==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
 				kc.disabledForRec = true;
 			}
         });
-
-        data.kcs.sort(function(a, b) {
-            return a.total_uk - b.total_uk;
-        });
+		// Sort in place by total_uk descending, tie-breaker: lowest att
+        data.kcs.sort((a, b) => {
+			const totalA = a.total_uk || 0;
+			const totalB = b.total_uk || 0;
+			if (totalA !== totalB) {
+				return totalB - totalA
+			}
+			const attA = typeof a.a === 'number' ? a.a : 0;
+			const attB = typeof b.a === 'number' ? b.a : 0;
+			return attB - attA;
+		});
 	}
 
-	/*if(learningGoal==2){
-
-	}*/
+	//Keep me up with the class
+	//Here we should 
+	if(learningGoal==2){
+		data.kcs.forEach(function(kc) {
+			//assign priority to the current concept based on its recency
+			//first check if the concept belongs to the current topic
+			const topic = data.topics.find(t => t.name === kc.t);
+			var recencyPriority = 0
+			if(Object.hasOwn(topic,'timeline')){
+				console.log("Topic timeline found for concept: ");
+				console.log(topic)
+				if(topic.timeline.current){
+					recencyPriority = 2
+				}else{
+					if(topic.timeline.covered){
+						recencyPriority = 1
+					}else{
+						recencyPriority = 0
+					}
+				}
+			}
+			kc.recencyPriority = recencyPriority;
+			kc.topicOrder = Number(topic.order) || 0;
+		})
+		data.kcs.sort((a, b) => {
+			const recA = a.recencyPriority || 0;
+			const recB = b.recencyPriority || 0;
+			if (recA !== recB) return recB - recA;
+			const orderA = typeof a.topicOrder === 'number' ? a.topicOrder : 0;
+			const orderB = typeof b.topicOrder === 'number' ? b.topicOrder : 0;
+			return orderB - orderA;
+});
+	}
 }
 function setTopConceptsForRecommendations(num_concepts){
     // Get the container div
@@ -1114,24 +1417,43 @@ function setTopConceptsForRecommendations(num_concepts){
         checkbox.type = 'checkbox';
         checkbox.className = 'concept-checkbox-html';
         checkbox.style.marginRight = '4px';
-        checkbox.checked = !!kc.selectedForRec;
+        checkbox.checked = true;//!!kc.selectedForRec;
         checkbox.onclick = function() {
             selectConceptForRecommendation(kc.id, checkbox.checked);
         };
         row.appendChild(checkbox);
 
-        // Label
-        const label = document.createElement('span');
-        label.className = 'concept-label-html';
-        label.title = kc.dn || kc.name || `Concept ${idx + 1}`;
-        label.innerText = (kc.dn || kc.name || `Concept ${idx + 1}`).length > 12
-            ? (kc.dn || kc.name || `Concept ${idx + 1}`).substring(0, 12) + '...'
-            : (kc.dn || kc.name || `Concept ${idx + 1}`);
-        row.appendChild(label);
+        // Get number of attempts for tooltip
+		const attempts = typeof kc.a === 'number' ? kc.a : 0;
+		const attemptsTooltip = `Attempts: ${attempts}`;
+
+		const sr = typeof kc.sr === 'number' ? kc.sr : 0;
+		const srTooltip = `Success rate: ${sr*100}%`;
+
+		const kcTooltip= attemptsTooltip + '\n' + srTooltip;
+
+		// Label
+		const label = document.createElement('span');
+		label.className = 'concept-label-html';
+		//label.title = kc.dn || kc.name || `Concept ${idx + 1}`;
+		label.innerText = (kc.dn || kc.name || `Concept ${idx + 1}`).length > 12
+			? (kc.dn || kc.name || `Concept ${idx + 1}`).substring(0, 12) + '...'
+			: (kc.dn || kc.name || `Concept ${idx + 1}`);
+		// Add attempts tooltip on hover
+		label.onmouseenter = function() {
+			label.setAttribute('title', kcTooltip);
+		};
+		row.appendChild(label);
 
         // Bar container (flex-based, no absolute positioning)
+		// Bar container (flex-based, no absolute positioning)
 		const barContainer = document.createElement('div');
 		barContainer.className = 'concept-mastery-bar';
+		// ...existing barContainer style setup...
+		// Add attempts tooltip on hover
+		barContainer.onmouseenter = function() {
+			barContainer.setAttribute('title', attemptsTooltip);
+		};
 		barContainer.style.display = 'flex';
 		barContainer.style.height = '12px';
 		barContainer.style.width = '75px';

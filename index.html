@@ -29,7 +29,6 @@
   <script type="text/javascript" src="script/vis.js?v=202203151743"></script>
   <script type="text/javascript" src="script/richolm/js/richolm.js?v=202103111255"></script>
   <script type="text/javascript" src="script/js-cookie/src/js.cookie.js"></script>
-  <script type="text/javascript" src="concepts_modal_functions.js"></script>
 </head>
 
 
@@ -179,11 +178,11 @@ function loadLearningGoals() {
         input.name = 'learning-goals';
         input.value = `goal${idx}`;
         const prepareRecFunction = "prepare"+goal.recFunction
+        console.log("prepareRecFunction: " + prepareRecFunction);
         input.onchange = function() {
           if (typeof window[prepareRecFunction] === 'function') {
             state.args.learningGoal = goal.recFunction;
             window[prepareRecFunction]();
-            
           }
         };
 
@@ -266,16 +265,13 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
     <!-- Generate Learning Path Button -->
     <div style="margin: 10px; text-align: center;">
       <button id="show-learning-path-btn" class="learning-path-btn" onclick="generateLearningPath()">
-        Generate Learning Path
+        Generate Learning Recommendations
       </button>
     </div>
 
     <!-- Learning Path Section -->
     <div id="learning-path-section" style="display: none;">
       <div class="learning-path-container">
-        <button id="generate-learning-path-btn" class="learning-path-btn" onclick="generateLearningPath()">
-          Generate Learning Path
-        </button>
         <div id="learning-path-graph"></div>
       </div>
     </div>
@@ -332,12 +328,12 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
           <div class="title" title="This list below shows activities which might help you with the activity you have just had an incorrect result with. This selection is based on the history of your interaction with activities (including the very last one).">2. Recommended activities</div>
         </td>
         <td>
-          <div style="display: flex; gap: 20px; align-items: flex-start;">
-            <div style="flex: 1;">
+          <div style="display: flex; gap: 0px; align-items: flex-start;">
+            <div id="div-act-frame" style="flex: 1;">
               <iframe src="empty.html" id="act-frame"></iframe>
               <iframe src="empty.html" id="act-frame-rec"></iframe>
             </div>
-            <div id="div-edit-sm" style="width: 300px; min-width: 300px;"> </div>
+            <div id="div-edit-sm"> </div>
           </div>
         </td>
       </tr>

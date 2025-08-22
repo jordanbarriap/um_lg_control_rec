@@ -2,14 +2,15 @@
 "id":0,
 "name_es":"Corregir conceptos erróneos",
 "recFunction": "RemedialRecommendations",
-"conceptFocus": "low mastery and low success rate"},
+"conceptFocus": "low success rate in the past"},
 {"name":"Fill knowledge gaps",
 "id":1,
 "name_es":"Aprender conceptos faltantes",
 "recFunction": "FillKnowledgeGapsRecommendations",
-"conceptFocus": "no evidence of mastery or success"},
-{"name":"Practice learned concepts",
+"conceptFocus": "no (much) evidence of mastery or success"},
+{"name":"Keep me up with the class",
 "id":2,
-"name_es":"Practicar lo aprendido",
-"recFunction": "RefreshKnowledgelRecommendations",
-"conceptFocus": "mid mastery that have not been practiced recently"}]
+"name_es":"Mantenme al dia con lo aprendido en el curso",
+"recFunction": "KeepMeUpWithTheClassRecommendations",
+"conceptFocus": "mid mastery on the most recent concepts"}
+]

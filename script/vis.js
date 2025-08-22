@@ -163,7 +163,7 @@ var ui = {
 };
 
 var othersTitle = "Students in the class";
-
+var max_levels_edition_sm = 3 // sets the maximum number of knowledge levels that can be edited in the student model (used in the edition of the student model in the vis interface) e.g. if it is 3 it can only increase or decrease three levels
 var last = {act: {}}//added by @Jordan for rec_exp
 
 //Added by @Jordan for rec_exp
@@ -213,6 +213,15 @@ var concept_weights = {};
 
 var set_prerequisites;
 var set_outcomes;
+
+//How each level of edition of the student model (editSM) impacts the knowledge level of the KC
+  let editImpactValues = new Map()
+  editImpactValues.set(1, .2)
+  editImpactValues.set(2, .3)
+  editImpactValues.set(3, .35)
+  editImpactValues.set(-1, -.2)
+  editImpactValues.set(-2, -.3)
+  editImpactValues.set(-3, -.35)
 
 // ------------------------------------------------------------------------------------------------------
 /**
@@ -1384,7 +1393,7 @@ function actLstHide() {
  * - http://adapt2.sis.pitt.edu/quizjet/quiz1.jsp?rdfID=jvariables1&act=Variables&sub=jVariables1&app=25&grp=IS172013Spring&usr=peterb&sid=7EA4F
  */
 function actOpen(resId, actIdx) {
-
+  console.log("actOpen: resId=" + resId + ", actIdx=" + actIdx);
   var topic = getTopic();
   var act = topic.activities[resId][actIdx];
   var res = getRes(resId);
@@ -2225,11 +2234,19 @@ function loadStaticData() {
       for (var i=0; i < json.topicTime.length ; i++) {
       	var topic_order = json.topicTime[i].topicOrder - 1;
       	var releaseDate = new Date(json.topicTime[i].releaseDate)
-      	
+      	var focusDate = new Date(json.topicTime[i].focusDate)
         data.topics[topic_order].unlockTime = releaseDate
         data.topics[topic_order].locked = new Date() < releaseDate
+        var covered = new Date() >= focusDate
+        data.topics[topic_order].timeline.current = false
+        data.topics[topic_order].timeline.covered = (covered) ? true : false
+        if(topic_order>0 && data.topics[topic_order].timeline.covered==false){
+          if(data.topics[topic_order-1].timeline.covered==true){
+            data.topics[topic_order-1].timeline.current = true
+          }
+        }
+        console.log(data.topics[topic_order]);
       }
-
       processData()
     });
   } else {
@@ -3078,6 +3095,8 @@ function stateArgsSet02() {
   state.args.showKcmap = false;//check if fine-grained OLM is shown or not
   state.args.controlKcmap = false;//check if users have access to choose if fine-grained OLM is shown or not
   state.args.learningGoal = "";
+
+  
   //end of code added by @Jordan
   
   // @@@@
@@ -7447,37 +7466,228 @@ count = function (ary, classifier) {
     }, {})
 };
 
+// function populateConceptsDiv(concepts) {
+//     var divEditSm = document.getElementById('div-edit-sm');
+//     divEditSm.style.display = 'block';
+//     divEditSm.innerHTML = '';
+    
+//     // Add a title for the sidebar
+//     var titleDiv = document.createElement('div');
+//     titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
+//     titleDiv.textContent = 'Programming Concepts';
+//     divEditSm.appendChild(titleDiv);
+    
+//     concepts.forEach(function(concept, index) {
+//         var conceptItem = document.createElement('div');
+//         conceptItem.className = 'concept-item';
+//         conceptItem.innerHTML = `
+//             <div class="concept-info">
+//                 <div class="concept-name">${concept.dn}</div>
+//                 <div class="concept-bar-container">
+//                     <div class="concept-bar" style="width: ${concept.uk * 100}%"></div>
+//                     <div class="concept-value">${Math.round(concept.uk * 100)}%</div>
+//                 </div>
+//             </div>
+//             <div class="concept-actions">
+//                 <button class="thumbs-btn thumbs-down" onclick="handleThumbsClick(${concept.id}, 'down')">
+//                     <span class="thumbs-icon">👎</span>
+//                 </button>
+//                 <button class="thumbs-btn thumbs-up" onclick="handleThumbsClick(${concept.id}, 'up')">
+//                     <span class="thumbs-icon">👍</span>
+//                 </button>
+//             </div>
+//         `;
+//         divEditSm.appendChild(conceptItem);
+//     });
+// }
+
 function populateConceptsDiv(concepts) {
     var divEditSm = document.getElementById('div-edit-sm');
     divEditSm.style.display = 'block';
     divEditSm.innerHTML = '';
-    
+    divEditSm.style.width = '25%';
+    var divActFrame = document.getElementById('div-act-frame');
+    divActFrame.style.width = '60%';
+
     // Add a title for the sidebar
     var titleDiv = document.createElement('div');
     titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
-    titleDiv.textContent = 'Programming Concepts';
+    titleDiv.textContent = "Let's reflect about your knowledge!";
+    var descriptionSpan = document.createElement('span');
+    descriptionSpan.style.cssText = 'font-size: 12px; color: #666'
+    descriptionSpan.textContent = 'The learning activity you just attempted involves learning the following programming concepts.  Let us know if you feel more or less confident than the system estimation about that knowledge. Changing these system beliefs will improve the personalized recommendations the system generates based on the learning goal you chose.';
     divEditSm.appendChild(titleDiv);
-    
+    divEditSm.appendChild(descriptionSpan);
+
     concepts.forEach(function(concept, index) {
+
         var conceptItem = document.createElement('div');
         conceptItem.className = 'concept-item';
-        conceptItem.innerHTML = `
-            <div class="concept-info">
-                <div class="concept-name">${concept.dn}</div>
-                <div class="concept-bar-container">
-                    <div class="concept-bar" style="width: ${concept.uk * 100}%"></div>
-                    <div class="concept-value">${Math.round(concept.uk * 100)}%</div>
-                </div>
-            </div>
-            <div class="concept-actions">
-                <button class="thumbs-btn thumbs-down" onclick="handleThumbsClick(${concept.id}, 'down')">
-                    <span class="thumbs-icon">👎</span>
-                </button>
-                <button class="thumbs-btn thumbs-up" onclick="handleThumbsClick(${concept.id}, 'up')">
-                    <span class="thumbs-icon">👍</span>
-                </button>
-            </div>
-        `;
+        conceptItem.style.display = 'flex';
+        conceptItem.style.alignItems = 'center';
+        conceptItem.style.marginBottom = '10px';
+
+        // Concept name
+        var nameDiv = document.createElement('div');
+        nameDiv.className = 'concept-name';
+        nameDiv.textContent = concept.dn;
+        nameDiv.style.flex = '1';
+        //conceptItem.appendChild(nameDiv);
+
+        // Bar chart container
+        var barContainer = document.createElement('div');
+        barContainer.className = 'concept-bar-container';
+        barContainer.style.display = 'flex';
+        barContainer.style.alignItems = 'center';
+        barContainer.style.marginRight = '10px';
+
+        var bar = document.createElement('div');
+        bar.className = 'concept-bar';
+
+        var finalBarValue=0
+        
+        if(Object.hasOwn(state.args.editSM,concept.id) && state.args.editSM[concept.id]<0){
+          var current_edition = state.args.editSM[concept.id]
+          finalBarValue = (concept.uk+editImpactValues.get(current_edition))<0 ? 0 : (concept.uk+editImpactValues.get(current_edition));
+          bar.style.width = (finalBarValue * 100) + '%';
+        }else{
+          finalBarValue = concept.uk;
+          bar.style.width = (concept.uk * 100) + '%';
+        }
+        bar.style.height = '16px';
+        bar.style.background = '#2196f3';
+        bar.style.borderRadius = '0px';
+        bar.style.marginRight = '0px';
+
+        var valueDiv = document.createElement('div');
+        valueDiv.className = 'concept-value';
+        valueDiv.textContent = Math.round(concept.uk * 100) + '%';
+        valueDiv.style.marginLeft = '4px';
+
+        //barContainer.appendChild(bar);
+        //barContainer.appendChild(valueDiv);
+        //conceptItem.appendChild(barContainer);
+
+        // Actions container (thumbs up/down)
+        var actionsDiv = document.createElement('div');
+        actionsDiv.className = 'concept-actions';
+        actionsDiv.style.display = 'flex';
+        actionsDiv.style.alignItems = 'center';
+
+        // Thumbs down button
+        var thumbsDownBtn = document.createElement('button');
+        thumbsDownBtn.className = 'thumbs-btn thumbs-down';
+        thumbsDownBtn.innerHTML = '<span class="thumbs-icon">➖</span>';//👎
+        thumbsDownBtn.style.marginRight = '4px';
+        thumbsDownBtn.style.transition = 'background 0.2s';
+        thumbsDownBtn.dataset.clickCount = '0';
+
+        // Thumbs up button
+        var thumbsUpBtn = document.createElement('button');
+        thumbsUpBtn.className = 'thumbs-btn thumbs-up';
+        thumbsUpBtn.innerHTML = '<span class="thumbs-icon">➕</span>';//👍
+        thumbsUpBtn.style.transition = 'background 0.2s';
+        thumbsUpBtn.dataset.clickCount = '0';
+
+        barContainer.appendChild(bar);
+        barContainer.appendChild(valueDiv);
+
+        conceptItem.appendChild(thumbsDownBtn);
+        
+        conceptItem.appendChild(barContainer);
+
+
+        // Color arrays for up/down
+        // Replace the color arrays for up/down with lighter colors
+        var upColors = ['#a5d6a7', '#81c784', '#66bb6a'];      // lighter greens
+        var downColors = ['#ef9a9a', '#e57373', '#ef5350'];  
+
+        if(Object.hasOwn(state.args.editSM,concept.id)){
+          var current_edition = state.args.editSM[concept.id];
+          console.log("concept has been edited before "+concept.id+" val "+current_edition)
+          if(current_edition>0){
+            thumbsUpBtn.style.background = upColors[current_edition-1];
+            thumbsUpBtn.style.color = '#fff';
+
+            // Green edition bar with hatching
+            var editionBar = document.createElement('div');
+            editionBar.className = 'concept-edition-bar';
+            editionBar.style.height = '16px';
+            //editionBar.style.borderRadius = '4px';
+            editionBar.style.marginLeft = '0px';
+            editionBar.style.background = '#43a047'; // green
+            editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
+editionBar.style.width = '20%';
+            
+            barContainer.appendChild(editionBar);
+          }
+          if(current_edition<0){
+            thumbsDownBtn.style.background = downColors[(current_edition*-1)-1];
+            thumbsDownBtn.style.color = '#fff';
+
+            // Red edition bar with hatching
+            var editionBarRed = document.createElement('div');
+            editionBarRed.className = 'concept-edition-bar';
+            editionBarRed.style.height = '16px';
+            //editionBarRed.style.borderRadius = '4px';
+            editionBarRed.style.marginLeft = '0px';
+            editionBarRed.style.background = '#e57373'; // red
+            editionBarRed.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
+            editionBarRed.style.width = (concept.uk+editImpactValues.get(current_edition)<0) ? (concept.uk*100)+"%": ((editImpactValues.get(current_edition)*-1)*100)+'%';
+            barContainer.appendChild(editionBarRed);
+          }
+        }
+
+        // Click handler for thumbs up
+        thumbsUpBtn.onclick = function() {
+          var current_max_level = 0;
+          if(Object.hasOwn(state.args.editSM,concept.id)){
+            current_max_level = state.args.editSM[concept.id];
+          }
+          if (current_max_level < 3) {
+            handleThumbsClick(concept.id,"up")
+            this.style.color = '#fff';
+            if(current_max_level>=0){
+              this.style.background = upColors[current_max_level];
+            }else{
+              if(current_max_level==-1){
+                thumbsDownBtn.style.background = 'none';
+              }else{
+                thumbsDownBtn.style.background = downColors[(current_max_level*-1)-2];
+              }
+            }
+            thumbsDownBtn.disabled = false;
+            if (current_max_level == 2) this.disabled = true;
+          }
+        };
+
+        // Click handler for thumbs down
+        thumbsDownBtn.onclick = function() {
+            var current_max_level = 0;
+            if(Object.hasOwn(state.args.editSM,concept.id)){
+              current_max_level = state.args.editSM[concept.id];
+            }
+            if (current_max_level > -3) {
+                handleThumbsClick(concept.id,"down")
+                this.style.color = '#fff';
+                if(current_max_level<=0){
+                  this.style.background = downColors[current_max_level*-1];
+                }else{
+                  if(current_max_level==1){
+                    thumbsUpBtn.style.background = 'none';
+                  }else{
+                    thumbsUpBtn.style.background = upColors[current_max_level -2];
+                  }
+                }
+                if (current_max_level == -2) this.disabled = true;
+            }
+        };
+        conceptItem.appendChild(thumbsUpBtn);
+
+        //actionsDiv.appendChild(thumbsDownBtn);
+        //actionsDiv.appendChild(thumbsUpBtn);
+        //conceptItem.appendChild(actionsDiv);
+        divEditSm.appendChild(nameDiv);
         divEditSm.appendChild(conceptItem);
     });
 }
@@ -7497,15 +7707,20 @@ function handleThumbsClick(conceptId, direction) {
     clickedButton.classList.add('active');
 
     //We have three cases here, we compare with the previous one and seeing if before it was neg, none or pos
-    //state.args.editSM
-    var value_change = 0.0
+ 
+    var value_change = 0
     if(direction=="up"){
-      value_change = 0.2
+      value_change = 1
     }else{
-      value_change = -0.2
+      value_change = -1
     }
+
     //replace the value of confidence by the value clicked by the student
-    state.args.editSM[conceptId]=value_change
+    if(!Object.hasOwn(state.args.editSM,conceptId)){
+        state.args.editSM[conceptId]=value_change
+    }else{
+        state.args.editSM[conceptId]=state.args.editSM[conceptId] + value_change;
+    }
     
     // Log the user's feedback
     console.log('User feedback:', {
@@ -7672,6 +7887,7 @@ function generateLearningPath() {
             console.log("FillKnowledgeGapsRecommendations")
             var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
             var recs = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+            generateLearningPathGraph(recs);
           }else{
             var recs = window[generateRecFunction]();
           }
@@ -7847,5 +8063,139 @@ function loadEditionsSM(objEditionsSM) {
   } else {
     console.error('loadEditionsSM: data.kcs is not available');
   }
+}
+
+// KCS Inspection Panel Functions
+function openConceptsModal() {
+  const panel = document.getElementById('div-kcs-inspection');
+  panel.style.display = 'flex';
+  createConceptsBarChart();
+}
+
+function closeConceptsInspection() {
+  const panel = document.getElementById('div-kcs-inspection');
+  panel.style.display = 'none';
+}
+
+function createConceptsBarChart() {
+  const chartContainer = document.getElementById('concepts-bar-chart');
+  chartContainer.innerHTML = '';
+
+  if (!data || !data.kcs) {
+    console.error('createConceptsBarChart: data.kcs is not available');
+    return;
+  }
+
+  // Prepare data for the chart
+  const chartData = data.kcs.map((concept, index) => {
+    const uk = concept.uk || 0;
+    const edition = editImpactValues.get(concept.edition) || 0;
+    const finalValue = uk + edition;
+    return {
+      id: concept.id,
+      name: concept.dn || `Concept ${index + 1}`,
+      uk: uk,
+      edition: edition,
+      finalValue: finalValue,
+      hasEdition: edition !== 0,
+      selectedForRec: concept['selected-for-rec'] || false
+    };
+  });
+
+  // Sort by final value (descending)
+  //chartData.sort((a, b) => b.finalValue - a.finalValue);
+
+  // Find max value for scaling
+  const maxValue = Math.max(1, ...chartData.map(d => d.finalValue));
+
+  // Create chart
+  const chart = document.createElement('div');
+  chart.className = 'concepts-bar-chart-html';
+
+  chartData.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'concept-bar-row';
+
+    // Checkbox
+    const checkbox = document.createElement('span');
+    checkbox.className = 'concept-checkbox-html' + (d.selectedForRec ? ' checked' : '');
+    checkbox.innerHTML = d.selectedForRec ? '✔' : '';
+    checkbox.onclick = function() {
+      d.selectedForRec = !d.selectedForRec;
+      const kcsItem = data.kcs.find(k => k.id == d.id);
+      if (kcsItem) kcsItem['selected-for-rec'] = d.selectedForRec;
+      checkbox.className = 'concept-checkbox-html' + (d.selectedForRec ? ' checked' : '');
+      checkbox.innerHTML = d.selectedForRec ? '✔' : '';
+    };
+    row.appendChild(checkbox);
+
+    // Label
+    const label = document.createElement('span');
+    label.className = 'concept-label-html';
+    label.title = d.name;
+    label.innerText = d.name.length > 12 ? d.name.substring(0, 12) + '...' : d.name;
+    label.onclick = function() {
+      checkbox.onclick();
+    };
+    row.appendChild(label);
+
+    // Bar container
+    const barContainer = document.createElement('div');
+    barContainer.className = 'bar-container-html';
+
+    // Original value bar (if edition exists)
+    if (d.hasEdition) {
+      const origBar = document.createElement('div');
+      origBar.className = 'bar-original-html';
+      origBar.style.width = (d.uk / maxValue * 100) + '%';
+      barContainer.appendChild(origBar);
+    }
+
+    // Main bar (final value)
+    const mainBar = document.createElement('div');
+    mainBar.className = 'bar-main-html';
+    mainBar.style.width = (d.finalValue / maxValue * 100) + '%';
+    barContainer.appendChild(mainBar);
+
+    // Edition bar (positive)
+    if (d.edition > 0) {
+      const editionBar = document.createElement('div');
+      editionBar.className = 'bar-edition-positive-html';
+      editionBar.style.width = (d.edition / maxValue * 100) + '%';
+      editionBar.style.left = (d.uk / maxValue * 100) + '%';
+      barContainer.appendChild(editionBar);
+    }
+
+    // Edition bar (negative)
+    if (d.edition < 0) {
+      const editionBar = document.createElement('div');
+      editionBar.className = 'bar-edition-negative-html';
+      editionBar.style.width = (Math.abs(d.edition) / maxValue * 100) + '%';
+      editionBar.style.left = (d.finalValue / maxValue * 100) + '%';
+      barContainer.appendChild(editionBar);
+    }
+
+    // Value label
+    const valueLabel = document.createElement('span');
+    valueLabel.className = 'concept-value-html';
+    valueLabel.innerText = `${Math.round(d.finalValue * 100)}%`;
+    barContainer.appendChild(valueLabel);
+
+    row.appendChild(barContainer);
+    chart.appendChild(row);
+  });
+
+  // Legend
+  const legend = document.createElement('div');
+  legend.className = 'concepts-legend-html';
+  legend.innerHTML = `
+    <span class="legend-box bar-main-html"></span> Current
+    <span class="legend-box bar-original-html"></span> Original
+    <span class="legend-box bar-edition-positive-html"></span> +Edit
+    <span class="legend-box bar-edition-negative-html"></span> -Edit
+  `;
+  chart.appendChild(legend);
+
+  chartContainer.appendChild(chart);
 }
 

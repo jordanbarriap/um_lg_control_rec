@@ -538,7 +538,7 @@ function actDone_cb(rsp) {
 	  
 	  //@Jordan
 	  //Generate recommendations based on problematic concepts (added by @Jordan)
-	  if (data.configprops.agg_proactiverec_enabled){
+	  if (data.configprops.agg_proactiverec_enabled && (Object.hasOwn(state.args,'learningGoal')==false || ( Object.hasOwn(state.args,'learningGoal') && state.args.learningGoalSelection))){
       if(data.configprops.agg_proactiverec_method=="remedial"){
   	  	recommended_activities = [];
   		  map_topic_max_rank_rec_act = {};
@@ -1371,7 +1371,200 @@ function actOpen(resId, actIdx) {
   var act = topic.activities[resId][actIdx];
   var res = getRes(resId);
 
+  console.log(resId)
+  console.log(res)
   
+  state.vis.act.act    = act;
+  state.vis.act.resId  = resId;
+  state.vis.act.actIdx = actIdx;
+  
+  $hide(ui.vis.act.recLst);
+  $hide(ui.vis.act.fbDiffCont);
+  $hide(ui.vis.act.fbRecCont);
+  $hide(ui.vis.act.frameRec);
+
+  //added by @Jordan for rec_exp
+  last.act = JSON.parse(JSON.stringify(state.vis.act))
+  //end of code added by @Jordan for rec_exp
+
+  // TODO
+  if(res.dim){
+    /*if(res.dim.w) ui.vis.act.frame.style.width = res.dim.w + "px";
+    if(res.dim.h) ui.vis.act.frame.style.height = res.dim.h + "px";
+
+    ui.vis.act.table.style.width = (res.dim.w) + "px";
+    ui.vis.act.table.style.height = (res.dim.h) + "px";*/
+    
+    //ui.vis.act.frameRec.style.width = "930px";
+    //ui.vis.act.frameRec.style.width = "930px";
+
+    //@@@JORDAN
+    //Adaptive frame size
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    
+    ui.vis.act.frame.style.width = display_width + "px";
+    ui.vis.act.frame.style.height = display_height + "px";
+
+    ui.vis.act.table.style.width = display_width + "px";
+    ui.vis.act.table.style.height = display_height + "px";
+    
+    //@@@JORDAN
+  } else{
+    ui.vis.act.frame.style.width = CONST.vis.actWindow.w;
+    ui.vis.act.frame.style.height = CONST.vis.actWindow.h;
+    
+    ui.vis.act.table.style.width  = (CONST.vis.actWindow.w) + "px";
+    ui.vis.act.table.style.height = (CONST.vis.actWindow.h) + "px";
+  }
+
+  // show the link for help
+  var helpLink = "";
+  if(resId === 'ae'){
+      helpLink = "<a href=\"https://greengoblin.cs.hut.fi/jsvee/help/\" title=\"Animated Examples help page\" target=\"_blank\">Animated Examples Help</a>";
+  }
+  
+  $show(ui.vis.act.frame);
+  $show(ui.vis.act.cont);
+
+  //Replace old version of quizjet with the new version of quizjet which includes Table Tracing
+  var is_quizjet_url = act.url.indexOf("quizjet") !== -1;
+  var traceParams;
+  if(is_quizjet_url){
+    //Changes by Zak Risha for table trace params
+    userKnowledge = {kcs: []};
+
+    //getSafe function in case bad prop
+    function getSafe(fn, defaultVal=false) {
+      try {
+          return fn();
+      } catch (e) {
+          return defaultVal;
+      }
+    }
+
+    //get kcs for uk param
+    act.kcs.forEach(function(id){
+      var payload = getSafe(function(){
+        var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+        return data.learners[usr_index].state.kcs[id]
+      });
+      if(payload) userKnowledge.kcs.push(payload);
+    });
+
+    //Average kcs
+    userKnowledge.kcSum = userKnowledge.kcs.reduce(function(accumulator, kc) {
+      return accumulator + kc.k;
+    }, 0) / userKnowledge.kcs.length;
+
+    //Set popup param based on ent_param
+    var popup;
+    var param = data.vis.ui.params.user.ttPopup ? data.vis.ui.params.user.ttPopup : data.vis.ui.params.group.ttPopup;
+    switch (param) {
+      case true:
+        popup = "model";
+        break;
+      case false:
+        popup = "false";
+        break;
+      case "always":
+        popup = "always";
+        break;
+      default:
+        popup = "false";
+        break;
+    }
+
+    traceParams = "&trace=true&popup=" + popup + "&uk=" + userKnowledge.kcSum;
+  }
+
+  
+  ui.vis.act.title.innerHTML = "Topic: <b>" + topic.name + "</b> &nbsp; &bull; &nbsp; Activity: <b>" + act.name + "</b>";
+  
+  //@@@Jordan@@@
+  //Code block needed for solving bug in pcrs content loading
+  //if(act.url.indexOf("pcrs.teach.cs.toronto.edu")!=-1 && pcrs_counter==0){
+  //  $(ui.vis.act.frame).css("visibility","hidden");
+  //  $(ui.vis.act.frame).one("load", function() {
+  //    $(ui.vis.act.frame).one("load", function() {
+  //      $(ui.vis.act.frame).css("visibility","visible");
+  //      pcrs_counter=1;//It just need to ask for authorization just once
+  //    });
+  //    ui.vis.act.frame.src = ui.vis.act.frame.src;
+  //  });
+ // }
+  //@@@Jordan@@@
+
+  /**
+   * The size of the act.frame is dynamically set after loading completed. 
+   * Old content (WebEx) loaded as white-space after Chrome browser update (March 2020)
+   * The problem is workaround fixed with setting the width dynamically after iframe load completed
+  */
+  $(ui.vis.act.frame).load(function(){
+    var display_width = 0.9*Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+    var display_height = 0.8*Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+    ui.vis.act.frame.style.width = (display_width + 1) + "px";
+    ui.vis.act.frame.style.height = (display_height + 1) + "px";
+
+    ui.vis.act.table.style.width = (display_width + 1) + "px";
+    ui.vis.act.table.style.height = (display_height + 1) + "px";
+  })
+
+  var activity_url = act.url
+
+  if(is_quizjet_url && traceParams) {
+    activity_url += traceParams;
+  } else if(state.curr.grp.startsWith("AALTOSQL21")) {
+    var is_dbqa_url = act.url.indexOf("tool=dbqa") !== -1;
+    if(is_dbqa_url) {
+      activity_url += "&step_explanation=" + state.args.dbqaExplanations
+    }
+  }
+
+  ui.vis.act.frame.src = activity_url + "&grp=" + state.curr.grp + "&usr=" + state.curr.usr + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+
+  ui.vis.act.otherTxt.innerHTML = helpLink;
+  
+
+  log(
+    "action"               + CONST.log.sep02 + "activity-open"     + CONST.log.sep01 +
+    "activity-topic-id"    + CONST.log.sep02 + getTopic().id       + CONST.log.sep01 +
+    "activity-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+    "activity-id"          + CONST.log.sep02 + getAct().id,
+    true
+  );
+  
+  // NOTE: Old way by opening an activity in a new tab (useful as an example if more tab-code needs to be developed):
+  /*
+  // remove all tabs after the second one:
+  for (var i = 3; i <= ui.nav.tabs.cnt; i++) {
+    ui.nav.tabs.tabs.find(".ui-tabs-nav").find("#nav-tabs-tab-" + i + "-li").remove();
+    ui.nav.tabs.tabs.find("#nav-tabs-tab-" + i).remove();
+  }
+  ui.nav.tabs.tabs.tabs("refresh");
+  ui.nav.tabs.cnt = 2;
+  
+  // add the new tab:
+  ui.nav.tabs.tabs.find(".ui-tabs-nav").append($("<li id='nav-tabs-tab-3-li'><a href='#nav-tabs-tab-3'>" + name + "</a></li>"));
+  ui.nav.tabs.tabs.append("<div id='nav-tabs-tab-3'></div>");
+  ui.nav.tabs.tabs.tabs("refresh");
+  ui.nav.tabs.tabs.tabs("option", "active", 2);
+  ui.nav.tabs.cnt = 3;
+  
+  // load the activity:
+  var frame = $$("frame", $_("nav-tabs-tab-3"), null, "act");
+  frame.src = "http://adapt2.sis.pitt.edu/quizjet/quiz1.jsp?rdfID=jvariables1&act=Variables&sub=jVariables1&app=25&grp=IS172013Spring&usr=peterb&sid=7EA4F";
+  */
+}
+
+function actOpenProgramatically(topicIndex, resId, actIdx) {
+
+  var topic = data.topics[topicIndex]
+  var act = topic.activities[resId][actIdx];
+  var res = getRes(resId);
+
   state.vis.act.act    = act;
   state.vis.act.resId  = resId;
   state.vis.act.actIdx = actIdx;
@@ -2156,13 +2349,13 @@ function initUI() {
   feMerge.append("svg:feMergeNode").
     attr("in", "SourceGraphic");
   
-  $( "#act-tbl" ).resizable({
+  /*$( "#act-tbl" ).resizable({
       resize: function( event, ui ) {
           state.vis.act.isResizing = true;
       },
       alsoResize : '#act-frame,#act-frame-rec',
       handles: "all"
-  });
+  });*/
   //$( "#act-frame" ).resizable();
 
   //added by jbarriapineda for optional OLM
@@ -3097,7 +3290,8 @@ function stateArgsSet02() {
       state.args.difficultyMsg          = (data.vis.ui.params.group.difficultyMsg != undefined ? data.vis.ui.params.group.difficultyMsg : state.args.difficultyMsg);
       state.args.effortMsg              = (data.vis.ui.params.group.effortMsg != undefined ? data.vis.ui.params.group.effortMsg : state.args.effortMsg);
       state.args.recExp                 = (data.vis.ui.params.group.recExp != undefined ? data.vis.ui.params.group.recExp : state.args.recExp);//added for rec_exp
-	  state.args.kcResouceIds           = (data.vis.ui.params.group.kcResouceIds != undefined ? data.vis.ui.params.group.kcResouceIds : state.args.kcResouceIds);
+	    state.args.kcResouceIds           = (data.vis.ui.params.group.kcResouceIds != undefined ? data.vis.ui.params.group.kcResouceIds : state.args.kcResouceIds);
+      state.args.editSM                 = (data.vis.ui.params.group.editSM != undefined ? data.vis.ui.params.group.editSM : state.args.editSM);
       //end of code added by @Jordan
 
       state.args.dbqaExplanations       = (data.vis.ui.params.group.dbqa_exp != undefined ? data.vis.ui.params.group.dbqa_exp : state.args.dbqaExplanations);
