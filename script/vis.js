@@ -7878,9 +7878,10 @@ function generateLearningPath() {
       if(state.args.learningGoal != ""){
         if(state.args.learningGoal == "RemedialRecommendations"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-          var recs = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
-          console.log("remedial recs")
-          console.log(recs)
+          recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+          top_recommended_activities = recommended_activities.slice(10)
+          console.log("Remedial recommendations")
+          console.log(top_recommended_activities)
           addRecommendationsToUI()
         }else{
           if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){

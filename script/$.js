@@ -2,9 +2,9 @@
 This file has a set of useful functions
 */
 var $CONST = {
-  align : {
-    h: { n:0, c:1, ll:2, lr:3, rl:4, rr:5 },
-    v: { n:0, c:1, tt:2, tb:3, bt:4, bb:5 }
+  align: {
+    h: { n: 0, c: 1, ll: 2, lr: 3, rl: 4, rr: 5 },
+    v: { n: 0, c: 1, tt: 2, tb: 3, bt: 4, bb: 5 }
   },
   asynchRandParam: "unique_req_id"
 };
@@ -16,8 +16,8 @@ var $env = {
 
 // ----------------------------------------------------------------------------------------------------------
 function $trim(s) { return (!s ? s : s.replace(/^\s+|\s+$/g, "")); }
-function $enc(s)  { return (s === null ? "" : encodeURIComponent("'" + s.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'")); }
-function $dec(s)  { return decodeURIComponent(s.replace(/\+/g, " ")); };
+function $enc(s) { return (s === null ? "" : encodeURIComponent("'" + s.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'")); }
+function $dec(s) { return decodeURIComponent(s.replace(/\+/g, " ")); };
 
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -31,12 +31,12 @@ function $_(id) { return document.getElementById(id); }
 // ----------------------------------------------------------------------------------------------------------
 function $$(type, parent, id, cls, innerHTML) {
   var el = document.createElement(type);
-  
-  if (id)        el.setAttribute("id", id);
-  if (cls)       el.className = cls;
+
+  if (id) el.setAttribute("id", id);
+  if (cls) el.className = cls;
   if (innerHTML) el.innerHTML = innerHTML;
-  if (parent)    parent.appendChild(el);
-  
+  if (parent) parent.appendChild(el);
+
   return el;
 }
 
@@ -64,10 +64,10 @@ function $$tbl(parent, id, cls, cellpadding, cellspacing) {
   tbl.setAttribute("cellspacing", cellspacing || "0");
   if (id) tbl.id = id;
   if (cls) tbl.className = cls;
-  
+
   if (parent) parent.appendChild(tbl);
   var tbody = $$("tbody", tbl);
-  
+
   return tbody;
 }
 
@@ -84,10 +84,10 @@ function $call(method, url, params, fnCb, doEval, doAlertMsg) {
   if ($env.isIE) {
     url += (url.indexOf("?") === -1 ? "?" : "&") + $CONST.asynchRandParam + "=" + (new Date()).getTime();
   }
-  
+
   var req = new XMLHttpRequest();
   req.open(method, url);
-  
+
   if (fnCb) {
     req.onreadystatechange = function (e) {
       if (req.readyState === 4) {
@@ -108,12 +108,12 @@ function $call(method, url, params, fnCb, doEval, doAlertMsg) {
         else {
           var msg = "Server error occurred. Try repeating your last action. If that doesn't work, wait for a while and then try again. I apologize for the inconvenience.";
           if (doAlertMsg) alert(msg);
-          fnCb({ outcome: false, msg: msg});
+          fnCb({ outcome: false, msg: msg });
         }
       }
     };
   };
-  
+
   if (params) {
     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     req.setRequestHeader("Content-length", params.length);
@@ -134,9 +134,9 @@ function $removeChildren(el) {
 // ---------------------------------------------------------------------------------------------------------------------
 function $clsAdd(el, x) {
   var cls = el.className;
-  
-  if (cls.indexOf(x) >= 0 ) return el;
-  
+
+  if (cls.indexOf(x) >= 0) return el;
+
   el.className = (cls + " " + x);
   return el;
 }
@@ -145,38 +145,38 @@ function $clsAdd(el, x) {
 // ---------------------------------------------------------------------------------------------------------------------
 function $clsRem(el, x) {
   var cls = el.className;
-  
-  if (cls.indexOf(x) === -1 ) return el;
-  
+
+  if (cls.indexOf(x) === -1) return el;
+
   var C = cls.replace(/\s+/g, " ").split(/ /);
-  for (var i=0,ni=C.length; i < ni; i++) {
+  for (var i = 0, ni = C.length; i < ni; i++) {
     if (C[i] === x) {
-      C.splice(i,1);
+      C.splice(i, 1);
       i--;
       ni--;
     }
   }
   el.className = C.join(" ");
-  
+
   return el;
 }
 
 
 // ---------------------------------------------------------------------------------------------------------------------
 function $show(el) { el.style.display = "block"; }
-function $hide(el) { el.style.display = "none";  }
+function $hide(el) { el.style.display = "none"; }
 
 
 // ---------------------------------------------------------------------------------------------------------------------
 function $getHash(delimPair, delimKeyVal) {
   var h = {};
-  
+
   var A = document.location.hash.substr(1).split(delim01);
-  for (var i=0, ni=A.length; i < ni; i++) {
+  for (var i = 0, ni = A.length; i < ni; i++) {
     var B = A[i].split(delim02);
     h[B[0]] = B[1];
   }
-  
+
   return h;
 }
 
@@ -184,13 +184,13 @@ function $getHash(delimPair, delimKeyVal) {
 // ---------------------------------------------------------------------------------------------------------------------
 function $getQS() {
   var qs = {};
-  
+
   var A = document.location.search.substr(1).split("&");
-  for (var i=0, ni=A.length; i < ni; i++) {
+  for (var i = 0, ni = A.length; i < ni; i++) {
     var B = A[i].split("=");
     qs[B[0]] = B[1];
   }
-  
+
   return qs;
 }
 
@@ -198,7 +198,7 @@ function $getQS() {
 // ---------------------------------------------------------------------------------------------------------------------
 function $cookieGet(name, delim01, delim02) {
   var tmp = null;
-  
+
   // Retrieve the cookie itself:
   var nameEq = name + "=";
   var C = document.cookie.split(';');
@@ -208,18 +208,18 @@ function $cookieGet(name, delim01, delim02) {
     if (c.indexOf(nameEq) == 0) tmp = c.substring(nameEq.length, c.length);
   }
   if (!tmp) return null;
-  
+
   if (!delim01 || !delim02) return tmp;
-  
+
   // Convert the cookie into a hash:
   var c = {};
-  
+
   var A = tmp.split(delim01);
-  for (var i=0, ni=A.length; i < ni; i++) {
+  for (var i = 0, ni = A.length; i < ni; i++) {
     var B = A[i].split(delim02);
     c[B[0]] = B[1];
   }
-  
+
   return c;
 }
 
@@ -233,7 +233,7 @@ function $cookieSet(name, value, days) {
   var expires = "";
   if (days) {
     var date = new Date();
-    date.setTime(date.getTime() + (days*24*60*60*1000));
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
     expires = "; expires=" + date.toGMTString();
   }
   document.cookie = name + "=" + value + expires + "; path=/";
@@ -303,7 +303,7 @@ function $evtCancelProp(e) {
 // ---------------------------------------------------------------------------------------------------------------------
 function $lfold(fn, A, init) {
   var res = init;
-  for (var i=0, ni=A.length; i < ni; i++) {
+  for (var i = 0, ni = A.length; i < ni; i++) {
     res = fn(res, A[i]);
   }
   return res;
@@ -316,38 +316,38 @@ function $lfold(fn, A, init) {
  * same size.
  */
 function $map(fn) {
-  var lstCnt = arguments.length-1;
+  var lstCnt = arguments.length - 1;
   var res = [];
-  
+
   if (lstCnt === 1) {  // one extra argument
     if (!(arguments[1] instanceof Array)) {  // and this argument ain't an array
       return fn(arguments[1]);
     }
-    
-    for (var i=0, ni=arguments[1].length; i < ni; i++) {  // it is an array
+
+    for (var i = 0, ni = arguments[1].length; i < ni; i++) {  // it is an array
       //res[i] = fn(arguments[1][i]);
       res[i] = fn((function (x) { return x; })(arguments[1][i]));
     }
   }
   else {  // multiple extra arguments
-    for (var i=0, ni=arguments[1].length; i < ni; i++) {
+    for (var i = 0, ni = arguments[1].length; i < ni; i++) {
       var lst = [];
-      for (var j=1; j <= lstCnt; j++) {
+      for (var j = 1; j <= lstCnt; j++) {
         lst.push(arguments[j][i]);
       }
       //res[i] = fn(lst);
       res[i] = fn((function (x) { return x; })(lst));
     }
   }
-  
+
   return res;
 }
 
 
 // ---------------------------------------------------------------------------------------------------------------------
 function $getCoords(el) {
-  var x1=0, y1=0, w=el.offsetWidth, h=el.offsetHeight, x2=el.offsetWidth, y2=el.offsetHeight;
-  
+  var x1 = 0, y1 = 0, w = el.offsetWidth, h = el.offsetHeight, x2 = el.offsetWidth, y2 = el.offsetHeight;
+
   if (!!el.offsetParent) {
     do {
       x1 += el.offsetLeft;
@@ -358,8 +358,8 @@ function $getCoords(el) {
     x1 = el.offsetLeft;
     y1 = el.offsetTop;
   }
-  
-  return { x1:x1, y1:y1, x2:x1+x2, y2:y1+y2, x0:x1+Math.floor(w/2), y0:y1+Math.floor(h/2) };
+
+  return { x1: x1, y1: y1, x2: x1 + x2, y2: y1 + y2, x0: x1 + Math.floor(w / 2), y0: y1 + Math.floor(h / 2) };
 }
 
 
@@ -374,24 +374,24 @@ function $getDim(el) { return (el ? { w: el.offsetWidth, h: el.offsetHeight } : 
 function $setPosCenter(el, isFixed, x, y, doConstrain) {
   el.style.position = (isFixed ? "fixed" : "absolute");
   $show(el);
-  
+
   var dim = $getDim(el);
-  
+
   x = x - (dim.w / 2)
-  
+
   // (1) Account for the window size and scrolling:
   var d = document.documentElement;
   var b = document.body;
-  
+
   var winW = window.innerWidth;
   var winH = window.innerHeight;
-  
+
   if (doConstrain) {
     if (x <= 4) x = 4;
   }
-  
+
   // (3) Set position:
   el.style.left = x + "px";
-  el.style.top  = y + "px";
+  el.style.top = y + "px";
 }
 

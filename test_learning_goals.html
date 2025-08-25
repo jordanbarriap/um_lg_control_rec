@@ -222,22 +222,6 @@
             console.log('Learning path section shown');
         }
 
-        function generateLearningPath() {
-            createLearningPathGraph();
-            const generateRecFunction = "generate" + state.args.learningGoal;
-            console.log(generateRecFunction)
-            if (typeof window[generateRecFunction] === 'function') {
-              if(state.args.learningGoal != ""){
-                if(state.args.learningGoal == "remedialReccommendations"){
-                  window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
-                }else{
-                  window[generateRecFunction]();
-                }
-              }
-            }
-            console.log('Learning path generated');
-        }
-
         function createLearningPathGraph() {
             const graphContainer = document.getElementById('learning-path-graph');
             graphContainer.innerHTML = '';

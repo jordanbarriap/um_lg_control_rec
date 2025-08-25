@@ -3,7 +3,7 @@ var non_recommended_topics = ["Table Creation", "Table Deletion and Alteration",
 var proficiency_threshold = .5;
 var topic_progress_limit = .1
 var last_success_rate_limit = .5
-var knowledge_level_limit = .6
+//var knowledge_level_limit = .6
 
 function generateLearningPathGraph(learningPathObj, containerId = 'learning-path-graph') {
     // Remove previous graph if exists
@@ -322,6 +322,186 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
  * Generate a list of recommended content list based on problematic concepts and  
  * knowledge level infered for kcs
  */
+// function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr){
+// 	kc_levels = user_state.kcs
+// 	topic_levels = user_state.topics
+
+// 	var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
+// 	console.log(filtered_kcs)
+// 	//get the ids from the selected kcs
+// 	selected_kcs_ids = data.kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec}).map(function(d){return d.id});
+
+// 	//further filter the kc_levels to keep only those that have been selected by the users
+// 	// further filter the kc_levels to keep only those that have been selected by the users
+// 	filtered_kcs = selected_kcs_ids //filtered_kcs.filter(function(d){ return selected_kcs_ids.includes(d); });
+
+// 	console.log(selected_kcs_ids)
+	
+	
+// 	var filtered_kc_levels = {};
+// 	for (var i=0; i<filtered_kcs.length;i++){
+// 		var kc_id = filtered_kcs[i];
+// 		if (kc_levels.hasOwnProperty(kc_id)) {
+//             filtered_kc_levels[kc_id] = kc_levels[kc_id];
+//         }
+// 	}
+  
+// 	kc_levels = filtered_kc_levels;
+// 	calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr);
+// 	var recommendations = [];
+// 	var topics = data_topics_acts_kcs;
+// 	var n_topics = topics.length;
+
+// 	for(var i=1; i<n_topics;i++){
+// 		var topic = topics[i];
+// 		//var topic_name = topic.name;
+// 		var topic_name = topic.id;
+// 		var resources = Object.keys(topic.activities);
+// 		var n_resources = resources.length;
+
+// 		var topic_activities = user_state["activities"][topic_name];
+
+// 		if(!non_recommended_topics.includes(topic_name) && topic_levels[topic_name].overall.p >= topic_progress_limit) {
+// 			for (var j=0; j<n_resources;j++){
+// 				var resource_id = resources[j];
+// 				var activities = topic.activities[resource_id];
+// 				var n_activities = activities.length;
+// 				for (var k=0;k<n_activities;k++){
+// 					var activity = activities[k];
+// 					var kcs = activity["kcs"];
+// 					var rec_score = 0;
+// 					var weights_sum = 0;
+// 					var helpful_kcs_number = 0;
+// 					var problematic_kcs = 0;
+// 					var slip_kcs = 0;
+
+// 					var act_progress = topic_activities[resource_id][activity.id].values.p;
+	
+// 					//Total number of concepts needed for solving the problem / understanding the example
+// 					var total_kcs = 0;
+// 					var kcs_for_recommendation = []
+
+// 					var misconception_kcs = []
+// 					var helpful_kcs = [] 
+	
+// 					for (var l=0;l<kcs.length;l++){
+// 						var kc_id = kcs[l];
+// 						if (kc_id in kc_levels){
+// 							var kc_diff = kc_levels[kc_id]["diff"];
+// 							if(kc_diff>=0){
+// 								total_kcs ++;
+// 								var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
+// 								rec_score = rec_score + (kc_weight*kc_diff);
+// 								weights_sum = weights_sum + kc_weight;
+	
+// 								var kc_level = kc_levels[kc_id]["k"];
+// 								var kc_lastksr= kc_levels[kc_id]["lastk-sr"];
+// 								var kc_lastk_att = kc_levels[kc_id]["lastk-att"];
+// 								var kc_sr = kc_levels[kc_id]["sr"];
+// 								var kc_att = kc_levels[kc_id]["a"];
+								
+// 								if(kc_level>= knowledge_level_limit){
+// 									if(kc_att > 0 && kc_sr <= last_success_rate_limit){
+// 									//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
+// 										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
+// 										//if (kc_level < proficiency_threshold){
+// 										problematic_kcs ++;
+// 										//} else{
+// 										//	slip_kcs ++;
+// 										//}
+		
+// 										//if (kc_level >= knowledge_level_limit){
+// 										kcs_for_recommendation.push(kc_levels[kc_id])
+// 										condition_to_generate_recommendations = true;
+// 										//}
+// 									}
+// 									else{// if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
+// 										var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
+// 										helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
+
+// 										helpful_kcs_number ++;
+// 									}
+// 								}else{
+// 									console.log(kc_id + " on-learning concept");
+
+// 								}
+								
+// 							}
+							
+// 						}	
+// 					}
+					
+
+// 					// Only add this activity to the recommended activity list:
+// 					// This activity has at least 1 KC which satisfies the following criteria:
+// 					// 1. Belong to a topic not listed as non_recommended_topics	  
+// 					// 2. Belong to a topic whose average progress is >= topic_progress_limit
+// 					// 3. Attempted at least once in last k attempts
+// 					// 4. Has knowledge level >= .5
+// 					// 5. Has last k success rate <= .5
+
+
+// 					if(kcs_for_recommendation.length>0){// && act_progress<.5){
+// 						if (weights_sum>0){
+// 							rec_score = rec_score/weights_sum;//Normalizing rec score with total of the sum of weights (?)
+// 						}
+
+// 						misconception_kcs = misconception_kcs.sort((a, b) => (a.lastksr < b.lastksr) ? 1 : -1)
+// 						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel < b.kclevel) ? 1 : -1)
+
+		
+// 						var rec_explanation = "This activity is recommended because:<ul>";
+		
+// 						if ((problematic_kcs+slip_kcs)>0){
+// 							rec_explanation = rec_explanation + "<li style='padding-left:0'>It allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (e.g. "+misconception_kcs[0].name+").</li>"
+// 							//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
+// 							// Peter suggested to hide this part of the explanation
+// 							// if (slip_kcs){
+// 							// 	rec_explanation = rec_explanation+ " , but you have shown proficiency in "+slip_kcs+" of them. </li>";
+// 							// }
+// 							//rec_explanation = rec_explanation + "<br>";
+// 						}
+// 						if (helpful_kcs_number>0){
+// 							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs_number+"</b> concept(s)</b> that are necessary to ";//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
+// 							var is_sqlknot = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0;
+// 							var is_example = (activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae"));
+// 							if(is_sqlknot){
+// 								rec_explanation = rec_explanation + " solve this problem.";
+// 							}else{
+// 								if(is_example){
+// 									rec_explanation = rec_explanation + " understand this example.";
+// 								}
+// 							}	
+
+// 							rec_explanation = rec_explanation + "(e.g. " + helpful_kcs[0].name + ")</li>"
+
+// 						}
+					
+// 						rec_explanation = rec_explanation + "</ul>";
+	
+// 						ranked_activity = Object.assign({}, activity);
+// 						ranked_activity["rec_score"] = 1-Math.abs(.5-rec_score);//rec_score;
+// 						ranked_activity["topic"] = topic_name;
+// 						ranked_activity["explanation"] = rec_explanation;
+// 						recommendations.push(ranked_activity);
+// 					}
+					
+// 				}
+// 			}
+// 		}
+// 	}
+// 	recommendations.sort(compareActivities);
+
+// 	return recommendations;
+// }
+
+/***
+Peter's explanation text:
+- It allows you to practice X concepts, which might have caused problems in the past
+- It is not too complicated for -- you have good knowledge of Y concepts out of Z necessary to solve this problem [or “To understand this example”]
+***/
+
+//Newest remedial recommendation for the new interface
 function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr){
 	kc_levels = user_state.kcs
 	topic_levels = user_state.topics
@@ -332,10 +512,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 	selected_kcs_ids = data.kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec}).map(function(d){return d.id});
 
 	//further filter the kc_levels to keep only those that have been selected by the users
-	// further filter the kc_levels to keep only those that have been selected by the users
 	filtered_kcs = selected_kcs_ids //filtered_kcs.filter(function(d){ return selected_kcs_ids.includes(d); });
-
-	console.log(selected_kcs_ids)
 	
 	
 	var filtered_kc_levels = {};
@@ -348,6 +525,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
   
 	kc_levels = filtered_kc_levels;
 	calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr);
+	
 	var recommendations = [];
 	var topics = data_topics_acts_kcs;
 	var n_topics = topics.length;
@@ -361,13 +539,15 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 
 		var topic_activities = user_state["activities"][topic_name];
 
-		if(!non_recommended_topics.includes(topic_name) && topic_levels[topic_name].overall.p >= topic_progress_limit) {
+		if(!non_recommended_topics.includes(topic_name)){//} && topic_levels[topic_name].overall.p >= topic_progress_limit) {
 			for (var j=0; j<n_resources;j++){
 				var resource_id = resources[j];
 				var activities = topic.activities[resource_id];
 				var n_activities = activities.length;
 				for (var k=0;k<n_activities;k++){
 					var activity = activities[k];
+					console.log("Activity")
+					console.log(activity)
 					var kcs = activity["kcs"];
 					var rec_score = 0;
 					var weights_sum = 0;
@@ -389,6 +569,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						if (kc_id in kc_levels){
 							var kc_diff = kc_levels[kc_id]["diff"];
 							if(kc_diff>=0){
+								console.log("difficult kc found "+kc_id)
 								total_kcs ++;
 								var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
 								rec_score = rec_score + (kc_weight*kc_diff);
@@ -400,31 +581,31 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								var kc_sr = kc_levels[kc_id]["sr"];
 								var kc_att = kc_levels[kc_id]["a"];
 								
-								if(kc_level>= knowledge_level_limit){
-									if(kc_att > 0 && kc_sr <= last_success_rate_limit){
-									//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
-										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
-										//if (kc_level < proficiency_threshold){
+								//if(kc_level>= knowledge_level_limit){
+								if(kc_att > 0 && kc_sr <= last_success_rate_limit){
+								//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
+									misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
+									if (kc_level < proficiency_threshold){
 										problematic_kcs ++;
-										//} else{
-										//	slip_kcs ++;
-										//}
-		
-										//if (kc_level >= knowledge_level_limit){
-										kcs_for_recommendation.push(kc_levels[kc_id])
-										condition_to_generate_recommendations = true;
-										//}
+									} else{
+										slip_kcs ++;
 									}
-									else{// if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
-										var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
-										helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
+	
+									//if (kc_level >= knowledge_level_limit){
+									kcs_for_recommendation.push(kc_levels[kc_id])
+									condition_to_generate_recommendations = true;
+									//}
+								}
+								else{// if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
+									var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
+									helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
 
-										helpful_kcs_number ++;
-									}
-								}else{
+									helpful_kcs_number ++;
+								}
+								/*}else{
 									console.log(kc_id + " on-learning concept");
 
-								}
+								}*/
 								
 							}
 							
@@ -463,9 +644,9 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						}
 						if (helpful_kcs_number>0){
 							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs_number+"</b> concept(s)</b> that are necessary to ";//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
-							var is_sqlknot = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0;
-							var is_example = (activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae"));
-							if(is_sqlknot){
+							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0;
+							var is_example = activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae") || activity["url"].indexOf("pcex")>=0;
+							if(is_problem){
 								rec_explanation = rec_explanation + " solve this problem.";
 							}else{
 								if(is_example){
@@ -485,7 +666,6 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						ranked_activity["explanation"] = rec_explanation;
 						recommendations.push(ranked_activity);
 					}
-					
 				}
 			}
 		}
@@ -494,12 +674,6 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 
 	return recommendations;
 }
-
-/***
-Peter's explanation text:
-- It allows you to practice X concepts, which might have caused problems in the past
-- It is not too complicated for -- you have good knowledge of Y concepts out of Z necessary to solve this problem [or “To understand this example”]
-***/
 
 
 // ------------------------------------------------------------------------------------------------------
@@ -966,6 +1140,8 @@ function compareActivities(a,b) {
  */
 function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   var kcs_ids = Object.keys(kc_levels);
+  console.log("Calculate KC difficulty scores...");
+  console.log(kc_levels)
   for(var i=0;i<kcs_ids.length;i++){
   	var kc_id = kcs_ids[i];
   	var kc_level = kc_levels[kc_id]["k"];
@@ -983,35 +1159,279 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
-  console.log("KC difficulty scores:");
-  console.log(kc_levels);
 }
 
-//Calculate difficulty scores for all the kcs by using overall success rates
-function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
-  var kcs_ids = Object.keys(kc_levels);
-  for(var i=0;i<kcs_ids.length;i++){
-  	var kc_id = kcs_ids[i];
-  	var kc_level = kc_levels[kc_id]["k"];
-  	var lastk_sr = kc_levels[kc_id]["lastk-sr"];
-  	var overall_sr = kc_levels[kc_id]["sr"];
-  	var kc_difficulty_score = - 1;
-  	if(lastk_sr>0){
-  		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
-  	}else{
-  		if(overall_sr>0){
-  			kc_difficulty_score = 1 - (overall_sr*weight_sr + kc_level*weight_kcs);
-  		}else{
-  			kc_difficulty_score = 1;
-  		}
-  	}
-	console.log(kc_difficulty_score)
-  	kc_levels[kc_id]["diff"]=kc_difficulty_score;
-  }
-  console.log("KC difficulty scores:");
-  console.log(kc_levels);
-}
+// function addRecommendationsToUI(){
+// 	//console.log("Add recommendation to UI...");
+// 	//console.log(top_recommended_activities);
 
+// 	//Remove existing stars
+// 	d3.selectAll(".recommendationStar").remove();
+// 	d3.selectAll(".recommended_act").classed("recommended_act",false);
+
+// 	console.log("top recommended activities")
+// 	console.log(top_recommended_activities)
+
+// 	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
+// 		if(top_recommended_activities && top_recommended_activities.length > 0) {
+			
+// 			//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
+// 			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
+			
+// 			if(topic_rec_activities.length > 0) {
+
+// 				//console.log("Rank recommended activities:");
+// 				//console.log(rank_recommended_activities);
+
+// 				d3.selectAll("g.grid-cell-outter").each( function(d, i){
+// 					var current_topic = data.topics[d.topicIdx]
+// 					var mg_activities = current_topic ? current_topic.activities:undefined;
+// 					var data_resource = data.resources[d.resIdx]
+// 					var data_resource_id = data_resource ? data_resource.id:undefined;
+// 					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+// 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+// 					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+// 					if(mg_activity) {
+// 						var act_id = mg_activity.id
+// 						var act_name = d.actName;
+// 						var act_is_recommended = (act_id in rank_recommended_activities);
+// 						mg_activity['actIdx'] = d.actIdx
+// 						mg_activity['topicIdx'] = d.topicIdx
+// 						mg_activity['resIdx'] = d.resIdx
+
+// 						if(act_is_recommended){
+
+// 							//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
+// 							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
+// 							recommended_activity['actIdx'] = d.actIdx
+// 							recommended_activity['topicIdx'] = d.topicIdx
+// 							recommended_activity['resIdx'] = d.resIdx
+
+// 							d3.select(this).classed("recommended_act", true);
+// 							// d3.select(this).append("svg:image")
+// 							// .attr('x', 8)
+// 							// .attr('y', 2)
+// 							// .attr('width', scaleRecommendationStar(rank_recommended_activities[act_id]))
+// 							// .attr('height', scaleRecommendationStar(rank_recommended_activities[act_id]))
+// 							// .attr("class","recommendationStar")
+// 							// .attr("xlink:href", function(d){
+// 							// 	return "./img/star.png";
+// 							// })
+// 							// .style("pointer-events","none");
+// 							var rank_rec = rank_recommended_activities[act_id];
+// 							var map_rank_to_seq = -1;
+
+// 							//TODO write here what happen if the proactive method is km
+// 							if(data.configprops.agg_proactiverec_method=="km"){
+// 								if(rank_rec===0){
+// 									map_rank_to_seq = 1;
+// 								}else{
+// 									if(rank_rec===1){
+// 										map_rank_to_seq = 0.7;
+// 									}else{
+// 										if(rank_rec===2){
+// 											map_rank_to_seq = 0.3;
+// 										}else{
+
+// 											map_rank_to_seq = 0.0;	
+
+// 										}
+// 									}
+// 								}
+// 							}
+// 							//TODO write here what happen if the proactive method is remedial
+// 							if(data.configprops.agg_proactiverec_method=="remedial"){
+// 								// function for adding two numbers.
+// 								const add = (a, b) => a + b
+// 								// use reduce to sum the total number of recommended activities
+// 								//var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
+								
+// 								//We use the total number of recommendations shown that is coming from vis.js in MG through the array top_recommended_activities
+// 								var total_rec_activities = top_recommended_activities.length;
+// 								map_rank_to_seq = 1-(rank_rec/total_rec_activities);
+// 							}
+							
+							
+// 							d3.select(this)
+// 								.append("svg:polygon")
+// 								//.attr("id", "star_1")
+// 								.attr("visibility", "visible")
+// 								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
+// 								.attr("points", function (d) { d.seq = map_rank_to_seq; return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+// 								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+// 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
+// 								.attr("stroke", "white")
+// 								.attr("max_rec_rank_act",rank_recommended_activities[act_id])
+// 								.attr("class","act_topic")
+// 								.style("shape-rendering", "geometricPrecision")
+// 								.style("pointer-events","none");
+							
+// 							d3.select(this)
+// 								.append("text").
+// 								attr("x", 15).
+// 								attr("y", 15).
+// 								attr("class", "rec_act_rank_txt").
+// 								style("text-anchor", "start").
+// 								text(function (d) {
+// 									if(data.configprops.agg_proactiverec_method=="km"){
+// 										if(d.seq === 1) {
+// 											return " 1";
+// 										} else if (d.seq === 0.7) {
+// 											return " 2";
+// 										} else if (d.seq === 0.3){
+// 											return " 3";
+// 										} else{
+// 											return "";
+// 										}
+// 									}
+// 									if(data.configprops.agg_proactiverec_method=="remedial"){
+// 										return rank_rec+1;
+// 									}
+									
+								
+// 								/*if(d.seq === 1) {
+// 									return "+6";
+// 								} else if (d.seq === 0.7) {
+// 									return "+4";
+// 								} else {
+// 									return "+2";
+// 								}*/
+// 								})
+// 								.attr("font-family", "sans-serif")
+// 										.attr("font-size", "12px")
+// 								.attr("style", function(d) {
+// 									var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
+// 									var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
+// 									return "fill: " + color + ";"; 
+// 								})
+// 								.style("pointer-events","none");
+// 						};
+// 					}
+					
+// 				});
+// 			}
+// 		}
+// 	}else{
+// 		d3.selectAll("g.grid-cell-outter").each( function(d, i){
+// 					var current_topic = data.topics[d.topicIdx]
+// 					var mg_activities = current_topic ? current_topic.activities:undefined;
+// 					var data_resource = data.resources[d.resIdx]
+// 					var data_resource_id = data_resource ? data_resource.id:undefined;
+// 					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
+// 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
+// 					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+// 					if(mg_activity) {
+// 						//var act_id = mg_activity.id
+// 						//var act_name = d.actName;
+// 						var act_is_recommended = d.seq>0 ? true : false;
+// 						//var act_is_recommended = (act_id in rank_recommended_activities);
+// 						//mg_activity['actIdx'] = d.actIdx
+// 						//mg_activity['topicIdx'] = d.topicIdx
+// 						//mg_activity['resIdx'] = d.resIdx
+		
+// 							d3.select(this)
+// 								.append("svg:polygon")
+// 								//.attr("id", "star_1")
+// 								.attr("visibility", "visible")
+// 								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
+// 								.attr("points", function (d) { return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+// 								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+// 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
+// 								.attr("stroke", "white")
+// 								//.attr("max_rec_rank_act",rank_recommended_activities[act_id])
+// 								.attr("class","act_topic")
+// 								.style("shape-rendering", "geometricPrecision")
+// 								.style("pointer-events","none");
+							
+// 							d3.select(this)
+// 								.append("text").
+// 								attr("x", 15).
+// 								attr("y", 15).
+// 								attr("class", "rec_act_rank_txt").
+// 								style("text-anchor", "start").
+// 								text(function (d) {
+// 									if(d.seq === 1) {
+// 										return "1";
+// 									} else if (d.seq === 0.7) {
+// 										return "2";
+// 									} else if(d.seq ===0.3){
+// 										return "3";
+// 									}else{
+// 										return "";
+// 									}
+// 								})
+// 								.attr("font-family", "sans-serif")
+// 										.attr("font-size", "12px")
+// 								.attr("style", function(d) {
+// 									var colorIndex = Math.round(data.vis.color.value2color(d.val)*10);
+// 									var color = colorbrewer.Oranges[9][8-Math.min(colorIndex,8)];
+// 									return "fill: " + color + ";"; 
+// 								})
+// 								.style("pointer-events","none");
+// 						//};
+// 					}
+					
+// 				});
+// 	}    
+// }
+
+// function generateProactiveRecommendations(method){
+// 	if(method=="km"){
+// 		console.log("Generate KM recommendations....");
+
+// 		var topic = getTopic();
+
+// 		if (topic==null) return;
+
+// 		var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+// 		recommended_activities = generateKMRecommendations(topics_concepts, topic, data.learners[usr_index].state.activities, data.learners[usr_index].state.kcs, data.kcs, 0.5);
+	
+// 		top_recommended_activities = recommended_activities.slice(0,3);
+// 		rank_recommended_activities = {};
+	
+// 		console.log("Top recommended activities:");
+// 		console.log(top_recommended_activities);
+			
+// 		//Here we get the maximum rank of the items recommended per topic
+// 		for(var i=0;i<top_recommended_activities.length;i++){
+// 		  var rec_act_topic = top_recommended_activities[i]["topic"];
+// 		  var rec_act_name  = top_recommended_activities[i]["name"];
+// 		  var rec_act_id  = top_recommended_activities[i]["id"];
+// 		  if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+// 			map_topic_max_rank_rec_act[rec_act_topic] = i;
+// 		  }
+// 		  rank_recommended_activities[rec_act_id] = i;
+// 		}
+	
+// 		//Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+// 		if(recommended_activities.length>0){
+// 			//Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+// 			for(var j=0;j<recommended_activities.length;j++){
+// 			  var rec_act_id  = recommended_activities[j]["id"];
+// 			  if (rec_act_id in rank_recommended_activities){
+// 				recommended_activities[j]["isRecommended"]="1";
+// 			  }else{
+// 				recommended_activities[j]["isRecommended"]="0";
+// 			  }
+// 			}
+// 			//console.log(recommended_activities);
+// 			var millisecondsDate = (new Date).getTime();
+// 			$.ajax({
+// 			  type: "POST",
+// 			  data :JSON.stringify({"usr":state.curr.usr,
+// 			  "grp":state.curr.grp,
+// 			  "sid":state.curr.sid,
+// 			  "cid":state.curr.cid,
+// 			  "sid":state.curr.sid,
+// 			  "logRecId":millisecondsDate.toString(),
+// 			  "recMethod":"bn-KM",
+// 			  "recommendations":recommended_activities}),
+// 			  url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+// 			  contentType: "application/json"
+// 			});
+// 		}
+// 	  }
+// }
 
 function addRecommendationsToUI(){
 	//console.log("Add recommendation to UI...");
@@ -1021,11 +1441,14 @@ function addRecommendationsToUI(){
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
 
+	console.log("top recommended activities")
+	console.log(top_recommended_activities)
+
 	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 		if(top_recommended_activities && top_recommended_activities.length > 0) {
 			
 			//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
-			var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
+			var topic_rec_activities = top_recommended_activities//.filter(activity => activity.topic == getTopic().id)
 			
 			if(topic_rec_activities.length > 0) {
 
@@ -1089,7 +1512,7 @@ function addRecommendationsToUI(){
 								}
 							}
 							//TODO write here what happen if the proactive method is remedial
-							if(data.configprops.agg_proactiverec_method=="remedial"){
+							if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal=="RemedialRecommendations"){
 								// function for adding two numbers.
 								const add = (a, b) => a + b
 								// use reduce to sum the total number of recommended activities
@@ -1133,7 +1556,7 @@ function addRecommendationsToUI(){
 											return "";
 										}
 									}
-									if(data.configprops.agg_proactiverec_method=="remedial"){
+									if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal=="RemedialRecommendations" ){
 										return rank_rec+1;
 									}
 									
@@ -1418,6 +1841,7 @@ function setTopConceptsForRecommendations(num_concepts){
         checkbox.className = 'concept-checkbox-html';
         checkbox.style.marginRight = '4px';
         checkbox.checked = true;//!!kc.selectedForRec;
+		kc.selectedForRec = true; // Ensure the concept is selected for recommendation
         checkbox.onclick = function() {
             selectConceptForRecommendation(kc.id, checkbox.checked);
         };
