@@ -194,7 +194,7 @@ var map_concept_id_topic = {}; //maps id with topic in which appear first (added
 //Added by @Jordan for remedial recommendations + explanations based on problematic concepts (added by @Jordan)
 var recommended_activities = []; //array with the recommended activities
 var top_recommended_activities = [];
-var max_rec_n = 5;//Number of recommended activities that will be shown at each time (added by @Jordan)
+var max_rec_n = 10;//Number of recommended activities that will be shown at each time (added by @Jordan)
 var map_topic_max_rank_rec_act = {};
 var rank_recommended_activities = {}; //stores the rank of the recommended activities (0 - top ranked act...), if act_name is not on the keys the activity is not recommended
 var max_remedial_recommendations_per_topic = 3;
@@ -7878,7 +7878,8 @@ function generateLearningPath() {
       if(state.args.learningGoal != ""){
         if(state.args.learningGoal == "RemedialRecommendations"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-          recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+          //Here both things are needed, low success rate but also low mastery (low success rate and higher mastery can be signs of slip concepts)
+          recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.6, 0.4);
 
           //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
           var recommended_activities_temp = []
@@ -7952,7 +7953,7 @@ function generateLearningPath() {
                 "cid":state.curr.cid,
                 "sid":state.curr.sid,
                 "logRecId":millisecondsDate.toString(),
-                "recMethod":"remedialCUMULATE",
+                "recMethod":"LGremedialCUMULATE",
                 "recommendations":recommended_activities}),
                 url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
                 contentType: "application/json"

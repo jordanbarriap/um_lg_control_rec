@@ -2760,6 +2760,8 @@ function processData() {
               });
           }
 
+          //Remove existing stars from topics
+          d3.selectAll("g.grid-cell-outter").selectAll(".star_1").remove();
           d3.selectAll("g.grid-cell-outter").each( function(d){
               var topic_name = d3.select(this).attr("topic");
             

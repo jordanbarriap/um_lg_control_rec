@@ -3,7 +3,8 @@ var non_recommended_topics = ["Table Creation", "Table Deletion and Alteration",
 var proficiency_threshold = .5;
 var topic_progress_limit = .1
 var last_success_rate_limit = .5
-//var knowledge_level_limit = .6
+var success_rate_limit = .5
+var knowledge_level_limit = .5
 
 function generateLearningPathGraph(learningPathObj, containerId = 'learning-path-graph') {
     // Remove previous graph if exists
@@ -582,7 +583,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								var kc_att = kc_levels[kc_id]["a"];
 								
 								//if(kc_level>= knowledge_level_limit){
-								if(kc_att > 0 && kc_sr <= last_success_rate_limit){
+								if(kc_att > 0 && kc_sr <= success_rate_limit){
 								//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
 									misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
 									if (kc_level < proficiency_threshold){
@@ -596,7 +597,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 									condition_to_generate_recommendations = true;
 									//}
 								}
-								else{// if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
+								if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
 									var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
 									helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
 
@@ -644,7 +645,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						}
 						if (helpful_kcs_number>0){
 							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs_number+"</b> concept(s)</b> that are necessary to ";//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
-							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0;
+							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0 || activity["url"].indexOf("quizpet")>=0;
 							var is_example = activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae") || activity["url"].indexOf("pcex")>=0;
 							if(is_problem){
 								rec_explanation = rec_explanation + " solve this problem.";
@@ -1141,20 +1142,19 @@ function compareActivities(a,b) {
 function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   var kcs_ids = Object.keys(kc_levels);
   console.log("Calculate KC difficulty scores...");
-  console.log(kc_levels)
   for(var i=0;i<kcs_ids.length;i++){
   	var kc_id = kcs_ids[i];
-  	var kc_level = kc_levels[kc_id]["k"];
+	//here we have to use total_uk instead of uk because we want to consider the students input
+  	var kc_level = kc_levels[kc_id]["total_uk"];
   	var lastk_sr = kc_levels[kc_id]["lastk-sr"];
   	var overall_sr = kc_levels[kc_id]["sr"];
-  	var kc_difficulty_score = - 1;
+	var attempts = kc_levels[kc_id]["a"];
+  	var kc_difficulty_score = NaN;
   	if(lastk_sr>0){
   		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
   	}else{
-  		if(overall_sr>0){
+  		if(attempts>0){
   			kc_difficulty_score = 1 - (overall_sr*weight_sr + kc_level*weight_kcs);
-  		}else{
-  			kc_difficulty_score = 1;
   		}
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
@@ -1733,9 +1733,24 @@ function sortKCSByLearningGoal(learningGoal){
 			}
         });
 
+		calculateKcDifficultyScores(data.kcs,0.6,0.4)
+
         data.kcs.sort(function(a, b) {
-            return a.sr - b.sr;
-        });
+			const diffA = isNaN(a.diff) ? 0 : a.diff;
+			const diffB = isNaN(b.diff) ? 0 : b.diff;
+			const bothNaN = isNaN(a.diff) && isNaN(b.diff);
+			if (bothNaN) {
+				// Sort by ascending total_uk if both diffs are NaN
+				const totalUkA = typeof a.total_uk === 'number' ? a.total_uk : 0;
+				const totalUkB = typeof b.total_uk === 'number' ? b.total_uk : 0;
+				return totalUkA - totalUkB;
+			}
+			// Otherwise, sort by descending diff
+			return diffB - diffA;
+		});
+
+		console.log("KCs sorted by difficulty:");
+		console.log(data.kcs);
 	}
 	//knowledge gaps
 	if(learningGoal==1){
