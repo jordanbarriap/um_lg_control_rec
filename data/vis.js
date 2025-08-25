@@ -193,7 +193,7 @@ var map_concept_id_topic = {}; //maps id with topic in which appear first (added
 //Added by @Jordan for remedial recommendations + explanations based on problematic concepts (added by @Jordan)
 var recommended_activities = []; //array with the recommended activities
 var top_recommended_activities = [];
-var max_rec_n = 5;//Number of recommended activities that will be shown at each time (added by @Jordan)
+var max_rec_n = 10;//Number of recommended activities that will be shown at each time (added by @Jordan)
 var map_topic_max_rank_rec_act = {};
 var rank_recommended_activities = {}; //stores the rank of the recommended activities (0 - top ranked act...), if act_name is not on the keys the activity is not recommended
 var max_remedial_recommendations_per_topic = 3;

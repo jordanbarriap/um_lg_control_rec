@@ -985,7 +985,7 @@ function actLstShow(doMe, doVs, doGrp) {
   var resNames  = $map(function (x) { return x.name; }, data.resources.slice(1));
   var title     = "";  // "<span class=\"info\">Activities</span>";
   
-  if(data.configprops.agg_proactiverec_enabled){
+  if(data.configprops.agg_proactiverec_enabled && state.args.learningGoal == undefined){
     generateProactiveRecommendations(data.configprops.agg_proactiverec_method);
     addRecommendationsToUI();
   }
@@ -7879,10 +7879,98 @@ function generateLearningPath() {
         if(state.args.learningGoal == "RemedialRecommendations"){
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
           recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
-          top_recommended_activities = recommended_activities.slice(10)
-          console.log("Remedial recommendations")
-          console.log(top_recommended_activities)
+
+          //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+          var recommended_activities_temp = []
+          var recommendations_per_topic = {}
+          for(var i=0;i<recommended_activities.length;i++){
+              var act_topic = recommended_activities[i].topic;
+              if(!(act_topic in recommendations_per_topic)){
+                recommendations_per_topic[act_topic] = 1;
+              }else{
+                recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+              }
+              if(recommendations_per_topic[act_topic]<=max_remedial_recommendations_per_topic){
+                recommended_activities_temp.push(recommended_activities[i]);
+              }
+          }
+
+          recommended_activities = recommended_activities_temp;
+
+          if(recommended_activities.length > max_rec_n) {
+
+              /*var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
+              if (top_rec_list_first_index<0){
+                top_rec_list_first_index=0;
+              }
+              var top_rec_list_last_index = recommended_activities.length/2 + max_rec_n/2;
+              if(top_rec_list_last_index > recommended_activities.length){
+                top_rec_list_last_index = recommended_activities.length;
+              }*/
+              var top_rec_list_first_index = 0;
+              var top_rec_list_last_index = max_rec_n;
+
+              top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+
+              recommendations_per_topic = count(top_recommended_activities, function (act) {
+                  return act.topic;
+              });
+   
+          } else {
+            top_recommended_activities = recommended_activities
+          }
+        
+          //Here we get the maximum rank of the items recommended per topic
+          for(var i=0;i<top_recommended_activities.length;i++){
+            var rec_act_topic = top_recommended_activities[i]["topic"];
+            var rec_act_name  = top_recommended_activities[i]["name"];
+            var rec_act_id  = top_recommended_activities[i]["id"];
+            if (!(rec_act_topic in map_topic_max_rank_rec_act)){
+              map_topic_max_rank_rec_act[rec_act_topic] = i;
+            }
+            rank_recommended_activities[rec_act_id] = i;
+          }
+
+          //Post array of recommended activities to the server (http://pawscomp2.sis.pitt.edu/recommendations/LogRecommendations)
+          if(recommended_activities.length>0){
+              //Prepare the array of recommendations for storing it in ent_recommendation db in the server (rec schema)
+              for(var j=0;j<recommended_activities.length;j++){
+                var rec_act_id  = recommended_activities[j]["id"];
+                if (rec_act_id in rank_recommended_activities){
+                  recommended_activities[j]["isRecommended"]="1";
+                }else{
+                  recommended_activities[j]["isRecommended"]="0";
+                }
+              }
+              console.log(recommended_activities);
+              var millisecondsDate = (new Date).getTime();
+              $.ajax({
+                type: "POST",
+                data :JSON.stringify({"usr":state.curr.usr,
+                "grp":state.curr.grp,
+                "sid":state.curr.sid,
+                "cid":state.curr.cid,
+                "sid":state.curr.sid,
+                "logRecId":millisecondsDate.toString(),
+                "recMethod":"remedialCUMULATE",
+                "recommendations":recommended_activities}),
+                url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+                contentType: "application/json"
+              });
+          }
+
+          d3.selectAll("g.grid-cell-outter").each( function(d){
+              var topic_name = d3.select(this).attr("topic");
+            
+              var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
+
+              if(topic_has_recommended_acts){
+                addRecommendationStarToTopic(d3.select(this),topic_name)
+              };
+          });
+
           addRecommendationsToUI()
+          
         }else{
           if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
             console.log("FillKnowledgeGapsRecommendations")

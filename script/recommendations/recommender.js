@@ -1441,7 +1441,7 @@ function addRecommendationsToUI(){
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
 
-	console.log("top recommended activities")
+	console.log("add top recommended activities to the interface")
 	console.log(top_recommended_activities)
 
 	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
