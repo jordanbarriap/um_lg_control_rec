@@ -205,6 +205,7 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 	console.log("Selected kcs ids for fill knowledge gaps recommendations:");
 	console.log(selected_kcs_ids);
 
+	var ranking_acts_per_type = {}
 
 	for(var i=1; i<n_topics;i++){
 		var topic = topics[i];
@@ -505,10 +506,12 @@ Peter's explanation text:
 //Newest remedial recommendation for the new interface
 function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr){
 	kc_levels = user_state.kcs
+	console.log("kc levels")
+	console.log(kc_levels)
+
 	topic_levels = user_state.topics
 
 	var filtered_kcs = kc_topic_weights.map(function(d){return d.id});
-	console.log(filtered_kcs)
 	//get the ids from the selected kcs
 	selected_kcs_ids = data.kcs.filter(function(d){return !d.disabledForRec && d.selectedForRec}).map(function(d){return d.id});
 
@@ -525,7 +528,6 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 	}
   
 	kc_levels = filtered_kc_levels;
-	calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr);
 	
 	var recommendations = [];
 	var topics = data_topics_acts_kcs;
@@ -547,8 +549,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 				var n_activities = activities.length;
 				for (var k=0;k<n_activities;k++){
 					var activity = activities[k];
-					console.log("Activity")
-					console.log(activity)
+					console.log("Evaluating activity "+activity.id+" from resource "+resource_id+" in topic "+topic_name);	
 					var kcs = activity["kcs"];
 					var rec_score = 0;
 					var weights_sum = 0;
@@ -561,14 +562,18 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 					//Total number of concepts needed for solving the problem / understanding the example
 					var total_kcs = 0;
 					var kcs_for_recommendation = []
-
 					var misconception_kcs = []
 					var helpful_kcs = [] 
+					console.log("KCs for this activity:")
+					console.log(kcs)
 	
 					for (var l=0;l<kcs.length;l++){
 						var kc_id = kcs[l];
+						console.log("Evaluating kc "+kc_id.id)
+						console.log(kc_id)
 						if (kc_id in kc_levels){
 							var kc_diff = kc_levels[kc_id]["diff"];
+							console.log(kc_id + " diff: "+kc_diff)
 							if(kc_diff>=0){
 								console.log("difficult kc found "+kc_id)
 								total_kcs ++;
@@ -672,6 +677,9 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 		}
 	}
 	recommendations.sort(compareActivities);
+
+	console.log("Remedial recommendation activities: ")
+	console.log(recommendations)
 
 	return recommendations;
 }
@@ -1140,6 +1148,7 @@ function compareActivities(a,b) {
  * Sort the activity objects according to their recommendation score
  */
 function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
+  var user_index = data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
   var kcs_ids = Object.keys(kc_levels);
   console.log("Calculate KC difficulty scores...");
   for(var i=0;i<kcs_ids.length;i++){
@@ -1159,6 +1168,19 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
+  console.log("kc diff scores:");
+  console.log(kc_levels);
+  //update difficulty in data.learners.state.kcs
+  var user_index = data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+
+  //Update the kc difficulty values in data.learners.state.kcs
+  for (let kc_index in kc_levels) {
+		var kc = kc_levels[kc_index]; 
+		var kc_id = kc.id;
+		if (kc_id in data.learners[user_index].state.kcs) {
+			data.learners[user_index].state.kcs[kc_id].diff = kc.diff;
+		}
+   }
 }
 
 // function addRecommendationsToUI(){

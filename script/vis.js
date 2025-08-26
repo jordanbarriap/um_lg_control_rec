@@ -571,7 +571,7 @@ function actDone_cb(rsp) {
   		  map_topic_max_rank_rec_act = {};
   		  rank_recommended_activities = {};
         var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-  		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+  		  recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.6, 0.4);
   		  // var top_rec_list_first_index = recommended_activities.length/2 - max_rec_n/2;
   		  // if (top_rec_list_first_index<0){
   			 //  top_rec_list_first_index=0;
