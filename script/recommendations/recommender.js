@@ -551,16 +551,20 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 					var activity = activities[k];
 					console.log("Evaluating activity "+activity.id+" from resource "+resource_id+" in topic "+topic_name);	
 					var kcs = activity["kcs"];
-					var rec_score = 0;
-					var weights_sum = 0;
+					var rec_score_prob_kcs = 0;
+					var rec_score_other_kcs = 0;
+					var weights_sum_problematic_kcs = 0;
+					var weights_sum_other_kcs =0;
 					var helpful_kcs_number = 0;
 					var problematic_kcs = 0;
 					var slip_kcs = 0;
 
+					var ratio_covered_selected_kcs = 0.0;
+
 					var act_progress = topic_activities[resource_id][activity.id].values.p;
 	
 					//Total number of concepts needed for solving the problem / understanding the example
-					var total_kcs = 0;
+					var total_diff_kcs = 0;
 					var kcs_for_recommendation = []
 					var misconception_kcs = []
 					var helpful_kcs = [] 
@@ -571,17 +575,18 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						var kc_id = kcs[l];
 						console.log("Evaluating kc "+kc_id.id)
 						console.log(kc_id)
+						var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
 						if (kc_id in kc_levels){
 							var kc_diff = kc_levels[kc_id]["diff"];
 							console.log(kc_id + " diff: "+kc_diff)
 							if(kc_diff>=0){
 								console.log("difficult kc found "+kc_id)
-								total_kcs ++;
-								var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
-								rec_score = rec_score + (kc_weight*kc_diff);
-								weights_sum = weights_sum + kc_weight;
+								total_diff_kcs ++;
+								
+								rec_score_prob_kcs = rec_score_prob_kcs + (kc_weight*kc_diff);
+								weights_sum_problematic_kcs = weights_sum_problematic_kcs + kc_weight;
 	
-								var kc_level = kc_levels[kc_id]["k"];
+								var kc_level = kc_levels[kc_id]["total_uk"];
 								var kc_lastksr= kc_levels[kc_id]["lastk-sr"];
 								var kc_lastk_att = kc_levels[kc_id]["lastk-att"];
 								var kc_sr = kc_levels[kc_id]["sr"];
@@ -602,12 +607,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 									condition_to_generate_recommendations = true;
 									//}
 								}
-								if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
-									var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
-									helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
-
-									helpful_kcs_number ++;
-								}
+								
 								/*}else{
 									console.log(kc_id + " on-learning concept");
 
@@ -615,9 +615,21 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								
 							}
 							
+						}else{
+							console.log("kc "+kc_id+" not in selected kcs");
+							if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
+								var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
+								helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
+
+								helpful_kcs_number ++;
+							}
+							rec_score_other_kcs = rec_score_other_kcs + (kc_weight*kc_level);
+							weights_sum_other_kcs = weights_sum_other_kcs + kc_weight;
+
 						}	
 					}
-					
+					//To-do asignar otros pesos a la combinacion de las dos partes del rec score
+					rec_score = (rec_score_prob_kcs/weights_sum_problematic_kcs)*0.5 + (rec_score_other_kcs/weights_sum_other_kcs)*0.5
 
 					// Only add this activity to the recommended activity list:
 					// This activity has at least 1 KC which satisfies the following criteria:
@@ -629,9 +641,9 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 
 
 					if(kcs_for_recommendation.length>0){// && act_progress<.5){
-						if (weights_sum>0){
+						/*if (weights_sum>0){
 							rec_score = rec_score/weights_sum;//Normalizing rec score with total of the sum of weights (?)
-						}
+						}*/
 
 						misconception_kcs = misconception_kcs.sort((a, b) => (a.lastksr < b.lastksr) ? 1 : -1)
 						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel < b.kclevel) ? 1 : -1)
