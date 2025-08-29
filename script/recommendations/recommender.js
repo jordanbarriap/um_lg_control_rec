@@ -549,8 +549,9 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 				var n_activities = activities.length;
 				for (var k=0;k<n_activities;k++){
 					var activity = activities[k];
-					console.log("Evaluating activity "+activity.id+" from resource "+resource_id+" in topic "+topic_name);	
+					//console.log("Evaluating activity "+activity.id+" from resource "+resource_id+" in topic "+topic_name);	
 					var kcs = activity["kcs"];
+					var rec_score = 0;
 					var rec_score_prob_kcs = 0;
 					var rec_score_other_kcs = 0;
 					var weights_sum_problematic_kcs = 0;
@@ -560,7 +561,6 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 					var slip_kcs = 0;
 
 					var ratio_covered_selected_kcs = 0.0;
-
 					var act_progress = topic_activities[resource_id][activity.id].values.p;
 	
 					//Total number of concepts needed for solving the problem / understanding the example
@@ -570,67 +570,81 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 					var helpful_kcs = [] 
 					console.log("KCs for this activity:")
 					console.log(kcs)
+					console.log(activity.name)
 	
 					for (var l=0;l<kcs.length;l++){
 						var kc_id = kcs[l];
-						console.log("Evaluating kc "+kc_id.id)
-						console.log(kc_id)
-						var kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
-						if (kc_id in kc_levels){
-							var kc_diff = kc_levels[kc_id]["diff"];
-							console.log(kc_id + " diff: "+kc_diff)
-							if(kc_diff>=0){
-								console.log("difficult kc found "+kc_id)
-								total_diff_kcs ++;
-								
-								rec_score_prob_kcs = rec_score_prob_kcs + (kc_weight*kc_diff);
-								weights_sum_problematic_kcs = weights_sum_problematic_kcs + kc_weight;
-	
-								var kc_level = kc_levels[kc_id]["total_uk"];
-								var kc_lastksr= kc_levels[kc_id]["lastk-sr"];
-								var kc_lastk_att = kc_levels[kc_id]["lastk-att"];
-								var kc_sr = kc_levels[kc_id]["sr"];
-								var kc_att = kc_levels[kc_id]["a"];
-								
-								//if(kc_level>= knowledge_level_limit){
-								if(kc_att > 0 && kc_sr <= success_rate_limit){
-								//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
-									misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr})
-									if (kc_level < proficiency_threshold){
-										problematic_kcs ++;
-									} else{
-										slip_kcs ++;
+						//Weight of the kc in the topic
+						//If the kc is not part of the topic, weight = 0
+						console.log("Evaluating kc "+kc_id)
+						var kc_weight = 0.0;
+						if(topic.concepts.filter(function(d){return d.id==kc_id;}).length>0){
+							kc_weight = topic.concepts.filter(function(d){return d.id==kc_id;})[0].weight;
+						}
+						var kc_info = data.kcs.filter(function(d){return d.id == kc_id;})[0]
+						if(kc_info!=undefined){
+							var kc_level = kc_info["total_uk"];
+							var kc_lastksr= kc_info["lastk-sr"];
+							var kc_lastk_att = kc_info["lastk-att"];
+							var kc_sr = kc_info["sr"];
+							var kc_att = kc_info["a"];
+
+							if (kc_id in kc_levels){
+								var kc_diff = kc_levels[kc_id]["diff"];
+								console.log(kc_id + " diff: "+kc_diff)
+
+								if(kc_diff>=0){
+									console.log("difficult kc found "+kc_id)
+									total_diff_kcs ++;
+									
+									rec_score_prob_kcs = rec_score_prob_kcs + (kc_weight*kc_diff);
+									weights_sum_problematic_kcs = weights_sum_problematic_kcs + kc_weight;
+
+									//if(kc_level>= knowledge_level_limit){
+									if(kc_att > 0 && kc_sr <= success_rate_limit){
+									//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
+										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr, "sr": kc_sr})
+										if (kc_level < proficiency_threshold){
+											problematic_kcs ++;
+										} else{
+											slip_kcs ++;
+										}
+										//if (kc_level >= knowledge_level_limit){
+										kcs_for_recommendation.push(kc_levels[kc_id])
+										condition_to_generate_recommendations = true;
+										//}
 									}
-	
-									//if (kc_level >= knowledge_level_limit){
-									kcs_for_recommendation.push(kc_levels[kc_id])
-									condition_to_generate_recommendations = true;
-									//}
+									/*}else{
+										console.log(kc_id + " on-learning concept");
+
+									}*/
 								}
 								
-								/*}else{
-									console.log(kc_id + " on-learning concept");
+							}else{
+								console.log("kc "+kc_id+" not in selected kcs");
+								if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
+									var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
+									helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
 
-								}*/
-								
-							}
-							
+									helpful_kcs_number ++;
+								}
+								rec_score_other_kcs = rec_score_other_kcs + (kc_weight*kc_level);
+								weights_sum_other_kcs = weights_sum_other_kcs + kc_weight;
+
+							}	
 						}else{
-							console.log("kc "+kc_id+" not in selected kcs");
-							if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
-								var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
-								helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
-
-								helpful_kcs_number ++;
-							}
-							rec_score_other_kcs = rec_score_other_kcs + (kc_weight*kc_level);
-							weights_sum_other_kcs = weights_sum_other_kcs + kc_weight;
-
-						}	
+							console.log("kc "+kc_id+" not found in data.kcs");
+						}
 					}
 					//To-do asignar otros pesos a la combinacion de las dos partes del rec score
+					console.log("rec score problematic kcs: ")
+					console.log(rec_score_prob_kcs)
+					console.log("weights sum other kcs: ")
+					console.log(rec_score_other_kcs)
 					rec_score = (rec_score_prob_kcs/weights_sum_problematic_kcs)*0.5 + (rec_score_other_kcs/weights_sum_other_kcs)*0.5
-
+					console.log("rec score: ")
+					console.log(rec_score)
+					// OLD algorithm 
 					// Only add this activity to the recommended activity list:
 					// This activity has at least 1 KC which satisfies the following criteria:
 					// 1. Belong to a topic not listed as non_recommended_topics	  
@@ -645,8 +659,17 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 							rec_score = rec_score/weights_sum;//Normalizing rec score with total of the sum of weights (?)
 						}*/
 
-						misconception_kcs = misconception_kcs.sort((a, b) => (a.lastksr < b.lastksr) ? 1 : -1)
-						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel < b.kclevel) ? 1 : -1)
+						misconception_kcs = misconception_kcs = misconception_kcs.sort((a, b) => {
+							const aLastksr = typeof a.lastksr === 'number' ? a.lastksr : 0;
+							const bLastksr = typeof b.lastksr === 'number' ? b.lastksr : 0;
+							const aSr = typeof a.sr === 'number' ? a.sr : 0;
+							const bSr = typeof b.sr === 'number' ? b.sr : 0;
+							if (aLastksr > 0.0 && bLastksr > 0.0) {
+								return bLastksr - aLastksr; // Descending by lastksr
+							}
+							return bSr - aSr; // Descending by sr if lastksr not available
+						});
+						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel > b.kclevel) ? 1 : -1)
 
 		
 						var rec_explanation = "This activity is recommended because:<ul>";
@@ -662,7 +685,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						}
 						if (helpful_kcs_number>0){
 							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs_number+"</b> concept(s)</b> that are necessary to ";//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
-							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0 || activity["url"].indexOf("quizpet")>=0;
+							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0 || activity["url"].indexOf("quizpet")>=0 || activity["url"].indexOf("pcrs")>=0;
 							var is_example = activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae") || activity["url"].indexOf("pcex")>=0;
 							if(is_problem){
 								rec_explanation = rec_explanation + " solve this problem.";
@@ -679,7 +702,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						rec_explanation = rec_explanation + "</ul>";
 	
 						ranked_activity = Object.assign({}, activity);
-						ranked_activity["rec_score"] = 1-Math.abs(.5-rec_score);//rec_score;
+						ranked_activity["rec_score"] = rec_score;
 						ranked_activity["topic"] = topic_name;
 						ranked_activity["explanation"] = rec_explanation;
 						recommendations.push(ranked_activity);
@@ -694,6 +717,465 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 	console.log(recommendations)
 
 	return recommendations;
+}
+
+function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, topics_activities, kc_levels, kc_topic_weights, weight_kcs){
+	//Define the outcome and prerequisites for the current topic
+	var topicOrder = -1;
+	var topic_name = topic.name;
+	var topic_name = topic.id;
+
+	var topicInfo = topics_concepts.filter(function(d){
+		return d.topicId == topic_name;
+	});
+
+	if(topicInfo.length>0){
+		topicOrder = topicInfo[0].topicOrder;
+	}
+
+	var topic_activities = topics_activities[topic_name];
+
+	var prerequisites = [];
+	prerequisites = topics_concepts.filter(function(d){return d.topicOrder < topicOrder});
+
+	for(var i=0; i<prerequisites.length;i++){
+		var prerequisite_concept = prerequisites[i];
+		console.log(prerequisite_concept)
+		kc_levels[prerequisite_concept.conceptId].type = "prerequisite";
+	}
+	set_prerequisites = new Set(prerequisites.map(function(d){ return d.conceptId}));
+	console.log("Set of prerequisites:");
+	console.log(set_prerequisites);
+
+	var outcomes =[]
+	//outcomes = topics_concepts.filter(function(d){return d.topicOrder == topicOrder});
+	const selectedKcIds = data.kcs.filter(kc => kc.selectedForRec === true).map(kc => kc.id);
+
+	outcomes = topics_concepts.filter(function(d){ return selectedKcIds.includes(d.conceptId)});
+	for(var i=0; i<outcomes.length;i++){
+		var outcome_concept = outcomes[i]
+		kc_levels[outcome_concept.conceptId].type = "outcome";
+	}
+	set_outcomes = new Set(outcomes.map(function(d){ return d.conceptId}));
+	console.log("Set of outcomes:");
+	console.log(set_outcomes);
+
+	//remove the outcomes (selected by the user) that in the previous algorithm were considered as prerequisites
+	prerequisites = prerequisites.filter(function(prereq) {
+		return !outcomes.some(function(outcome) {
+			return outcome.conceptId === prereq.conceptId;
+		})
+	});
+
+	// Calculate the weights for outcomes and prerequisite concepts using TF-IDF (boolean in this case as we do not have number of times that concept appears in an activity)
+	// starting from idf values
+	// Calculate the weights for outcomes and prerequisite concepts using TF-IDF (boolean in this case as we do not have number of times that concept appears in an activity)
+	// starting from idf values
+	var idf_values = {};
+	var prerequisite_idfs = [];
+	var outcome_idfs = [];
+	var total_acts_prev_topics = topics_concepts.filter(function(d){return d.topicOrder<=topicOrder;}).map(function(d){return d.topicActs;}).reduce(function(a, b) { return a + b; });
+
+	for(var i=0;i<prerequisites.length;i++){
+		var prerequisite = prerequisites[i];
+		var prerequisite_id = prerequisite.conceptId;
+		var prerequisite_prev_appereances = topics_concepts.filter(function(d){return (d.topicOrder<=topicOrder && d.conceptId==prerequisite_id)});
+		var num_acts_prerequisite = prerequisite_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
+		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_prerequisite);
+		idf_values[prerequisite_id] = idf_concept;
+		prerequisite_idfs.push({'conceptId': prerequisite_id, 'value': idf_concept});
+	}
+
+	for(var i=0;i<outcomes.length;i++){
+		var outcome = outcomes[i];
+		var outcome_id = outcome.conceptId;
+		outcomes[i].k = kc_levels[outcome_id].k;
+		var outcome_prev_appereances = topics_concepts.filter(function(d){return (d.topicOrder<=topicOrder && d.conceptId==outcome_id)});
+		var num_acts_outcome = outcome_prev_appereances.map(function(d){return d.conceptActs}).reduce(function(a, b) { return a + b; });
+		var idf_concept =  Math.log(total_acts_prev_topics/num_acts_outcome);
+		idf_values[outcome_id] = idf_concept;
+		outcome_idfs.push({'conceptId': outcome_id, 'value': idf_concept});
+	}
+
+	//Sort idf values for generating explanations for km recommendations
+	prerequisite_idfs.sort(function(a,b){return b.value-a.value;});
+	outcome_idfs.sort(function(a,b){return b.value-a.value;});
+
+	console.log("Prerequisite idf values:");
+	console.log(prerequisite_idfs);
+	console.log("Outcome idf values:");
+	console.log(outcome_idfs)
+
+	var recommendations = [];
+	//var topics = data_topics_acts_kcs;
+	//var n_topics = topics.length;
+
+	//If at least one of the kcs have a level > .5, we generate the recommendations
+	//var condition_to_generate_recommendations = false;
+
+	// for(var i=1; i<n_topics;i++){
+	// var topic = topics[i];
+	// var topic_name = topic.name;
+
+	//First we see if there are never attempted outcome concepts
+	var num_non_attempted_concepts = 0;
+	var non_attempted_concepts = [];
+	for(var i=0;i<outcomes.length;i++){
+		var outcome_conceptId = outcomes[i].conceptId;
+		
+		var outcome_concept_k = -1
+		var outcome_concept_a=-1
+		if('total_uk' in outcomes[i]){
+			outcome_concept_k = outcomes[i].total_uk;
+			outcome_concept_a = outcomes[i].a;
+		}
+
+		//Here we check if a concept has been attempted in a previous activity 
+		if((data.configprops.agg_kc_student_modeling=="bn" && outcome_concept_k==.5) || (data.configprops.agg_kc_student_modeling=="cumulate" && outcome_concept_k==0 && outcome_concept_a==0)){//TODO: we should check the real number of attempts instead the kc level given by bn_general
+			console.log("Outcome concept "+outcome_conceptId+" has never been attempted in the past");
+			num_non_attempted_concepts= num_non_attempted_concepts + 1;
+			non_attempted_concepts.push(outcome_conceptId);
+		}
+	}
+
+	console.log(num_non_attempted_concepts+" outcome concepts have not been attempted in the past");
+	console.log(non_attempted_concepts);
+
+	var resources = Object.keys(topic.activities);
+
+	var example_recommendations = [];
+	//If there are concepts that have not been attempted in the past
+	if(num_non_attempted_concepts>0){
+		var examples_resource_ids = resources.filter(function(d){return d.includes("Example")});
+		//console.log(examples_resource_ids);
+		for(var i=0;i<examples_resource_ids.length;i++){
+			var resource_id = examples_resource_ids[i];
+			if(resources.includes(resource_id)){
+				var activities = topic.activities[resource_id];
+				var n_activities = activities.length;
+				for (var k=0;k<n_activities;k++){
+					var activity = activities[k];
+					var kcs = activity["kcs"];
+
+					//Identify the overlapping concepts between the non attempted concepts (for that specific student) and the kcs of the example activities
+					var overlap_non_attempted_outcomes_kcs = kcs.filter(function(n) {
+						return non_attempted_concepts.indexOf(n) !== -1;
+					});
+
+					console.log("Overlap non-attempted outcome concepts");
+					console.log(overlap_non_attempted_outcomes_kcs);
+					
+					var rec_score = 0;
+		
+					var act_progress = 0;
+					console.log(topic_activities[resource_id][activity.id])
+					act_progress = topic_activities[resource_id][activity.id].values.p;
+		
+					// Only examples that include non-attempted outcome concepts
+					// and the non-completed ones will be recommended (progress - p - less than 1) are candidates to be recommended first
+					if(overlap_non_attempted_outcomes_kcs.length>0 && act_progress<1){
+						//Total number of concepts needed for solving the problem / understanding the example
+						var total_kcs = 0;
+						var total_prerequisites = 0;
+						var total_outcomes = 0;
+		
+						//Variables needed for estimating the amount of knowledge already learned associated with prerequisite concepts
+						var prerequisites_mastery = 0;
+						var weight_prerequisites = 0;
+		
+						//Variables needed for estimating the amount of knowledge yet to be learned associated with outcomeconcepts
+						var outcomes_lack_mastery = 0;
+						var weight_outcomes = 0;
+		
+						for (var l=0;l<kcs.length;l++){
+							var kc_id = kcs[l];
+		
+							if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
+								//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
+								if (set_prerequisites.has(kc_id)){
+									var prerequisite_weight = Math.log(1*idf_values[kc_id]);
+									prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
+									total_kcs = total_kcs + 1
+									weight_prerequisites = prerequisite_weight + weight_prerequisites
+									total_prerequisites = total_prerequisites + 1;
+								}else{
+									//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
+									if(set_outcomes.has(kc_id)){
+										var outcome_weight = Math.log(1*idf_values[kc_id]);
+										outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
+										total_kcs = total_kcs + 1
+										weight_outcomes = outcome_weight + weight_outcomes
+										total_outcomes = total_outcomes + 1;
+									}
+								}
+							}
+						}		
+						if(weight_prerequisites>0){
+							rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
+						}
+						if(weight_outcomes>0){
+							rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
+						}
+						rec_score=rec_score/total_kcs;
+						
+						//console.log(activity.id)
+						//console.log("Rec score: "+rec_score);
+
+						var rec_explanation = "This example is recommended because it presents <span class='important-text'>concept(s) that are new</span> to you (e.g. <i>"+kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];})[0].dn+"</i>).";
+
+						ranked_activity = Object.assign({}, activity);
+						ranked_activity["rec_score"] = rec_score;
+						ranked_activity["topic"] = topic_name;
+						ranked_activity["explanation"] = rec_explanation;
+						example_recommendations.push(ranked_activity);
+					}	
+				}
+				if(example_recommendations.length>0){
+					//Sort the array of prioritized example recommendations
+					example_recommendations.sort(compareActivities);
+
+					//We get only 2 examples from the candidate examples that cover 
+					example_recommendations = example_recommendations.slice(0,2);
+
+					console.log("Array of prioritized example recommendations: ");
+					console.log(example_recommendations);
+					
+				}			
+			}
+		}
+	}
+
+	var n_resources = resources.length;
+	for (var j=0; j<n_resources;j++){
+		var resource_id = resources[j];
+		if (resource_id != "Examples" || (resource_id=="Examples" && example_recommendations.length==0)){
+			var activities = topic.activities[resource_id];
+			var n_activities = activities.length;
+			for (var k=0;k<n_activities;k++){
+				var activity = activities[k];
+				var kcs = activity["kcs"];
+				var rec_score = 0;
+
+				var act_progress = 0;
+				console.log(topic_activities[resource_id][activity.id])
+				act_progress = topic_activities[resource_id][activity.id].values.p;
+
+				//Only non-completed activities will be recommended (progress - p - less than 1)
+				if(act_progress<1){
+					//Total number of concepts needed for solving the problem / understanding the example
+					var total_kcs = 0;
+					var total_prerequisites =0;
+					var total_outcomes =0;
+
+					//Variables needed for estimating the amount of knowledge already learned associated with prerequisite concepts
+					var prerequisites_mastery = 0;
+					var weight_prerequisites = 0;
+					var ids_act_prerequisites = new Set();
+
+					//Variables needed for estimating the amount of knowledge yet to be learned associated with outcomeconcepts
+					var outcomes_lack_mastery = 0;
+					var weight_outcomes = 0;
+					var ids_act_outcomes = new Set();
+
+					for (var l=0;l<kcs.length;l++){
+						var kc_id = kcs[l];
+
+						if (kc_id in kc_levels){ //Check if we have an estimation of the knowledge on that specific concept
+							//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
+							if (set_prerequisites.has(kc_id)){
+								var prerequisite_weight = Math.log(1*idf_values[kc_id]);
+								ids_act_prerequisites.add(kc_id);
+								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
+								total_kcs = total_kcs + 1
+								weight_prerequisites = prerequisite_weight + weight_prerequisites
+								total_prerequisites = total_prerequisites + 1;
+							}else{
+								//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
+								if(set_outcomes.has(kc_id)){
+									var outcome_weight = Math.log(1*idf_values[kc_id]);
+									ids_act_outcomes.add(kc_id);
+									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
+									total_kcs = total_kcs + 1
+									weight_outcomes = outcome_weight + weight_outcomes
+									total_outcomes = total_outcomes + 1;
+								}
+							}
+						}
+					}
+					if(total_prerequisites>0){
+						rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
+					}
+					if(total_outcomes>0){
+						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
+					}
+					rec_score=rec_score/(total_prerequisites + total_outcomes);
+
+					var rec_explanation = "This activity is recommended because:<ul>";
+					
+					//console.log(activity.id);
+					//console.log("Rec score: "+rec_score);
+
+					var top_num_concepts = 3;
+					var top_prerequisite_concepts = prerequisite_idfs.filter(function(d){return ids_act_prerequisites.has(d.conceptId);}).slice(0,top_num_concepts);
+					var top_outcome_concepts = outcome_idfs.filter(function(d){return ids_act_outcomes.has(d.conceptId);}).slice(0,top_num_concepts);
+
+					//Threshold and definitions for the explanations
+					var mastery_concepts = 0;
+					var mastery_threshold = .95;
+					var proficiency_concepts = 0;
+					var proficiency_threshold = .75;
+					var good_concepts = 0;
+					var good_threshold = .6;
+					var ok_concepts = 0;
+
+					var avg_k_prerequisite_concepts = 0;
+					var total_weight_prerequisites = 0;
+					for(var i=0;i<top_prerequisite_concepts.length;i++){
+						var k_concept = kc_levels[top_prerequisite_concepts[i].conceptId].k;
+						var weight_concept = Math.log(1*idf_values[top_prerequisite_concepts[i].conceptId]);
+						if(k_concept>=mastery_threshold){
+							mastery_concepts++;
+						}else{
+							if(k_concept>=proficiency_threshold){
+								proficiency_concepts++;
+							}else{
+								if(k_concept>=good_threshold){
+									good_concepts++;
+								}else{
+									ok_concepts++;
+								}
+							}
+						}
+						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + weight_concept*k_concept;
+						total_weight_prerequisites = total_weight_prerequisites + weight_concept;
+					}
+
+					avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/total_weight_prerequisites;
+					if(top_prerequisite_concepts.length<top_num_concepts) top_num_concepts=top_prerequisite_concepts.length;
+
+					var prerequisite_explanation = "";
+
+					if(top_prerequisite_concepts && top_prerequisite_concepts.length>0){
+						//console.log("Average most important prerequisites:");
+						//console.log(avg_k_prerequisite_concepts);
+						if(avg_k_prerequisite_concepts>=mastery_threshold){
+							prerequisite_explanation+="<li>It looks like on average you <span class='level1-exp-text'>master</span> the main <span class='important-text'>prerequisite concepts</span>.</li>";
+						}else{
+							if(avg_k_prerequisite_concepts>=proficiency_threshold){
+								prerequisite_explanation+="<li>It looks like on average you are <span class='level2-exp-text'>proficient</span> in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+							}else{
+								if(avg_k_prerequisite_concepts>=good_threshold){
+									prerequisite_explanation+="<li>It looks like on average you have a <span class='level3-exp-text'>good</span> understanding in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+								}else{
+									prerequisite_explanation+="<li>Although it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
+								}
+							}
+						}
+					}
+					var excellent_opportunity_threshold =.8;
+					var good_opportunity_threshold =.6;
+					var fair_opportunity_threshold = .4; 
+
+					var avg_k_outcome_concepts = 0;
+					var total_weight_outcomes = 0;
+					for(var i=0;i<top_outcome_concepts.length;i++){
+						var k_concept = 1- kc_levels[top_outcome_concepts[i].conceptId].k;
+						var weight_concept = Math.log(1*idf_values[top_outcome_concepts[i].conceptId]);
+						avg_k_outcome_concepts = avg_k_outcome_concepts + weight_concept*k_concept;
+						total_weight_outcomes = total_weight_outcomes + weight_concept;
+					}
+
+					avg_k_outcome_concepts = avg_k_outcome_concepts/total_weight_outcomes;
+					if(top_outcome_concepts.length<top_num_concepts) top_num_concepts=top_outcome_concepts.length;
+
+					var outcome_explanation = "";
+					
+					if(top_outcome_concepts && top_outcome_concepts.length>0){
+						//console.log("Average learning opportunity of most important outcomes:");
+						//console.log(avg_k_outcome_concepts);
+						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
+							outcome_explanation+="<li>You have an <span class='level1-exp-text'>excellent</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+						}else{
+							if(avg_k_outcome_concepts>=good_opportunity_threshold){
+								outcome_explanation+="<li>You have a <span class='level2-exp-text'>good</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+							}else{
+								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
+									outcome_explanation+="<li>You have a <span class='level3-exp-text'>fair</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+								}else{
+									outcome_explanation+="<li>Although it is low, the opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic is one of the highest within the topic.</li>";
+								}
+							}
+						}
+					}
+	
+					rec_explanation = rec_explanation + prerequisite_explanation;
+					rec_explanation = rec_explanation + outcome_explanation;
+					rec_explanation = rec_explanation + "</ul>";
+
+					// var avg_k_top_outcomes = 0;
+					// for(var i=0;i<top_outcome_concepts.length;i++){
+					// 	var 
+					// }
+
+					
+
+					//Commented by @Jordan from here
+					// if ((problematic_kcs+slip_kcs)>0){
+					// 	rec_explanation = rec_explanation + "<li style='padding-left:0'>It allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concepts which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past.</li>"
+					// 	//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
+					// 	// Peter suggested to hide this part of the explanation
+					// 	// if (slip_kcs){
+					// 	// 	rec_explanation = rec_explanation+ " , but you have shown proficiency in "+slip_kcs+" of them. </li>";
+					// 	// }
+					// 	//rec_explanation = rec_explanation + "<br>";
+					// }
+					// if (helpful_kcs>0){
+					// 	rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs+"</b> concepts out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
+					// 	var is_sqlknot = activity["url"].indexOf("sqlknot")>=0 ;
+					// 	var is_example = (activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae"));
+					// 	if(is_sqlknot){
+					// 		rec_explanation = rec_explanation + " solve this problem.</li>";
+					// 	}else{
+					// 		if(is_example){
+					// 			rec_explanation = rec_explanation + " understand this example.</li>";
+					// 		}
+					// 	}	
+					// }
+					// //Generate recommendations only if they have failed in the lastk attempts
+					// if((problematic_kcs+slip_kcs)>0){
+					// 	condition_to_generate_recommendations = true;
+					// 	rec_explanation = rec_explanation + "</ul>";
+
+					ranked_activity = Object.assign({}, activity);
+					ranked_activity["rec_score"] = rec_score;
+					ranked_activity["topic"] = topic_name;
+					ranked_activity["explanation"] = rec_explanation;
+					recommendations.push(ranked_activity);
+					// }
+					//end of Jordan's comment
+				}	
+			}
+		}
+	}
+	//}
+	if(recommendations.length>0){
+		recommendations.sort(compareActivities);
+	}
+	//Delete the activities from the topics that were decided to not to be recommended
+	//recommendations = recommendations.filter(function(d){return !non_recommended_topics.includes(d.topic);});
+	// if(!condition_to_generate_recommendations){
+	// 	recommendations = [];
+	// }
+	var merged_recommendations = example_recommendations.concat(recommendations);
+	//
+	var merged_recommendations_without_duplicates = merged_recommendations.filter(function (a) {
+        return !this[a.id] && (this[a.id] = true);
+    }, Object.create(null));
+
+	console.log("Recommendations to keep you up with the class")
+	console.log(merged_recommendations_without_duplicates)
+	//return merged_recommendations;
+	return merged_recommendations_without_duplicates;
 }
 
 
@@ -837,6 +1319,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					var rec_score = 0;
 		
 					var act_progress = 0;
+					console.log(topic_activities[resource_id][activity.id])
 					act_progress = topic_activities[resource_id][activity.id].values.p;
 		
 					// Only examples that include non-attempted outcome concepts
@@ -925,6 +1408,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 				var rec_score = 0;
 
 				var act_progress = 0;
+				console.log(topic_activities[resource_id][activity.id])
 				act_progress = topic_activities[resource_id][activity.id].values.p;
 
 				//Only non-completed activities will be recommended (progress - p - less than 1)
