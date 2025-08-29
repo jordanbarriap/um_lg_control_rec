@@ -7880,8 +7880,24 @@ function generateLearningPath() {
           var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
           //Here both things are needed, low success rate but also low mastery (low success rate and higher mastery can be signs of slip concepts)
           recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.6, 0.4);
-
-          //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
+          
+        }else{
+          if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
+            console.log("FillKnowledgeGapsRecommendations")
+            var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+            recommended_activities = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
+            //generateLearningPathGraph(recs);
+          }else{
+            if(state.args.learningGoal == "KeepMeUpWithTheClassRecommendations"){
+              var current_topic = data.topics.find(t => t.id!="AVG" && t.timeline.current);
+              console.log("KeepMeUpWithTheClassRecommendations current topic:")
+              console.log(current_topic)
+              var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
+              recommended_activities = window[generateRecFunction](topics_concepts, current_topic, data.learners[usr_index].state.activities, data.learners[usr_index].state.kcs, data.kcs, 0.5);
+            }
+          }
+        }
+        //Keep at most max_remedial_recommendations_per_topic per potential recommmendations per topic
           var recommended_activities_temp = []
           var recommendations_per_topic = {}
           for(var i=0;i<recommended_activities.length;i++){
@@ -7953,7 +7969,7 @@ function generateLearningPath() {
                 "cid":state.curr.cid,
                 "sid":state.curr.sid,
                 "logRecId":millisecondsDate.toString(),
-                "recMethod":"LGremedialCUMULATE",
+                "recMethod":state.args.learningGoal,
                 "recommendations":recommended_activities}),
                 url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
                 contentType: "application/json"
@@ -7971,24 +7987,6 @@ function generateLearningPath() {
           });
 
           addRecommendationsToUI()
-          
-        }else{
-          if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
-            console.log("FillKnowledgeGapsRecommendations")
-            var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-            var recs = window[generateRecFunction](data.topics, data.learners[usr_index].state, data.kcs, 0.5, 0.5);
-            generateLearningPathGraph(recs);
-          }else{
-            if(state.args.learningGoal == "KeepMeUpWithTheClassRecommendations"){
-              var current_topic = data.topics.find(t => t.id!="AVG" && t.timeline.current);
-              console.log("KeepMeUpWithTheClassRecommendations current topic:")
-              console.log(current_topic)
-              var usr_index=data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
-              var recs = window[generateRecFunction](topics_concepts, current_topic, data.learners[usr_index].state.activities, data.learners[usr_index].state.kcs, data.kcs, 0.5);
-              addRecommendationsToUI()
-            }
-          }
-        }
       }
     }
     console.log('Learning path generated');

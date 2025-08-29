@@ -1980,8 +1980,15 @@ function addRecommendationsToUI(){
 					var data_resource_id = data_resource ? data_resource.id:undefined;
 					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
-					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
+					console.log(current_topic)
+					console.log(mg_activities)
+					console.log(d.resIdx)
+					console.log(data_resource)
+					console.log(d.actIdx)
+					//var mg_activity = data_resource ? data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]:undefined
+					console.log(mg_activity)
 					if(mg_activity) {
+						console.log("mg_activity")
 						var act_id = mg_activity.id
 						var act_name = d.actName;
 						var act_is_recommended = (act_id in rank_recommended_activities);
@@ -1990,7 +1997,7 @@ function addRecommendationsToUI(){
 						mg_activity['resIdx'] = d.resIdx
 
 						if(act_is_recommended){
-
+							
 							//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
 							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
 							recommended_activity['actIdx'] = d.actIdx
@@ -2030,7 +2037,7 @@ function addRecommendationsToUI(){
 								}
 							}
 							//TODO write here what happen if the proactive method is remedial
-							if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal=="RemedialRecommendations"){
+							if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 								// function for adding two numbers.
 								const add = (a, b) => a + b
 								// use reduce to sum the total number of recommended activities
@@ -2074,7 +2081,7 @@ function addRecommendationsToUI(){
 											return "";
 										}
 									}
-									if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal=="RemedialRecommendations" ){
+									if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 										return rank_rec+1;
 									}
 									
@@ -2111,6 +2118,7 @@ function addRecommendationsToUI(){
 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
 					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
 					if(mg_activity) {
+						console.log("M G ACT")
 						//var act_id = mg_activity.id
 						//var act_name = d.actName;
 						var act_is_recommended = d.seq>0 ? true : false;
