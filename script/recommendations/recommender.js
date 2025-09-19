@@ -5,6 +5,8 @@ var topic_progress_limit = .1
 var last_success_rate_limit = .5
 var success_rate_limit = .5
 var knowledge_level_limit = .5
+var max_num_recs = 9
+
 
 function generateLearningPathGraph(learningPathObj, containerId = 'learning-path-graph') {
     // Remove previous graph if exists
@@ -711,10 +713,20 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 			}
 		}
 	}
+	//Remove content that belongs to future 
 	recommendations.sort(compareActivities);
 
 	console.log("Remedial recommendation activities: ")
 	console.log(recommendations)
+
+	recommendations = recommendations.filter(function(rec) {
+		const topicObj = data.topics.find(t => t.id === rec.topic || t.name === rec.topic);
+		if (!topicObj || !topicObj.timeline) return true; // keep if no info
+		// keep if current or covered
+		console.log(rec)
+		console.log("current or old: "+(topicObj.timeline.covered || topicObj.timeline.current));
+		return topicObj.timeline.covered || topicObj.timeline.current;
+	});
 
 	return recommendations;
 }
@@ -2271,6 +2283,12 @@ function sortKCSByLearningGoal(learningGoal){
 				const totalUkB = typeof b.total_uk === 'number' ? b.total_uk : 0;
 				return totalUkA - totalUkB;
 			}
+			// If diffs are equal, sort by normalized attempts (a.a / a.cnt.length)
+			if(diffA==diffB){
+				const normalizedAttA = a.a/a.cnt.length
+				const normalizedAttB = b.a/b.cnt.length
+				return normalizedAttB- normalizedAttA; //tie breaker: more normalized attempts first
+			}
 			// Otherwise, sort by descending diff
 			return diffB - diffA;
 		});
@@ -2288,7 +2306,7 @@ function sortKCSByLearningGoal(learningGoal){
 		data.kcs.forEach(function(kc) {
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
-            let edition = typeof kc.edition === 'number' ? kc.edition : 0;
+            let edition = typeof kc.edition === 'number' ? editImpactValues.get(kc.edition) : 0;
             let total_uk = uk + edition;
             if (isNaN(total_uk)) total_uk = 0;
             if (total_uk < 0) total_uk = 0;
@@ -2298,17 +2316,20 @@ function sortKCSByLearningGoal(learningGoal){
 				kc.disabledForRec = true;
 			}
         });
-		// Sort in place by total_uk descending, tie-breaker: lowest att
+		// Sort in place by total attempts, tie-breaker: lowest total_uk
         data.kcs.sort((a, b) => {
-			const totalA = a.total_uk || 0;
-			const totalB = b.total_uk || 0;
-			if (totalA !== totalB) {
-				return totalB - totalA
-			}
 			const attA = typeof a.a === 'number' ? a.a : 0;
 			const attB = typeof b.a === 'number' ? b.a : 0;
-			return attB - attA;
+			if (attB != attA) return attA - attB; // Primary sort: ascending
+			const totalA = a.total_uk || 0;
+			const totalB = b.total_uk || 0;
+			
+			return totalA - totalB
+			
 		});
+
+		console.log("KCs sorted by attempts:");
+		console.log(data.kcs);
 	}
 
 	//Keep me up with the class
@@ -2365,167 +2386,11 @@ function setTopConceptsForRecommendations(num_concepts){
         if (isNaN(total)) total = 0;
         if (total < 0) total = 0;
         if (total > 1) total = 1;
-		console.log(edition)
-		console.log(kc.dn+" "+total)
+		kc.name = kc.dn
+		kc.selectedForRec = true; // Default to selected
 
-        // Create row
-        const row = document.createElement('div');
-        row.className = 'concept-bar-row';
-        row.style.display = 'flex';
-        row.style.alignItems = 'center';
-        row.style.gap = '6px';
-        row.style.marginBottom = '2px';
-
-        // Checkbox
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'concept-checkbox-html';
-        checkbox.style.marginRight = '4px';
-        checkbox.checked = true;//!!kc.selectedForRec;
-		kc.selectedForRec = true; // Ensure the concept is selected for recommendation
-        checkbox.onclick = function() {
-            selectConceptForRecommendation(kc.id, checkbox.checked);
-        };
-        row.appendChild(checkbox);
-
-        // Get number of attempts for tooltip
-		const attempts = typeof kc.a === 'number' ? kc.a : 0;
-		const attemptsTooltip = `Attempts: ${attempts}`;
-
-		const sr = typeof kc.sr === 'number' ? kc.sr : 0;
-		const srTooltip = `Success rate: ${sr*100}%`;
-
-		const kcTooltip= attemptsTooltip + '\n' + srTooltip;
-
-		// Label
-		const label = document.createElement('span');
-		label.className = 'concept-label-html';
-		//label.title = kc.dn || kc.name || `Concept ${idx + 1}`;
-		label.innerText = (kc.dn || kc.name || `Concept ${idx + 1}`).length > 12
-			? (kc.dn || kc.name || `Concept ${idx + 1}`).substring(0, 12) + '...'
-			: (kc.dn || kc.name || `Concept ${idx + 1}`);
-		// Add attempts tooltip on hover
-		label.onmouseenter = function() {
-			label.setAttribute('title', kcTooltip);
-		};
-		row.appendChild(label);
-
-        // Bar container (flex-based, no absolute positioning)
-		// Bar container (flex-based, no absolute positioning)
-		const barContainer = document.createElement('div');
-		barContainer.className = 'concept-mastery-bar';
-		// ...existing barContainer style setup...
-		// Add attempts tooltip on hover
-		barContainer.onmouseenter = function() {
-			barContainer.setAttribute('title', attemptsTooltip);
-		};
-		barContainer.style.display = 'flex';
-		barContainer.style.height = '12px';
-		barContainer.style.width = '75px';
-		barContainer.style.background = '#f0f0f0';
-		barContainer.style.borderRadius = '3px';
-		barContainer.style.overflow = 'hidden';
-		barContainer.style.position = 'relative';
-
-		// Original value bar (uk)
-		if (uk > 0) {
-			const origBar = document.createElement('div');
-			//origBar.className = 'bar-original-html';
-			origBar.className = 'concept-mastery-fill';
-			origBar.style.width = (uk*100)+'%';
-			origBar.style.background = '#bbb';
-			origBar.style.opacity = '0.6';
-			origBar.style.height = '100%';
-			barContainer.appendChild(origBar);
-		}
-
-		// Edition bar (positive or negative) with hatching pattern
-		if (edition !== 0) {
-			const editionBar = document.createElement('div');
-			editionBar.style.flex = Math.abs(edition);
-			editionBar.style.height = '100%';
-			editionBar.style.position = 'relative';
-			editionBar.style.background = 'none';
-
-			// Create SVG for hatching
-			const svgNS = "http://www.w3.org/2000/svg";
-			const svg = document.createElementNS(svgNS, "svg");
-			svg.setAttribute('width', '100%');
-			svg.setAttribute('height', '100%');
-			svg.setAttribute('viewBox', '0 0 10 12');
-			svg.style.position = 'absolute';
-			svg.style.top = '0';
-			svg.style.left = '0';
-			svg.style.width = '100%';
-			svg.style.height = '100%';
-			svg.style.pointerEvents = 'none';
-
-			// Define pattern
-			const pattern = document.createElementNS(svgNS, "pattern");
-			pattern.setAttribute('id', `hatch-${kc.id}-${idx}`);
-			pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-			pattern.setAttribute('width', '3');
-			pattern.setAttribute('height', '6');
-			pattern.setAttribute('patternTransform', 'rotate(45)');
-
-			const color = edition > 0 ? '#4caf50' : '#f44336';
-
-			// Draw lines for hatching
-			const line = document.createElementNS(svgNS, "rect");
-			line.setAttribute('x', '0');
-			line.setAttribute('y', '0');
-			line.setAttribute('width', '2');
-			line.setAttribute('height', '6');
-			line.setAttribute('fill', color);
-			line.setAttribute('opacity', '0.5');
-			pattern.appendChild(line);
-
-			svg.appendChild(pattern);
-
-			// Use pattern as fill
-			const rect = document.createElementNS(svgNS, "rect");
-			rect.setAttribute('x', '0');
-			rect.setAttribute('y', '0');
-			rect.setAttribute('width', '100%');
-			rect.setAttribute('height', '100%');
-			rect.setAttribute('fill', `url(#hatch-${kc.id}-${idx})`);
-			svg.appendChild(rect);
-
-			editionBar.appendChild(svg);
-
-			// Assign class for possible further styling
-			editionBar.className = edition > 0 ? 'bar-edition-positive-html' : 'bar-edition-negative-html';
-
-			barContainer.appendChild(editionBar);
-		}
-
-		// Fill the rest with empty space if total < 1
-		if (total < 1) {
-			const emptyBar = document.createElement('div');
-			emptyBar.style.flex = 1 - total;
-			emptyBar.style.height = '100%';
-			emptyBar.style.background = 'transparent';
-			barContainer.appendChild(emptyBar);
-		}
-
-		// Value label (positioned absolutely over the bar)
-		const valueLabel = document.createElement('span');
-		valueLabel.className = 'concept-value-html';
-		valueLabel.innerText = `${Math.round(total * 100)}%`;
-		valueLabel.style.position = 'absolute';
-		valueLabel.style.right = '4px';
-		valueLabel.style.top = '1px';
-		valueLabel.style.fontSize = '10px';
-		valueLabel.style.color = '#222';
-		valueLabel.style.background = 'rgba(255,255,255,0.7)';
-		valueLabel.style.padding = '0 2px';
-		valueLabel.style.borderRadius = '2px';
-		barContainer.appendChild(valueLabel);
-
-		row.appendChild(barContainer);
-
+        const row = createConceptBarRow(kc, true)
 		
-
 		container.appendChild(row);
 
 		

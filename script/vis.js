@@ -194,7 +194,7 @@ var map_concept_id_topic = {}; //maps id with topic in which appear first (added
 //Added by @Jordan for remedial recommendations + explanations based on problematic concepts (added by @Jordan)
 var recommended_activities = []; //array with the recommended activities
 var top_recommended_activities = [];
-var max_rec_n = 10;//Number of recommended activities that will be shown at each time (added by @Jordan)
+var max_rec_n = 7;//Number of recommended activities that will be shown at each time (added by @Jordan)
 var map_topic_max_rank_rec_act = {};
 var rank_recommended_activities = {}; //stores the rank of the recommended activities (0 - top ranked act...), if act_name is not on the keys the activity is not recommended
 var max_remedial_recommendations_per_topic = 3;
@@ -962,7 +962,7 @@ function actLstShow(doMe, doVs, doGrp) {
   state.vis.lastCellSel.cellIdxSel = state.vis.grid.cellIdxSel;
   state.vis.lastCellSel.cellSel = state.vis.grid.cellSel;
   state.vis.lastCellSel.topicIdx = state.vis.grid.topicIdx;
-  state.vis.lastCellSel.gridName = state.vis.grid.name;
+  state.vis.lastCellSel.gridName = state.vis.grid.dn;
 
   //Code added by @Jordan
   if($("#help-dlg").css("display")=="block"){
@@ -1341,7 +1341,7 @@ function actLstHide() {
   state.vis.grid.cellIdxSel = -1;
   state.vis.grid.cellSel    = null;
   state.vis.topicIdx        = -1;
-  state.vis.grid.name       = null;
+  state.vis.grid.dn       = null;
 //  state.vis.lastCellSel.doMe = false;
 //  state.vis.lastCellSel.doVs = false;
 //  state.vis.lastCellSel.doGrp = false;
@@ -2264,14 +2264,15 @@ function processData() {
   var all_resource_kcs = new Set()
   
   state.args.kcResouceIds.forEach(function(resource) {
-	
-  console.log(resource);
-	console.log(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat());
-	
-  var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
-	all_resource_kcs = new Set([...all_resource_kcs,...resource_kcs])
-  });
 
+    console.log(resource);
+    console.log(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat());
+    
+    var resource_kcs = new Set(data.topics.filter(topic => topic.id != 'AVG').map(function(a) {return a.activities[resource]}).flat().map(function(b){return b.kcs}).flat())
+    all_resource_kcs = new Set([...all_resource_kcs,...resource_kcs])
+  });
+  console.log("all_resource_kcs")
+  console.log(all_resource_kcs)
   
   data.kcs = data.kcs.filter(function(kc){return all_resource_kcs.has(kc.id)})
   //end @Kamil
@@ -2293,6 +2294,16 @@ function processData() {
     }
     concept_weights[kc_data.id]=kc_data;
   }
+
+  //update finalValue in data.kcs
+  data.kcs.forEach(kc => {
+    console.log("add additional info to kcs");
+    console.log(typeof kc.uk)
+    console.log(kc.uk)
+    kc.finalValue = Number(kc.uk) + (kc.edition ? editImpactValues.get(kc.edition) : 0);
+    kc.hasEdition =  kc.edition ? true : false;
+    console.log(kc);
+  });
 
   for(var i=0;i<data_topics.length;i++){
     topic_data = data_topics[i];
@@ -5923,12 +5934,12 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
   // Show the activities list for the cell being moused-over if LMB is held down:
   if (state.args.uiGridActLstMode && state.isMouseBtn1) {
     if ((gridName === "me" || gridName === "mevsgrp" || gridName === "grp")) {
-      if (topicIdx === state.vis.topicIdx && state.vis.grid.name === gridName) return;  // the already-selected topic has been clicked (and on the same grid at that)
+      if (topicIdx === state.vis.topicIdx && state.vis.grid.dn === gridName) return;  // the already-selected topic has been clicked (and on the same grid at that)
       
       state.vis.grid.cellIdxSel = cellIdx;
       state.vis.grid.cellSel    = grpOutter;
       state.vis.topicIdx        = topicIdx;
-      state.vis.grid.name       = gridName;
+      state.vis.grid.dn       = gridName;
       
       if (state.vis.topicIdx === 0) return actLstHide();  // the average topic has been clicked or the already-selected topic has been clicked
       
@@ -6253,12 +6264,12 @@ function ehVisGridBoxClick(e, grpOutter) {
   if (state.args.uiGridActLstMode) {
     // (1.1) Topics grid:
     if ((gridName === "me" || gridName === "mevsgrp" || gridName === "grp")) {
-      if (topicIdx === state.vis.topicIdx && state.vis.grid.name === gridName) return;  // the already-selected topic has been clicked (and on the same grid at that)
+      if (topicIdx === state.vis.topicIdx && state.vis.grid.dn === gridName) return;  // the already-selected topic has been clicked (and on the same grid at that)
       
       state.vis.grid.cellIdxSel = cellIdx;
       state.vis.grid.cellSel    = grpOutter;
       state.vis.topicIdx        = topicIdx;
-      state.vis.grid.name       = gridName;
+      state.vis.grid.dn       = gridName;
       
       //alert("["+usrState+"]"+"["+grpState+"]");
       
@@ -6599,7 +6610,7 @@ function ehVisGridBoxClick(e, grpOutter) {
         state.vis.grid.cellIdxSel = cellIdx;
         state.vis.grid.cellSel    = grpOutter;
         state.vis.topicIdx        = topicIdx;
-        state.vis.grid.name       = gridName;
+        state.vis.grid.dn       = gridName;
         
         // ui.nav.tabs.tabs.find(".ui-tabs-nav").children(0).children(0)[0].innerHTML = "TOPIC: " + topic.name;
           // [I've since removed the top tabs altogether, but I kept this code in case this comes in handy later]
@@ -6620,7 +6631,7 @@ function ehVisGridBoxClick(e, grpOutter) {
         state.vis.grid.cellIdxSel = -1;
         state.vis.grid.cellSel    = null;
         state.vis.topicIdx        = -1;
-        state.vis.grid.name       = null;
+        state.vis.grid.dn       = null;
         
         //ui.nav.tabs.tabs.find(".ui-tabs-nav").children(0).children(0)[0].innerHTML = "TOPICS";
           // TODO: Set page header
@@ -7870,8 +7881,9 @@ function showLearningPathSection() {
 }
 
 function generateLearningPath() {
-    createLearningPathGraph();
-    alert("generateLearningPath")
+    //createLearningPathGraph();
+    //alert("generateLearningPath")
+    
     const generateRecFunction = "generate" + state.args.learningGoal;
     console.log(generateRecFunction)
     if (typeof window[generateRecFunction] === 'function') {
@@ -8116,14 +8128,14 @@ function createLearningPathGraph() {
   // Add text to nodes
   nodes.append('text')
     .text(function(d) {
-      return d.name.split(' ')[0]; // Show first word only
+      return d.dn.split(' ')[0]; // Show first word only
     })
     .attr('class', 'learning-path-node text');
   
   // Add tooltips
   nodes.append('title')
     .text(function(d) {
-      return d.name;
+      return d.dn;
     });
 }
 
@@ -8186,6 +8198,7 @@ function createConceptsBarChart() {
     const uk = concept.uk || 0;
     const edition = editImpactValues.get(concept.edition) || 0;
     const finalValue = uk + edition;
+    const selectedForRec = concept.selectedForRec || false;
     return {
       id: concept.id,
       name: concept.dn || `Concept ${index + 1}`,
@@ -8193,7 +8206,7 @@ function createConceptsBarChart() {
       edition: edition,
       finalValue: finalValue,
       hasEdition: edition !== 0,
-      selectedForRec: concept['selected-for-rec'] || false
+      selectedForRec: selectedForRec
     };
   });
 
@@ -8201,82 +8214,17 @@ function createConceptsBarChart() {
   //chartData.sort((a, b) => b.finalValue - a.finalValue);
 
   // Find max value for scaling
-  const maxValue = Math.max(1, ...chartData.map(d => d.finalValue));
+  //const maxValue = Math.max(1, ...chartData.map(d => d.finalValue));
 
   // Create chart
   const chart = document.createElement('div');
   chart.className = 'concepts-bar-chart-html';
 
-  chartData.forEach(d => {
-    const row = document.createElement('div');
-    row.className = 'concept-bar-row';
+  //chartData.forEach(d => {
+  data.kcs.forEach(d=> {
 
-    // Checkbox
-    const checkbox = document.createElement('span');
-    checkbox.className = 'concept-checkbox-html' + (d.selectedForRec ? ' checked' : '');
-    checkbox.innerHTML = d.selectedForRec ? '✔' : '';
-    checkbox.onclick = function() {
-      d.selectedForRec = !d.selectedForRec;
-      const kcsItem = data.kcs.find(k => k.id == d.id);
-      if (kcsItem) kcsItem['selected-for-rec'] = d.selectedForRec;
-      checkbox.className = 'concept-checkbox-html' + (d.selectedForRec ? ' checked' : '');
-      checkbox.innerHTML = d.selectedForRec ? '✔' : '';
-    };
-    row.appendChild(checkbox);
-
-    // Label
-    const label = document.createElement('span');
-    label.className = 'concept-label-html';
-    label.title = d.name;
-    label.innerText = d.name.length > 12 ? d.name.substring(0, 12) + '...' : d.name;
-    label.onclick = function() {
-      checkbox.onclick();
-    };
-    row.appendChild(label);
-
-    // Bar container
-    const barContainer = document.createElement('div');
-    barContainer.className = 'bar-container-html';
-
-    // Original value bar (if edition exists)
-    if (d.hasEdition) {
-      const origBar = document.createElement('div');
-      origBar.className = 'bar-original-html';
-      origBar.style.width = (d.uk / maxValue * 100) + '%';
-      barContainer.appendChild(origBar);
-    }
-
-    // Main bar (final value)
-    const mainBar = document.createElement('div');
-    mainBar.className = 'bar-main-html';
-    mainBar.style.width = (d.finalValue / maxValue * 100) + '%';
-    barContainer.appendChild(mainBar);
-
-    // Edition bar (positive)
-    if (d.edition > 0) {
-      const editionBar = document.createElement('div');
-      editionBar.className = 'bar-edition-positive-html';
-      editionBar.style.width = (d.edition / maxValue * 100) + '%';
-      editionBar.style.left = (d.uk / maxValue * 100) + '%';
-      barContainer.appendChild(editionBar);
-    }
-
-    // Edition bar (negative)
-    if (d.edition < 0) {
-      const editionBar = document.createElement('div');
-      editionBar.className = 'bar-edition-negative-html';
-      editionBar.style.width = (Math.abs(d.edition) / maxValue * 100) + '%';
-      editionBar.style.left = (d.finalValue / maxValue * 100) + '%';
-      barContainer.appendChild(editionBar);
-    }
-
-    // Value label
-    const valueLabel = document.createElement('span');
-    valueLabel.className = 'concept-value-html';
-    valueLabel.innerText = `${Math.round(d.finalValue * 100)}%`;
-    barContainer.appendChild(valueLabel);
-
-    row.appendChild(barContainer);
+    // row.appendChild(barContainer);
+    let row = createConceptBarRow(d);
     chart.appendChild(row);
   });
 
@@ -8292,5 +8240,137 @@ function createConceptsBarChart() {
   chart.appendChild(legend);
 
   chartContainer.appendChild(chart);
+}
+
+function createConceptBarRow(d, label_top = false) {
+    d.finalValue = d.uk + (editImpactValues.get(d.edition) || 0);
+    if (d.finalValue > 1) d.finalValue = 1;
+    if (d.finalValue < 0) d.finalValue = 0;
+
+    // Outer row: vertical stack
+    const row = document.createElement('div');
+    row.className = 'concept-bar-row-html';
+    row.style.display = 'flex';
+    row.style.flexDirection = 'column';
+    row.style.gap = '2px';
+
+    // First line: label+checkbox and bar, side by side
+    const firstLine = document.createElement('div');
+    firstLine.style.display = 'flex';
+    firstLine.style.alignItems = 'center';
+    firstLine.style.gap = '6px';
+
+    // Label container with fixed width
+    const labelContainer = document.createElement('div');
+    labelContainer.style.width = '100px';
+    labelContainer.style.flexShrink = '0';
+    labelContainer.style.overflow = 'hidden';
+    labelContainer.style.textOverflow = 'ellipsis';
+    labelContainer.style.whiteSpace = 'nowrap';
+
+    // Checkbox
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'concept-checkbox-html ' + d.n + '-checkbox';
+    checkbox.checked = d.selectedForRec;
+    checkbox.id = `concept-${d.id}`;
+    checkbox.onclick = function() {
+        d.selectedForRec = checkbox.checked;
+        const kcsItem = data.kcs.find(k => k.id == d.id);
+        if (kcsItem) kcsItem['selected-for-rec'] = d.selectedForRec;
+        const checkboxes = document.querySelectorAll('.' + d.n + '-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+    };
+    labelContainer.appendChild(checkbox);
+
+    // Label
+    const label = document.createElement('span');
+    label.className = 'concept-label-html';
+    label.title = d.dn;
+    if (d.dn.length > 18) {
+        let splitIdx = d.dn.lastIndexOf(' ', 18);
+        if (splitIdx === -1) splitIdx = 18;
+        label.innerHTML = d.dn.slice(0, splitIdx) + '<br>' + d.dn.slice(splitIdx).trim();
+    } else {
+        label.innerText = d.dn;
+    }
+    label.onclick = function() {
+        checkbox.onclick();
+    };
+    labelContainer.appendChild(label);
+
+    // Bar container
+    const barContainer = document.createElement('div');
+    barContainer.className = 'bar-container-html';
+    barContainer.style.flex = '1';
+
+    const mainBar = document.createElement('div');
+    mainBar.className = 'bar-main-html';
+    mainBar.style.height = "14px";
+    mainBar.style.width = (d.uk * 100) + '%';
+    barContainer.appendChild(mainBar);
+
+    if (d.hasEdition && d.edition > 0) {
+        mainBar.style.width = (d.uk * 100) + '%';
+        const editionBar = document.createElement('div');
+        editionBar.className = 'concept-edition-bar';
+        editionBar.style.position = 'absolute';
+        editionBar.style.height = '14px';
+        editionBar.style.top = '0';
+        editionBar.style.left = (d.uk * 100) + '%';
+        editionBar.style.background = '#43a047';
+        editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
+        editionBar.style.width = (editImpactValues.get(d.edition) * 100) + '%';
+        editionBar.style.borderRadius = '0 4px 4px 0';
+        barContainer.appendChild(editionBar);
+    }
+    if (d.hasEdition && d.edition < 0) {
+        mainBar.style.width = (d.finalValue * 100) + '%';
+        const editionBar = document.createElement('div');
+        editionBar.className = 'bar-edition-negative-html';
+        editionBar.style.position = 'absolute';
+        editionBar.style.height = '14px';
+        editionBar.style.top = '0';
+        editionBar.style.left = (d.finalValue * 100) + '%';
+        editionBar.style.width = (Math.abs(editImpactValues.get(d.edition)) * 100) + '%';
+        editionBar.style.background = '#e57373';
+        editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
+        editionBar.style.borderRadius = '0 4px 4px 0';
+        barContainer.appendChild(editionBar);
+    }
+
+    const valueLabel = document.createElement('span');
+    valueLabel.className = 'concept-value-html';
+    valueLabel.innerText = `${Math.round(d.finalValue * 100)}%`;
+    barContainer.appendChild(valueLabel);
+
+    // Add labelContainer and barContainer to the first line
+    firstLine.appendChild(labelContainer);
+    firstLine.appendChild(barContainer);
+
+    // Add the first line to the row
+    row.appendChild(firstLine);
+
+    // If label_top and infoLabel needed, add infoLabel in a new line
+    if (label_top){
+      const infoLabelWrapper = document.createElement('div');
+      infoLabelWrapper.style.width = '100%';
+      infoLabelWrapper.style.marginTop = '2px';
+      const infoLabel = document.createElement('span');
+      infoLabel.className = 'concept-info-html';
+      if(state.args.learningGoal == "RemedialRecommendations") {
+        infoLabel.innerText = 'Success rate: ' + (d.sr * 100) + '%';
+      }else{
+        if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
+          infoLabel.innerText = 'Attempts: ' + (d.a);;
+        }
+      }
+      infoLabelWrapper.appendChild(infoLabel);
+      row.appendChild(infoLabelWrapper);
+    }
+
+    return row;
 }
 
