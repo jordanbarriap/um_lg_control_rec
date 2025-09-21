@@ -7,6 +7,15 @@ var success_rate_limit = .5
 var knowledge_level_limit = .5
 var max_num_recs = 9
 
+//Threshold and definitions for the explanations
+var mastery_concepts = 0;
+var mastery_threshold = .95;
+var proficiency_concepts = 0;
+var proficiency_threshold = .75;
+var good_concepts = 0;
+var good_threshold = .5;
+var ok_concepts = 0;
+
 
 function generateLearningPathGraph(learningPathObj, containerId = 'learning-path-graph') {
     // Remove previous graph if exists
@@ -183,22 +192,22 @@ function generateLearningPathGraph(learningPathObj, containerId = 'learning-path
 function prepareFillKnowledgeGapsRecommendations(){
 	alert("prepare fill knowledge gaps recommendations");
 	sortKCSByLearningGoal(1)
-	setTopConceptsForRecommendations(4);
+	setTopConceptsForRecommendations(5);
 }
 
 function prepareRemedialRecommendations(){
 	alert("prepare remedial recommendations");
 	sortKCSByLearningGoal(0)
-	setTopConceptsForRecommendations(4);
+	setTopConceptsForRecommendations(5);
 }
 
 function prepareKeepMeUpWithTheClassRecommendations(){
 	alert("prepare remedial recommendations");
 	sortKCSByLearningGoal(2)
-	setTopConceptsForRecommendations(4);
+	setTopConceptsForRecommendations(5);
 }
 
-function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_sr,selected_kcs_ids){
+function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_proficiency,selected_kcs_ids){
 	var recommendations = [];
 	var topics = data_topics_acts_kcs;
 	var n_topics = topics.length;
@@ -208,6 +217,7 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 	console.log(selected_kcs_ids);
 
 	var ranking_acts_per_type = {}
+	var unique_list_rec_activities = []
 
 	for(var i=1; i<n_topics;i++){
 		var topic = topics[i];
@@ -233,9 +243,27 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 				console.log(activity)
 				var ratio_covered_selected_kcs = selected_kcs_ids.length > 0 ? covered.length / selected_kcs_ids.length : 0;
 				activity.ratio_covered_selected_kcs = ratio_covered_selected_kcs;
+
 				activity.topic_name = topic_name;
 				activity.topic_id = i;
+
+				explanation = ""
+				//Explanations about the target concepts covered
+				ratio_covered_selected_kcs = activity.ratio_covered_selected_kcs
+				if(ratio_covered_selected_kcs==1){
+					explanation+="This activity is recommended because it covers <span class='important-text'>all the concept(s) that you have not attempted yet and chose to focus on</span>.";
+				}else{
+					if(ratio_covered_selected_kcs>0.5){
+						explanation+="This activity is recommended because it covers <span class='important-text'>a good portion of the concept(s) that you have not attempted yet and chose to focus on</span>.";
+					}else{
+						if(ratio_covered_selected_kcs>0.0){
+							explanation+="This activity is recommended because it covers <span class='important-text'>at least one concept that you have not attempted yet and chose to focus on</span>.";
+						}
+					}
+				}
+				activity.explanation = explanation;
 				ranking_act_curr_type.push(activity);
+				unique_list_rec_activities.push(activity);
 			}
 			console.log("current type")
 			console.log(ranking_act_curr_type)
@@ -247,73 +275,137 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 			}
 		}
 	}
-
-	
 	
 	//sort each of the activities per source based on different criteria
-	//0. if not an example and not a quizpet, the candidate for recommendation should be activities that have not been solved correctly in the past
+	//0. if not an example and not a quizpet, the candidate for recommendation should be activities that have not been solved correctly in the past (p different than 1)
 	//1. Sort by ratio of covered selected kcs (higher the better) -> done
-	//2. Student should not be proficient in the target covered selected kcs (the lowest avg knowledge the better)
-	//3. Higher avg level of proficiency in the not target covered selected kcs (the higher the better)
+	//2. Student should not be proficient in the target covered selected kcs (the lowest avg knowledge the better) -> pending
+	//3. Higher avg level of proficiency in the non-target covered selected kcs (the higher the better) -> done
 	//4. Priority if the activity covers one or more concepts of the week
 
-	for (var resource_id in ranking_acts_per_type){
-		var ranking_acts = ranking_acts_per_type[resource_id];
-		// Sort by ratio_covered_selected_kcs descending
-		ranking_acts.sort(function(a, b) {
-			return (b.ratio_covered_selected_kcs || 0) - (a.ratio_covered_selected_kcs || 0);
+	// After all activities have been pushed to unique_list_rec_activities and before sorting:
+	unique_list_rec_activities.forEach(function(activity) {
+		// Get non-target KCs (those not in selected_kcs_ids)
+		var non_target_kcs = activity.kcs.filter(function(kc_id) {
+			return !selected_kcs_ids.includes(kc_id);
 		});
-		ranking_acts_per_type[resource_id] = ranking_acts;
-		console.log(resource_id + " ranking activities:");
-	}
 
-	console.log("Ranking activities per type:");
-	console.log(ranking_acts_per_type)
-	//Ejecucion -> quizpet
-	//ee615 -> pcex examples
-	//rec582 -> parsons
-	const max_num_rec_quizpet=3
-	const max_num_rec_examples=4
-	const max_num_rec_parsons=3
-
-	//final order in the recommended learning path
-	var final_recs ={"Ejecucion":{"order":1},"ee615":{"order":0},"rec582":{"order":2}}
-
-	for (var resource_id in ranking_acts_per_type){
-		var ranking_acts = ranking_acts_per_type[resource_id];
-		var resource_rec_acts =[]
-		if (ranking_acts.length>0){
-			if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion") || resource_id.includes("ee615")){
-				max_num_recs = max_num_rec_quizpet
+		// Calculate average uk for non-target KCs
+		var avg_uk_non_target = 0;
+		if (non_target_kcs.length > 0) {
+			var sum_uk = 0;
+			for (var nt = 0; nt < non_target_kcs.length; nt++) {
+				var kc_obj = data.kcs.find(function(d) { return d.id == non_target_kcs[nt]; });
+				sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? kc_obj.uk : 0;
 			}
-			if (resource_id.includes("Example") || resource_id.includes("ee615")){
-				max_num_recs = max_num_rec_examples
-			}
-			if (resource_id.includes("Parson") || resource_id.includes("rec582")){
-				max_num_recs = max_num_rec_parsons
-			}
-			for(var i=0;i<ranking_acts.length && i<max_num_recs;i++){
-				var rec_explanation = "This activity is recommended because it covers <b>"+ranking_acts[i].ratio_covered_selected_kcs+"</b> of the concept(s) that you have not attempted yet.";
-				if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion")){
-					rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
+			avg_uk_non_target = sum_uk / non_target_kcs.length;
+		}
+		activity.avg_uk_non_target = avg_uk_non_target;
+		console.log("Activity " + activity.id + " avg_uk_non_target: " + avg_uk_non_target);
+		
+		explanation_other_kcs_part=activity.explanation
+		if(avg_uk_non_target>=mastery_threshold){
+			explanation_other_kcs_part+="<li>, and also on average you <span class='level1-exp-text'>master</span> the other <span class='important-text'>concepts present in this activity</span>.</li>";
+		}else{
+			if(avg_uk_non_target>=proficiency_threshold){
+				explanation_other_kcs_part+="<li>, and also on average you are <span class='level2-exp-text'>proficient</span> in the other <span class='important-text'>concepts present in this activity</span>.</li>";
+			}else{
+				if(avg_uk_non_target>=good_threshold){
+					explanation_other_kcs_part+="<li>,and also on average you have a <span class='level3-exp-text'>good</span> understanding in the other <span class='important-text'>concepts present in this activity</span>.</li>";
+				}else{
+					explanation_other_kcs_part+="<li>and also, although it is low, your knowledge level on the other <span class='important-text'>concepts present in this activity</span> is one of the highest overall.</li>";
 				}
-				if (resource_id.includes("Example") || resource_id.includes("ee615")){
-					rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
-				}
-				if (resource_id.includes("Parson") || resource_id.includes("rec582")){
-					rec_explanation = rec_explanation + " It is a parsons problem that will help you practice these concepts.";
-				}
-				ranking_acts[i].explanation = rec_explanation;
-				resource_rec_acts.push(ranking_acts[i]);
 			}
 		}
-		var recs_obj = final_recs[resource_id]
-		recs_obj["recs"]=resource_rec_acts
-		final_recs[resource_id]=recs_obj
-	}
-	console.log("Final recommendations for fill knowledge gaps:");
-	console.log(final_recs)
-	return  final_recs
+		//Add the explanations about the concepts covered and overall proficiency in other topics
+		activity.explanation = explanation_other_kcs_part;
+
+		// Calculate weighted rank score
+		activity.rank_score = weight_kcs * activity.ratio_covered_selected_kcs + weight_proficiency * avg_uk_non_target;
+	});
+
+	// Now sort by rank_score descending
+	unique_list_rec_activities.sort(function(a, b) {
+		return (b.rank_score || 0) - (a.rank_score || 0);
+	});
+
+
+	// for (var resource_id in ranking_acts_per_type){
+	// 	var ranking_acts = ranking_acts_per_type[resource_id];
+	// 	// Sort by ratio_covered_selected_kcs descending
+	// 	ranking_acts.sort(function(a, b) {
+	// 		return (b.ratio_covered_selected_kcs || 0) - (a.ratio_covered_selected_kcs || 0);
+	// 	});
+	// 	ranking_acts_per_type[resource_id] = ranking_acts;
+	// 	console.log(resource_id + " ranking activities:");
+	// 	console.log(ranking_acts_per_type[resource_id])
+	// }
+
+	// console.log("Ranking activities per type:");
+	// console.log(ranking_acts_per_type)
+	// //Ejecucion -> quizpet
+	// //ee615 -> pcex examples
+	// //rec582 -> parsons
+	// const max_num_rec_quizpet=2
+	// const max_num_rec_examples=3
+	// const max_num_rec_challenges=2
+	// const max_num_rec_parsons=2
+	// const max_num_rec_pcrs =2
+
+	// //final order in the recommended learning path
+	// var final_recs ={"Ejecucion":{"order":1},"Ejemplos explicados":{"order":0},"rec582":{"order":2},"Codificacion":{"order":4},"Completa el codigo":{"order":3}}
+
+	// for (var resource_id in ranking_acts_per_type){
+	// 	var ranking_acts = ranking_acts_per_type[resource_id];
+	// 	var resource_rec_acts =[]
+	// 	console.log(resource_id + " final recommended activities:");
+	// 	if (ranking_acts.length>0){
+	// 		console.log("Max num recs for " + resource_id + ": " + ranking_acts.length);
+	// 		if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion") || resource_id.includes("ee615")){
+	// 			max_num_recs = max_num_rec_quizpet
+	// 		}
+	// 		if (resource_id.includes("Example") || resource_id.includes("Ejemplos explicados") || resource_id.includes("ee615")){
+	// 			max_num_recs = max_num_rec_examples
+	// 		}
+	// 		if (resource_id.includes("Parson") || resource_id.includes("rec582")){
+	// 			max_num_recs = max_num_rec_parsons
+	// 		}
+	// 		if(resource_id.includes("Codificacion")){
+	// 			max_num_recs = max_num_rec_pcrs
+	// 		}
+	// 		if(resource_id.includes("Completa el codigo")){
+	// 			max_num_recs = max_num_rec_challenges
+	// 		}
+	// 		for(var i=0;i<ranking_acts.length && i<max_num_recs;i++){
+	// 			console.log(i)
+	// 			var rec_explanation = "This activity is recommended because it covers <b>"+ranking_acts[i].ratio_covered_selected_kcs+"</b> of the concept(s) that you have not attempted yet.";
+	// 			if (resource_id.includes("Quizpet") || resource_id.includes("Ejecucion")){
+	// 				rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
+	// 			}
+	// 			if (resource_id.includes("Example") || resource_id.includes("ee615") || resource_id.includes("Ejemplos explicados")){
+	// 				rec_explanation = rec_explanation + " It is an example that will help you understand these concepts better.";
+	// 			}
+	// 			if (resource_id.includes("Parson") || resource_id.includes("rec582")){
+	// 				rec_explanation = rec_explanation + " It is a parsons problem that will help you practice these concepts.";
+	// 			}
+	// 			if (resource_id.includes("Codificacion")){
+	// 				rec_explanation = rec_explanation + " It is a coding problem that will help you practice these concepts.";
+	// 			}
+	// 			if (resource_id.includes("Completa el codigo")){
+	// 				rec_explanation = rec_explanation + " It is a code completion problem that will help you practice these concepts.";
+	// 			}
+	// 			ranking_acts[i].explanation = rec_explanation;
+	// 			resource_rec_acts.push(ranking_acts[i]);
+	// 		}
+	// 	}
+	// 	var recs_obj = final_recs[resource_id]
+	// 	console.log(recs_obj)
+	// 	recs_obj["recs"]=resource_rec_acts
+	// 	final_recs[resource_id]=recs_obj
+	// }
+	// console.log("Final recommendations for fill knowledge gaps:");
+	// console.log(final_recs)
+	return unique_list_rec_activities
 
 }
 
@@ -705,7 +797,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 	
 						ranked_activity = Object.assign({}, activity);
 						ranked_activity["rec_score"] = rec_score;
-						ranked_activity["topic"] = topic_name;
+						ranked_activity["topic_name"] = topic_name;
 						ranked_activity["explanation"] = rec_explanation;
 						recommendations.push(ranked_activity);
 					}
@@ -713,20 +805,8 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 			}
 		}
 	}
-	//Remove content that belongs to future 
+	//Remove content that belongs to future topics
 	recommendations.sort(compareActivities);
-
-	console.log("Remedial recommendation activities: ")
-	console.log(recommendations)
-
-	recommendations = recommendations.filter(function(rec) {
-		const topicObj = data.topics.find(t => t.id === rec.topic || t.name === rec.topic);
-		if (!topicObj || !topicObj.timeline) return true; // keep if no info
-		// keep if current or covered
-		console.log(rec)
-		console.log("current or old: "+(topicObj.timeline.covered || topicObj.timeline.current));
-		return topicObj.timeline.covered || topicObj.timeline.current;
-	});
 
 	return recommendations;
 }
@@ -1482,14 +1562,6 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 					var top_prerequisite_concepts = prerequisite_idfs.filter(function(d){return ids_act_prerequisites.has(d.conceptId);}).slice(0,top_num_concepts);
 					var top_outcome_concepts = outcome_idfs.filter(function(d){return ids_act_outcomes.has(d.conceptId);}).slice(0,top_num_concepts);
 
-					//Threshold and definitions for the explanations
-					var mastery_concepts = 0;
-					var mastery_threshold = .95;
-					var proficiency_concepts = 0;
-					var proficiency_threshold = .75;
-					var good_concepts = 0;
-					var good_threshold = .6;
-					var ok_concepts = 0;
 
 					var avg_k_prerequisite_concepts = 0;
 					var total_weight_prerequisites = 0;
@@ -1992,11 +2064,11 @@ function addRecommendationsToUI(){
 					var data_resource_id = data_resource ? data_resource.id:undefined;
 					var data_resource =  data_resource_id && mg_activities ? mg_activities[data_resource_id]:undefined;
 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
-					console.log(current_topic)
-					console.log(mg_activities)
-					console.log(d.resIdx)
-					console.log(data_resource)
-					console.log(d.actIdx)
+					// console.log(current_topic)
+					// console.log(mg_activities)
+					// console.log(d.resIdx)
+					// console.log(data_resource)
+					// console.log(d.actIdx)
 					//var mg_activity = data_resource ? data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]:undefined
 					console.log(mg_activity)
 					if(mg_activity) {
@@ -2130,7 +2202,6 @@ function addRecommendationsToUI(){
 					var mg_activity = data_resource ? data_resource[d.actIdx]:undefined;
 					//var mg_activity = data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]
 					if(mg_activity) {
-						console.log("M G ACT")
 						//var act_id = mg_activity.id
 						//var act_name = d.actName;
 						var act_is_recommended = d.seq>0 ? true : false;
