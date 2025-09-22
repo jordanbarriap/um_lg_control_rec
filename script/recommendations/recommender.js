@@ -2460,7 +2460,7 @@ function setTopConceptsForRecommendations(num_concepts){
 		kc.name = kc.dn
 		kc.selectedForRec = true; // Default to selected
 
-        const row = createConceptBarRow(kc, true)
+        const row = createConceptBarRow(kc, label_top=true, add_checkbox=true);
 		
 		container.appendChild(row);
 

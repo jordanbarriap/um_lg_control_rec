@@ -1,50 +1,110 @@
-/**
- * TODO
- *   Widget
- *     Utilize overlays to display activities (like to be implemented in the main interface)
- *     Grant immediate (i.e., in the same window) access to activities
- *       There will not be enough room to show activities but Peter wants it that way
- *     Ask server what to provide back
- *   
- *   Timeline
- *     Make the name row hideable
- *   
- *   Adding overlay
- *     Make topic clickable and they go to the activities grids [done]
- *     Topic grids
- *       Click on questions cell shows only questions overlay [done]
- *       Click on average cell shows all activities overlay [done]
- *     Do not show cells for topics with no activities [todo]
- *     On questions grid (i.e., resource-focus mode)
- *       Show overlays as a grid with the color scheme of the row clicked (me, mevsgrp, grp) [done]
- *     Overlay itself
- *       Same grid as the topic one but smaller cells if possible (names of activites on the top) [done]
- *     TODO
- *       Redraw the overlay upon closing the activity window
- *       Hide the overlay when the user "clicks away"
- *       Add a small bar chart for activities (that would require new design because currently there is only one bar chart SVG to which every grid refers to)
- *       Highlight the entire column for which activities are being shown to make it clear to users what they are looking at
- *         Cell shadow could be good and natural here since the overlay has a shadow as well
- *       Experiment with using color to bind the overlay to the activity window (currently, orange #faa200 is used in that window, but only when recommended activities are shown, i.e., after a studnet's fuck up)
- *   Sort others by the resource upon selecting it
- *   
- *   Make students choice of if they are anonymous
- *   Add help
- *   Bar chart is too far to the right for grids with column names. See if this can easily be changed.
- * 
- * URLs
- *    1 : http://adapt2.sis.pitt.edu/um-vis-dev/index.html?usr=yam14&grp=IS172013Fall&sid=test&cid=1&ui-tbar-mode-vis=0&ui-tbar-rep-lvl-vis=0&ui-tbar-topic-size-vis=0
- *   16 : http://adapt2.sis.pitt.edu/um-vis-dev/index.html?usr=lmo17&grp=IS172013Fall&sid=test&cid=1&ui-tbar-mode-vis=0&ui-tbar-rep-lvl-vis=0&ui-tbar-topic-size-vis=0
- */
+
+// --- Internationalization (i18n) setup ---
+const LANGUAGES = {
+  en: {
+    appName: "MasteryGrids",
+    actLoadRec_notFound: "Due to an error the activity you have selected is not available at this time despite being on the recommended list. Please select a different activity.",
+    othersTitle: "Students in the class",
+    noConceptsSelected: "Learning content recommendations cannot be generated if no concept to focus on have been selected by you",
+    loading: "Loading...",
+    help: "Help",
+    barChartTitle: "Mastery Bar Chart",
+    recommendedActivities: "Recommended Activities",
+    selectLanguage: "Select Language",
+    english: "English",
+    spanish: "Spanish",
+    close: "Close",
+    confirm: "Confirm",
+    cancel: "Cancel",
+    tableCreation: "Table Creation",
+    tableDeletionAlteration: "Table Deletion and Alteration",
+    keyConstraints: "Key Constraints",
+    tupleInsertion: "Tuple Insertion",
+    tupleDeletion: "Tuple Deletion",
+    tupleUpdate: "Tuple Update",
+    generalConstraints: "General Constraints",
+    derivedRelationsViews: "Derived Relations and Views",
+    noRecommendationInTopic: "There is no recommendation in this topic.",
+  learningGoalsLabel: "1. What to focus on in this study session?",
+  seeMoreConcepts: "See more concepts"
+
+  },
+  es: {
+    appName: "MasteryGrids",
+    actLoadRec_notFound: "Debido a un error, la actividad que ha seleccionado no está disponible en este momento a pesar de estar en la lista de recomendados. Por favor, seleccione una actividad diferente.",
+    othersTitle: "Estudiantes en la clase",
+    noConceptsSelected: "No se pueden generar recomendaciones de contenido de aprendizaje si no ha seleccionado ningún concepto en el que enfocarse",
+    loading: "Cargando...",
+    help: "Ayuda",
+    barChartTitle: "Gráfico de Dominio",
+    recommendedActivities: "Actividades Recomendadas",
+    selectLanguage: "Seleccionar idioma",
+    english: "Inglés",
+    spanish: "Español",
+    close: "Cerrar",
+    confirm: "Confirmar",
+    cancel: "Cancelar",
+    tableCreation: "Creación de tablas",
+    tableDeletionAlteration: "Eliminación y alteración de tablas",
+    keyConstraints: "Restricciones de clave",
+    tupleInsertion: "Inserción de tuplas",
+    tupleDeletion: "Eliminación de tuplas",
+    tupleUpdate: "Actualización de tuplas",
+    generalConstraints: "Restricciones generales",
+    derivedRelationsViews: "Relaciones derivadas y vistas",
+    noRecommendationInTopic: "No hay recomendaciones en este tema.",
+  learningGoalsLabel: "1. ¿En qué deseas enfocarte en esta sesión de estudio?",
+  seeMoreConcepts: "Ver más conceptos"
+  }
+};
+
+// Example usage for new keys:
+// LANGUAGES[currentLang].loading
+// LANGUAGES[currentLang].help
+// LANGUAGES[currentLang].barChartTitle
+// LANGUAGES[currentLang].recommendedActivities
+// LANGUAGES[currentLang].selectLanguage
+// LANGUAGES[currentLang].english
+// LANGUAGES[currentLang].spanish
+// LANGUAGES[currentLang].close
+// LANGUAGES[currentLang].confirm
+// LANGUAGES[currentLang].cancel
+// LANGUAGES[currentLang].tableCreation
+// LANGUAGES[currentLang].tableDeletionAlteration
+// LANGUAGES[currentLang].keyConstraints
+// LANGUAGES[currentLang].tupleInsertion
+// LANGUAGES[currentLang].tupleDeletion
+// LANGUAGES[currentLang].tupleUpdate
+// LANGUAGES[currentLang].generalConstraints
+// LANGUAGES[currentLang].derivedRelationsViews
+let currentLang = 'es';
+function setLanguage(lang) {
+  if (LANGUAGES[lang]) {
+    currentLang = lang;
+    updateAllText();
+  }
+}
+
+function updateAllText() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (LANGUAGES[currentLang][key]) {
+      el.textContent = LANGUAGES[currentLang][key];
+    }
+  });
+}
+
+// Call this after DOMContentLoaded and after any language change
+document.addEventListener('DOMContentLoaded', updateAllText);
 
 
 var CONST = {
-  appName    : "MasteryGrids",
+  appName    : LANGUAGES[currentLang].appName,
   cookies    : { days: 355 },
   defTopN    : 10,  // the default 'n' in the "Top n" group
   log        : { sep01: ",", sep02: ":" },  // separators used for logging
   msg        : {
-    actLoadRec_notFound: "Due to an error the activity you have selected is not available at this time despite being on the recommended list. Please select a different activity."
+    actLoadRec_notFound: LANGUAGES[currentLang].actLoadRec_notFound
   },
   scrollTime : 500,  // after how much time log scrolling position [ms]
   vis        : {
@@ -4219,7 +4279,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   
   if(data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to be checked by a parameter
 	  var titleTr = $$("tr", tbl);
-	  var recommendationTitle = $$("td",titleTr, null, "rec-title", 'Recommended Activities')
+  var recommendationTitle = $$("td",titleTr, null, "rec-title", LANGUAGES[currentLang].recommendedActivities)
 	  var allActivitiesTitle = $$("td",titleTr, null, "rec-title", 'All Activities')
 	  $setAttr(recommendationTitle, { colspan: 1 });
 	  $setAttr(allActivitiesTitle, { colspan: 1 });
@@ -4344,16 +4404,16 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 						$(orderedList).append(recommendationItem);
           })
 			} else {
-				var topicMastered = document.createElement('div');
-				$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
-				$(recommendationtr).append(topicMastered);  
+  var topicMastered = document.createElement('div');
+  $(topicMastered).html(LANGUAGES[currentLang].noRecommendationInTopic).addClass('no_recommendation');
+  $(recommendationtr).append(topicMastered);  
 			}
 
 				
 		} else {
-			var topicMastered = document.createElement('div');
-			$(topicMastered).html("There is no recommendation\nin this topic.").addClass('no_recommendation');
-			$(recommendationtr).append(topicMastered);  
+    var topicMastered = document.createElement('div');
+    $(topicMastered).html(LANGUAGES[currentLang].noRecommendationInTopic).addClass('no_recommendation');
+    $(recommendationtr).append(topicMastered);  
 		}
 	} else if(data.configprops.agg_proactiverec_method=="random"){
     var recommendedActivities = $.grep($.map( gridData.series, function(n){
@@ -7485,7 +7545,7 @@ count = function (ary, classifier) {
 //     // Add a title for the sidebar
 //     var titleDiv = document.createElement('div');
 //     titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
-//     titleDiv.textContent = 'Programming Concepts';
+//     titleDiv.textContent = LANGUAGES[currentLang].barChartTitle;
 //     divEditSm.appendChild(titleDiv);
     
 //     concepts.forEach(function(concept, index) {
@@ -7530,62 +7590,99 @@ function populateConceptsDiv(concepts) {
     divEditSm.appendChild(titleDiv);
     divEditSm.appendChild(descriptionSpan);
 
-    concepts.forEach(function(concept, index) {
+    // --- Add Less/More confident labels ---
+    var confidenceLabelsDiv = document.createElement('div');
+    confidenceLabelsDiv.style.display = 'flex';
+    confidenceLabelsDiv.style.justifyContent = 'space-between';
+    confidenceLabelsDiv.style.margin = '10px 0 5px 0';
 
+    var lessConfidentLabel = document.createElement('span');
+    lessConfidentLabel.textContent = 'Less confident';
+    lessConfidentLabel.style.fontSize = '13px';
+    lessConfidentLabel.style.color = '#888';
+    lessConfidentLabel.style.textAlign = 'left';
+
+    var moreConfidentLabel = document.createElement('span');
+    moreConfidentLabel.textContent = 'More confident';
+    moreConfidentLabel.style.fontSize = '13px';
+    moreConfidentLabel.style.color = '#888';
+    moreConfidentLabel.style.textAlign = 'right';
+
+    confidenceLabelsDiv.appendChild(lessConfidentLabel);
+    confidenceLabelsDiv.appendChild(moreConfidentLabel);
+    divEditSm.appendChild(confidenceLabelsDiv);
+    // --- End labels ---
+
+
+    const max_percentage_concepts_to_show = 0.1; // Show at most 10% of the concepts
+    const max_num_concepts_to_show = 4; // Show at most 4 concepts
+
+    // --- SEE MORE CONCEPTS PATCH START ---
+    const conceptItems = [];
+    concepts.forEach(function(concept, index) {
         var conceptItem = document.createElement('div');
         conceptItem.className = 'concept-item';
-        conceptItem.style.display = 'flex';
+        if (index < max_num_concepts_to_show) {
+            conceptItem.style.display = 'flex';
+        } else {
+            conceptItem.style.display = 'flex';
+            conceptItem.style.overflow = 'hidden';
+            conceptItem.style.maxHeight = '0px';
+            conceptItem.style.opacity = '0';
+            conceptItem.style.transition = 'max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1)';
+        }
         conceptItem.style.alignItems = 'center';
         conceptItem.style.marginBottom = '10px';
 
-        // Concept name
-        var nameDiv = document.createElement('div');
-        nameDiv.className = 'concept-name';
-        nameDiv.textContent = concept.dn;
-        nameDiv.style.flex = '1';
-        //conceptItem.appendChild(nameDiv);
+        var row = createConceptBarRow(concept, label_top=true);
 
-        // Bar chart container
-        var barContainer = document.createElement('div');
-        barContainer.className = 'concept-bar-container';
-        barContainer.style.display = 'flex';
-        barContainer.style.alignItems = 'center';
-        barContainer.style.marginRight = '10px';
+        // // Concept name (title per row)
+        // //if (index < max_num_concepts_to_show) {
+        // var nameDiv = document.createElement('div');
+        // nameDiv.className = 'concept-name';
+        // nameDiv.textContent = concept.dn;
+        // nameDiv.style.flex = '1';
+        // nameDiv.style.fontWeight = 'bold';
+        // nameDiv.style.marginRight = '10px';
+        // conceptItem.appendChild(nameDiv);
+        // //}
 
-        var bar = document.createElement('div');
-        bar.className = 'concept-bar';
+        // // Bar chart container
+        // var barContainer = document.createElement('div');
+        // barContainer.className = 'concept-bar-container';
+        // barContainer.style.display = 'flex';
+        // barContainer.style.alignItems = 'center';
+        // barContainer.style.marginRight = '10px';
 
-        var finalBarValue=0
-        
-        if(Object.hasOwn(state.args.editSM,concept.id) && state.args.editSM[concept.id]<0){
-          var current_edition = state.args.editSM[concept.id]
-          finalBarValue = (concept.uk+editImpactValues.get(current_edition))<0 ? 0 : (concept.uk+editImpactValues.get(current_edition));
-          bar.style.width = (finalBarValue * 100) + '%';
-        }else{
-          finalBarValue = concept.uk;
-          bar.style.width = (concept.uk * 100) + '%';
-        }
-        bar.style.height = '16px';
-        bar.style.background = '#2196f3';
-        bar.style.borderRadius = '0px';
-        bar.style.marginRight = '0px';
+        // var bar = document.createElement('div');
+        // bar.className = 'concept-bar';
 
-        var valueDiv = document.createElement('div');
-        valueDiv.className = 'concept-value';
-        valueDiv.textContent = Math.round(concept.uk * 100) + '%';
-        valueDiv.style.marginLeft = '4px';
+        // var finalBarValue=0
+        // if(Object.hasOwn(state.args.editSM,concept.id) && state.args.editSM[concept.id]<0){
+        //   var current_edition = state.args.editSM[concept.id]
+        //   finalBarValue = (concept.uk+editImpactValues.get(current_edition))<0 ? 0 : (concept.uk+editImpactValues.get(current_edition));
+        //   bar.style.width = (finalBarValue * 100) + '%';
+        // }else{
+        //   finalBarValue = concept.uk;
+        //   bar.style.width = (concept.uk * 100) + '%';
+        // }
+        // bar.style.height = '16px';
+        // bar.style.background = '#2196f3';
+        // bar.style.borderRadius = '0px';
+        // bar.style.marginRight = '0px';
 
-        //barContainer.appendChild(bar);
-        //barContainer.appendChild(valueDiv);
-        //conceptItem.appendChild(barContainer);
+        // var valueDiv = document.createElement('div');
+        // valueDiv.className = 'concept-value';
+        // valueDiv.textContent = Math.round(concept.uk * 100) + '%';
+        // valueDiv.style.marginLeft = '4px';
 
-        // Actions container (thumbs up/down)
-        var actionsDiv = document.createElement('div');
-        actionsDiv.className = 'concept-actions';
-        actionsDiv.style.display = 'flex';
-        actionsDiv.style.alignItems = 'center';
+        // // Actions container (thumbs up/down)
+        // var actionsDiv = document.createElement('div');
+        // actionsDiv.className = 'concept-actions';
+        // actionsDiv.style.display = 'flex';
+        // actionsDiv.style.alignItems = 'center';
 
-        // Thumbs down button
+        // // Thumbs down button
         var thumbsDownBtn = document.createElement('button');
         thumbsDownBtn.className = 'thumbs-btn thumbs-down';
         thumbsDownBtn.innerHTML = '<span class="thumbs-icon">➖</span>';//👎
@@ -7600,54 +7697,43 @@ function populateConceptsDiv(concepts) {
         thumbsUpBtn.style.transition = 'background 0.2s';
         thumbsUpBtn.dataset.clickCount = '0';
 
-        barContainer.appendChild(bar);
-        barContainer.appendChild(valueDiv);
+        //barContainer.appendChild(bar);
+        //barContainer.appendChild(valueDiv);
 
         conceptItem.appendChild(thumbsDownBtn);
-        
-        conceptItem.appendChild(barContainer);
-
+        conceptItem.appendChild(row);
 
         // Color arrays for up/down
-        // Replace the color arrays for up/down with lighter colors
         var upColors = ['#a5d6a7', '#81c784', '#66bb6a'];      // lighter greens
         var downColors = ['#ef9a9a', '#e57373', '#ef5350'];  
 
-        if(Object.hasOwn(state.args.editSM,concept.id)){
-          var current_edition = state.args.editSM[concept.id];
-          console.log("concept has been edited before "+concept.id+" val "+current_edition)
-          if(current_edition>0){
-            thumbsUpBtn.style.background = upColors[current_edition-1];
-            thumbsUpBtn.style.color = '#fff';
-
-            // Green edition bar with hatching
-            var editionBar = document.createElement('div');
-            editionBar.className = 'concept-edition-bar';
-            editionBar.style.height = '16px';
-            //editionBar.style.borderRadius = '4px';
-            editionBar.style.marginLeft = '0px';
-            editionBar.style.background = '#43a047'; // green
-            editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
-editionBar.style.width = '20%';
-            
-            barContainer.appendChild(editionBar);
-          }
-          if(current_edition<0){
-            thumbsDownBtn.style.background = downColors[(current_edition*-1)-1];
-            thumbsDownBtn.style.color = '#fff';
-
-            // Red edition bar with hatching
-            var editionBarRed = document.createElement('div');
-            editionBarRed.className = 'concept-edition-bar';
-            editionBarRed.style.height = '16px';
-            //editionBarRed.style.borderRadius = '4px';
-            editionBarRed.style.marginLeft = '0px';
-            editionBarRed.style.background = '#e57373'; // red
-            editionBarRed.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
-            editionBarRed.style.width = (concept.uk+editImpactValues.get(current_edition)<0) ? (concept.uk*100)+"%": ((editImpactValues.get(current_edition)*-1)*100)+'%';
-            barContainer.appendChild(editionBarRed);
-          }
-        }
+        // if(Object.hasOwn(state.args.editSM,concept.id)){
+        //   var current_edition = state.args.editSM[concept.id];
+        //   if(current_edition>0){
+        //     thumbsUpBtn.style.background = upColors[current_edition-1];
+        //     thumbsUpBtn.style.color = '#fff';
+        //     var editionBar = document.createElement('div');
+        //     editionBar.className = 'concept-edition-bar';
+        //     editionBar.style.height = '16px';
+        //     editionBar.style.marginLeft = '0px';
+        //     editionBar.style.background = '#43a047'; // green
+        //     editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
+        //     editionBar.style.width = (concept.uk+editImpactValues.get(current_edition)>1) ? (100-(concept.uk*100))+"%": ((editImpactValues.get(current_edition))*100)+'%';
+        //     barContainer.appendChild(editionBar);
+        //   }
+        //   if(current_edition<0){
+        //     thumbsDownBtn.style.background = downColors[(current_edition*-1)-1];
+        //     thumbsDownBtn.style.color = '#fff';
+        //     var editionBarRed = document.createElement('div');
+        //     editionBarRed.className = 'concept-edition-bar';
+        //     editionBarRed.style.height = '16px';
+        //     editionBarRed.style.marginLeft = '0px';
+        //     editionBarRed.style.background = '#e57373'; // red
+        //     editionBarRed.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
+        //     editionBarRed.style.width = (concept.uk+editImpactValues.get(current_edition)<0) ? (concept.uk*100)+"%": ((editImpactValues.get(current_edition)*-1)*100)+'%';
+        //     barContainer.appendChild(editionBarRed);
+        //   }
+        // }
 
         // Click handler for thumbs up
         thumbsUpBtn.onclick = function() {
@@ -7659,7 +7745,28 @@ editionBar.style.width = '20%';
             handleThumbsClick(concept.id,"up")
             this.style.color = '#fff';
             if(current_max_level>=0){
+              //already positive or zero
               this.style.background = upColors[current_max_level];
+              var editionBarWidth = editImpactValues.get(current_edition)*100;
+              // Remove any existing edition bar in this barContainer
+              var barContainer = this.parentElement;
+              var oldEditionBar = barContainer.querySelector('.concept-edition-bar');
+              if (oldEditionBar) barContainer.removeChild(oldEditionBar);
+              // Create new edition bar
+              var editionBar = document.createElement('div');
+              editionBar.className = 'concept-edition-bar';
+              editionBar.style.height = '16px';
+              editionBar.style.marginLeft = '0px';
+              editionBar.style.background = '#43a047'; // green
+              editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
+              editionBar.style.width = '0%';
+              editionBar.style.left = (concept.uk*100)+'%';
+              editionBar.style.transition = 'width 0.5s cubic-bezier(0.4,0,0.2,1)';
+              barContainer.appendChild(editionBar);
+              // Animate width
+              setTimeout(function() {
+                editionBar.style.width = editionBarWidth + '%';
+              }, 10);
             }else{
               if(current_max_level==-1){
                 thumbsDownBtn.style.background = 'none';
@@ -7695,12 +7802,31 @@ editionBar.style.width = '20%';
         };
         conceptItem.appendChild(thumbsUpBtn);
 
-        //actionsDiv.appendChild(thumbsDownBtn);
-        //actionsDiv.appendChild(thumbsUpBtn);
-        //conceptItem.appendChild(actionsDiv);
-        divEditSm.appendChild(nameDiv);
         divEditSm.appendChild(conceptItem);
+        conceptItems.push(conceptItem);
     });
+
+    // Add 'See more concepts' button if needed
+  if (concepts.length > max_num_concepts_to_show) {
+    var seeMoreBtn = document.createElement('button');
+    seeMoreBtn.textContent = LANGUAGES[currentLang].seeMoreConcepts || 'See more concepts';
+    seeMoreBtn.style.margin = '10px auto';
+    seeMoreBtn.style.display = 'block';
+    seeMoreBtn.onclick = function() {
+      conceptItems.forEach(function(item, idx) {
+        if (idx >= max_num_concepts_to_show) {
+          item.style.display = 'flex';
+          // Force reflow for transition
+          void item.offsetWidth;
+          item.style.maxHeight = '100px';
+          item.style.opacity = '1';
+        }
+      });
+      seeMoreBtn.style.display = 'none';
+    };
+    divEditSm.appendChild(seeMoreBtn);
+  }
+    // --- SEE MORE CONCEPTS PATCH END ---
 }
 
 function handleThumbsClick(conceptId, direction) {
@@ -8236,7 +8362,7 @@ function createConceptsBarChart() {
   data.kcs.forEach(d=> {
 
     // row.appendChild(barContainer);
-    let row = createConceptBarRow(d);
+    let row = createConceptBarRow(d,add_checkbox=true);
     chart.appendChild(row);
   });
 
@@ -8254,7 +8380,7 @@ function createConceptsBarChart() {
   chartContainer.appendChild(chart);
 }
 
-function createConceptBarRow(d, label_top = false) {
+function createConceptBarRow(d, label_top = false, add_checkbox=false, extra_info=false) {
     d.finalValue = d.uk + (editImpactValues.get(d.edition) || 0);
     if (d.finalValue > 1) d.finalValue = 1;
     if (d.finalValue < 0) d.finalValue = 0;
@@ -8281,21 +8407,24 @@ function createConceptBarRow(d, label_top = false) {
     labelContainer.style.whiteSpace = 'nowrap';
 
     // Checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'concept-checkbox-html ' + d.n + '-checkbox';
-    checkbox.checked = d.selectedForRec;
-    checkbox.id = `concept-${d.id}`;
-    checkbox.onclick = function() {
-        d.selectedForRec = checkbox.checked;
-        const kcsItem = data.kcs.find(k => k.id == d.id);
-        if (kcsItem) kcsItem['selected-for-rec'] = d.selectedForRec;
-        const checkboxes = document.querySelectorAll('.' + d.n + '-checkbox');
-        checkboxes.forEach(cb => {
-            cb.checked = checkbox.checked;
-        });
-    };
-    labelContainer.appendChild(checkbox);
+    if(add_checkbox){
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'concept-checkbox-html ' + d.n + '-checkbox';
+      checkbox.checked = d.selectedForRec;
+      checkbox.id = `concept-${d.id}`;
+      checkbox.onclick = function() {
+          d.selectedForRec = checkbox.checked;
+          const kcsItem = data.kcs.find(k => k.id == d.id);
+          if (kcsItem) kcsItem['selected-for-rec'] = d.selectedForRec;
+          const checkboxes = document.querySelectorAll('.' + d.n + '-checkbox');
+          checkboxes.forEach(cb => {
+              cb.checked = checkbox.checked;
+          });
+      };
+      labelContainer.appendChild(checkbox);
+    }
+    
 
     // Label
     const label = document.createElement('span');
@@ -8366,7 +8495,7 @@ function createConceptBarRow(d, label_top = false) {
     row.appendChild(firstLine);
 
     // If label_top and infoLabel needed, add infoLabel in a new line
-    if (label_top){
+    if (extra_info){
       const infoLabelWrapper = document.createElement('div');
       infoLabelWrapper.style.width = '100%';
       infoLabelWrapper.style.marginTop = '2px';
@@ -8374,6 +8503,7 @@ function createConceptBarRow(d, label_top = false) {
       infoLabel.className = 'concept-info-html';
       if(state.args.learningGoal == "RemedialRecommendations") {
         infoLabel.innerText = 'Failure rate: ' + ((1-d.sr) * 100) + '%';
+        
       }else{
         if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
           infoLabel.innerText = 'Attempts: ' + (d.a);;
@@ -8441,7 +8571,7 @@ function showCustomModal(message) {
     msg.innerText = message;
 
     const btn = document.createElement('button');
-    btn.innerText = 'OK';
+  btn.innerText = LANGUAGES[currentLang].confirm;
     btn.style.padding = '8px 24px';
     btn.style.fontSize = '15px';
     btn.style.background = '#1976d2';
