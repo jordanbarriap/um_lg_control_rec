@@ -4584,27 +4584,28 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
         }
       }
       percent = percent/actId_kcs[actId].length;//percentage is the weighted avg of the number of kcs according to their category (see UMAP'18 paper for equation)- added by @Jordan
+      console.log("Percent: "+percent);
     }
     
     if(data.configprops.agg_kc_student_modeling=="bn"){
       percent = kcs_estimates[actId];
     
-    //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying
-    if(percent == undefined){
-      var estimate = -1;
-      if (actId in actId_kcs){
-        estimate = 0;
-        for(var i=0; i < actId_kcs[actId].length; i++){
-          var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-          var kc_level = kcs_estimates[kc_info.n];
-          //console.log(kc_info.n);
-          //console.log(kc_level);
-          estimate = estimate + kc_level;
+      //Estimates probability of understanding the example correctly given the avg of the knowledge in underlying
+      if(percent == undefined){
+        var estimate = -1;
+        if (actId in actId_kcs){
+          estimate = 0;
+          for(var i=0; i < actId_kcs[actId].length; i++){
+            var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
+            var kc_level = kcs_estimates[kc_info.n];
+            //console.log(kc_info.n);
+            //console.log(kc_level);
+            estimate = estimate + kc_level;
+          }
+          estimate = estimate/actId_kcs[actId].length;
+          percent = estimate;
         }
-        estimate = estimate/actId_kcs[actId].length;
-        percent = estimate;
-      }
-    }  
+      }  
     }
 
     var tid=lastNodeMouseOver;
@@ -4630,18 +4631,26 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
     
 
     //percent = kc_state_act.difficulty; //Commented by @Jordan for the use of MG pr version + concept vis
-
+    console.log(data.configprops.agg_proactiverec_method+" method for proactive rec");
     if(needle && (state.args.impactMsg || state.args.difficultyMsg)){
-      if(data.configprops.agg_kc_student_modeling=="cumulate" && data.configprops.agg_proactiverec_enabled && (data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km")){
-        var act_difficulty = 0;
-        var mouseovered_act = recommended_activities.filter(function(d){return d.id==actId;})[0];
-        if (mouseovered_act){
-          act_difficulty = mouseovered_act["rec_score"];
-          //console.log("Rec score: "+act_difficulty)
-          needle.moveTo(act_difficulty);
+      if(data.configprops.agg_kc_student_modeling=="cumulate"){
+        if(data.configprops.agg_proactiverec_enabled && state.args.learningGoal == undefined && (data.configprops.agg_proactiverec_method=="remedial" || data.configprops.agg_proactiverec_method=="km")){
+          var act_difficulty = 0;
+          console.log("Needle will move to rec_score of the activity");
+          var mouseovered_act = recommended_activities.filter(function(d){return d.id==actId;})[0];
+          if (mouseovered_act){
+            act_difficulty = mouseovered_act["rec_score"];
+            console.log("Rec score: "+act_difficulty)
+            needle.moveTo(act_difficulty);
+          }
+        }else{
+          console.log("Learning goal: "+state.args.learningGoal);
+          if(state.args.learningGoal){
+            needle.moveTo(percent);
+          }
         }
       }else{
-        //console.log("Needle will move to: "+percent);
+        console.log("Needle will move to: "+percent);
         if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
             needle.moveTo(percent);
@@ -4653,6 +4662,8 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
           needle.moveTo(percent);
         }
       }
+    }else{
+      console.log("No needle defined or no msg to show");
     }
 
     //setTimeout(displayValue, 1350);

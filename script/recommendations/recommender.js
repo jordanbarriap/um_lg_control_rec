@@ -239,31 +239,36 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 				var covered = kcs.filter(function(kc_id) {
 					return selected_kcs_ids.includes(kc_id);
 				});
-				console.log("Covered kcs for activity " + activity.id + ": " + covered.length);
-				console.log(activity)
+
 				var ratio_covered_selected_kcs = selected_kcs_ids.length > 0 ? covered.length / selected_kcs_ids.length : 0;
 				activity.ratio_covered_selected_kcs = ratio_covered_selected_kcs;
 
 				activity.topic_name = topic_name;
 				activity.topic_id = i;
-
+				sample_covered_concepts = covered.slice(0,3).map(function(d){return data.kcs.filter(function(kc){return kc.id==d})[0].dn})
 				explanation = ""
 				//Explanations about the target concepts covered
 				ratio_covered_selected_kcs = activity.ratio_covered_selected_kcs
 				if(ratio_covered_selected_kcs==1){
-					explanation+="This activity is recommended because it covers <span class='important-text'>all the concept(s) that you have not attempted yet and chose to focus on</span>.";
+					explanation+="This is recommended because it covers <span class='level1-exp-text-chosen-kcs'>ALL the concept(s)</span> that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 				}else{
-					if(ratio_covered_selected_kcs>0.5){
-						explanation+="This activity is recommended because it covers <span class='important-text'>a good portion of the concept(s) that you have not attempted yet and chose to focus on</span>.";
+					if(ratio_covered_selected_kcs>=0.5){
+						explanation+="This is recommended because it covers <span class='level2-exp-text-chosen-kcs'>more than half</span> of the concept(s) that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 					}else{
-						if(ratio_covered_selected_kcs>0.0){
-							explanation+="This activity is recommended because it covers <span class='important-text'>at least one concept that you have not attempted yet and chose to focus on</span>.";
+						if(ratio_covered_selected_kcs>0.25){
+							explanation+="This is recommended because it covers <span class='level3-exp-text-chosen-kcs'>few</span> of the concept(s) that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+						}else{
+							if(ratio_covered_selected_kcs>0.0){
+								explanation+="This is recommended because it covers <span class='level4-exp-text-chosen-kcs'>at least one concept</span> that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+							}
 						}
 					}
 				}
 				activity.explanation = explanation;
-				ranking_act_curr_type.push(activity);
-				unique_list_rec_activities.push(activity);
+				if(ratio_covered_selected_kcs>0){//if it does not cover at least one of the selected kcs, it is not considered for recommendation
+					ranking_act_curr_type.push(activity);
+					unique_list_rec_activities.push(activity);
+				}
 			}
 			console.log("current type")
 			console.log(ranking_act_curr_type)
@@ -305,15 +310,15 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		
 		explanation_other_kcs_part=activity.explanation
 		if(avg_uk_non_target>=mastery_threshold){
-			explanation_other_kcs_part+="<li>, and also on average you <span class='level1-exp-text'>master</span> the other <span class='important-text'>concepts present in this activity</span>.</li>";
+			explanation_other_kcs_part+=", and also on average you <span class='level1-exp-text'>master</span> the other <span class='important-text'>concepts present in this activity</span>.";
 		}else{
 			if(avg_uk_non_target>=proficiency_threshold){
-				explanation_other_kcs_part+="<li>, and also on average you are <span class='level2-exp-text'>proficient</span> in the other <span class='important-text'>concepts present in this activity</span>.</li>";
+				explanation_other_kcs_part+=", and also on average you are <span class='level2-exp-text'>proficient</span> in the other <span class='important-text'>concepts present in this activity</span>";
 			}else{
 				if(avg_uk_non_target>=good_threshold){
-					explanation_other_kcs_part+="<li>,and also on average you have a <span class='level3-exp-text'>good</span> understanding in the other <span class='important-text'>concepts present in this activity</span>.</li>";
+					explanation_other_kcs_part+=", and also on average you have a <span class='level3-exp-text'>good</span> understanding in the other <span class='important-text'>concepts present in this activity</span>.";
 				}else{
-					explanation_other_kcs_part+="<li>and also, although it is low, your knowledge level on the other <span class='important-text'>concepts present in this activity</span> is one of the highest overall.</li>";
+					explanation_other_kcs_part+=", and also, although it is low, your knowledge level on the other <span class='level4-exp-text'>concepts present in this activity</span> is one of the highest overall.";
 				}
 			}
 		}
@@ -766,10 +771,10 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel > b.kclevel) ? 1 : -1)
 
 		
-						var rec_explanation = "This activity is recommended because:<ul>";
+						var rec_explanation = "This activity is recommended because ";
 		
 						if ((problematic_kcs+slip_kcs)>0){
-							rec_explanation = rec_explanation + "<li style='padding-left:0'>It allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (e.g. "+misconception_kcs[0].name+").</li>"
+							rec_explanation = rec_explanation + " it allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (e.g. "+misconception_kcs[0].name+").</li>"
 							//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
 							// Peter suggested to hide this part of the explanation
 							// if (slip_kcs){
@@ -1240,7 +1245,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 
 					ranked_activity = Object.assign({}, activity);
 					ranked_activity["rec_score"] = rec_score;
-					ranked_activity["topic"] = topic_name;
+					ranked_activity["topic_name"] = topic_name;
 					ranked_activity["explanation"] = rec_explanation;
 					recommendations.push(ranked_activity);
 					// }
@@ -1735,16 +1740,28 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	var kc_id = kcs_ids[i];
 	//here we have to use total_uk instead of uk because we want to consider the students input
   	var kc_level = kc_levels[kc_id]["total_uk"];
+	var kc_level_original = kc_levels[kc_id]["uk"];
+	var kc_has_edits = kc_levels[kc_id]["hasEdition"];
+	var kc_edition = kc_levels[kc_id]["edition"];
   	var lastk_sr = kc_levels[kc_id]["lastk-sr"];
   	var overall_sr = kc_levels[kc_id]["sr"];
 	var attempts = kc_levels[kc_id]["a"];
   	var kc_difficulty_score = NaN;
+	console.log("KC: "+kc_id+" -> calculating diff score...");
+	console.log(kc_levels[kc_id])
   	if(lastk_sr>0){
   		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
   	}else{
   		if(attempts>0){
   			kc_difficulty_score = 1 - (overall_sr*weight_sr + kc_level*weight_kcs);
-  		}
+  		}else{
+			if(attempts==0 && kc_level==0 && kc_has_edits && kc_edition<0){
+				//if the user edited negatively till a point that it reaches zero, it could be inferred that the 
+				//user is having troubles with it
+				kc_difficulty_score = 0.75;
+				kc_levels[kc_id]["studentSpecifiedProblem"] = true;
+			}
+		}
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
@@ -2040,19 +2057,26 @@ function addRecommendationsToUI(){
 	//console.log(top_recommended_activities);
 
 	//Remove existing stars
+	//from activities
 	d3.selectAll(".recommendationStar").remove();
 	d3.selectAll(".recommended_act").classed("recommended_act",false);
+	//from topics
+	d3.selectAll(".rec_topic").remove()
+
 
 	console.log("add top recommended activities to the interface")
 	console.log(top_recommended_activities)
+
+	console.log("Rank recommended activities:");
+	console.log(rank_recommended_activities);
 
 	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 		if(top_recommended_activities && top_recommended_activities.length > 0) {
 			
 			//var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().name)
-			var topic_rec_activities = top_recommended_activities//.filter(activity => activity.topic == getTopic().id)
+			//var topic_rec_activities = top_recommended_activities//.filter(activity => activity.topic == getTopic().id)
 			
-			if(topic_rec_activities.length > 0) {
+			if(top_recommended_activities.length > 0) {
 
 				//console.log("Rank recommended activities:");
 				//console.log(rank_recommended_activities);
@@ -2070,6 +2094,7 @@ function addRecommendationsToUI(){
 					// console.log(data_resource)
 					// console.log(d.actIdx)
 					//var mg_activity = data_resource ? data.topics[d.topicIdx].activities[data.resources[d.resIdx].id][d.actIdx]:undefined
+					console.log(mg_activities)
 					console.log(mg_activity)
 					if(mg_activity) {
 						console.log("mg_activity")
@@ -2081,9 +2106,10 @@ function addRecommendationsToUI(){
 						mg_activity['resIdx'] = d.resIdx
 
 						if(act_is_recommended){
-							
+							console.log(d);
 							//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
 							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
+							console.log(recommended_activity)
 							recommended_activity['actIdx'] = d.actIdx
 							recommended_activity['topicIdx'] = d.topicIdx
 							recommended_activity['resIdx'] = d.resIdx
@@ -2100,37 +2126,41 @@ function addRecommendationsToUI(){
 							// })
 							// .style("pointer-events","none");
 							var rank_rec = rank_recommended_activities[act_id];
+							d.rank_rec = rank_rec
 							var map_rank_to_seq = -1;
-
-							//TODO write here what happen if the proactive method is km
-							if(data.configprops.agg_proactiverec_method=="km"){
-								if(rank_rec===0){
-									map_rank_to_seq = 1;
-								}else{
-									if(rank_rec===1){
-										map_rank_to_seq = 0.7;
-									}else{
-										if(rank_rec===2){
-											map_rank_to_seq = 0.3;
-										}else{
-
-											map_rank_to_seq = 0.0;	
-
-										}
-									}
-								}
-							}
 							//TODO write here what happen if the proactive method is remedial
 							if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 								// function for adding two numbers.
-								const add = (a, b) => a + b
+								//const add = (a, b) => a + b
 								// use reduce to sum the total number of recommended activities
 								//var total_rec_activities = Object.values(map_topic_max_rank_rec_act).reduce(add);
 								
 								//We use the total number of recommendations shown that is coming from vis.js in MG through the array top_recommended_activities
 								var total_rec_activities = top_recommended_activities.length;
 								map_rank_to_seq = 1-(rank_rec/total_rec_activities);
+								console.log(rank_rec+": rank_rec")
+							}else{
+								//TODO write here what happen if the proactive method is km
+								if(data.configprops.agg_proactiverec_method=="km"){
+									if(rank_rec===0){
+										map_rank_to_seq = 1;
+									}else{
+										if(rank_rec===1){
+											map_rank_to_seq = 0.7;
+										}else{
+											if(rank_rec===2){
+												map_rank_to_seq = 0.3;
+											}else{
+
+												map_rank_to_seq = 0.0;	
+
+											}
+										}
+									}
+								}
 							}
+							
+							
 							
 							
 							d3.select(this)
@@ -2138,8 +2168,15 @@ function addRecommendationsToUI(){
 								//.attr("id", "star_1")
 								.attr("visibility", "visible")
 								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-								.attr("points", function (d) { d.seq = map_rank_to_seq; return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
-								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
+								.attr("points", function (d) {  
+									d.seq = map_rank_to_seq;
+									var R = scaleRecommendationStar(d.seq);
+									var r = R * innerRatio;
+									var cx=6;
+									var cy=6;
+									var pts = starPoints(cx, cy, R, r, numPoints);
+									return ( d.seq === 0 ? "0,0" :pts) })
+								.attr("style", function (d) { return `fill: ${CONST.vis.colors.sequencing};`; })
 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
 								.attr("stroke", "white")
 								.attr("max_rec_rank_act",rank_recommended_activities[act_id])
@@ -2154,7 +2191,10 @@ function addRecommendationsToUI(){
 								attr("class", "rec_act_rank_txt").
 								style("text-anchor", "start").
 								text(function (d) {
-									if(data.configprops.agg_proactiverec_method=="km"){
+									if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
+										return d.rank_rec+1;
+									}else{
+										if(data.configprops.agg_proactiverec_method=="km"){
 										if(d.seq === 1) {
 											return " 1";
 										} else if (d.seq === 0.7) {
@@ -2165,9 +2205,9 @@ function addRecommendationsToUI(){
 											return "";
 										}
 									}
-									if(data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
-										return rank_rec+1;
 									}
+									
+									
 									
 								
 								/*if(d.seq === 1) {
@@ -2215,7 +2255,15 @@ function addRecommendationsToUI(){
 								//.attr("id", "star_1")
 								.attr("visibility", "visible")
 								//.attr("points", CalculateStarPoints(6, 6, function (d) { return (d.seq === 0 ? 0 : 5); }, 10, 5))
-								.attr("points", function (d) { return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+								//.attr("points", function (d) { return ( d.seq === 0 ? "0,0" : CalculateStarPoints(6, 6, 5, Math.max((2+Math.round(8*(d.seq-0.50)/0.5)),4), Math.max((2+Math.round(8*(d.seq-0.50)/0.5))/2,2))); })
+								.attr("points", function(d){
+									var R = scaleRecommendationStar(d.seq);
+									var r = R * innerRatio;
+									var cx=6;
+									var cy=6;
+									var pts = starPoints(cx, cy, R, r, numPoints);
+									return ( d.seq === 0 ? "0,0" : pts);
+								})
 								.attr("style", function (d) { return "fill: " + CONST.vis.colors.sequencing + ";"; })
 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
 								.attr("stroke", "white")
@@ -2254,6 +2302,16 @@ function addRecommendationsToUI(){
 					
 				});
 	}    
+
+	//add stars to the topic based on the maximum rank of the recommended activities per topic
+	d3.selectAll("g.grid-cell-outter").each( function(d){
+            var topic_name = d3.select(this).attr("topic");
+            var topic_has_recommended_acts = (topic_name in map_topic_max_rank_rec_act);
+            console.log(topic_name+" has rec acts: "+topic_has_recommended_acts)
+            if(topic_has_recommended_acts){
+              addRecommendationStarToTopic(d3.select(this),topic_name)
+            };
+        });
 }
 
 function generateProactiveRecommendations(method){
@@ -2328,26 +2386,36 @@ function sortKCSByLearningGoal(learningGoal){
 	//remedial recommendations
 	if (learningGoal==0){
 		data.kcs.forEach(function(kc) {
+			kc.disabledForRec = false;
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
 			let sr = typeof kc.sr === 'number' ? kc.sr : 0;
-            let edition = typeof kc.edition === 'number' ? kc.edition : 0;
+			let lastksr = typeof kc.lastksr === 'number' ? kc.lastksr : 0;
+            let edition = typeof kc.edition === 'number' ? editImpactValues.get(kc.edition) : 0;
             let total_uk = uk + edition;
             if (isNaN(total_uk)) total_uk = 0;
             if (total_uk < 0) total_uk = 0;
             if (total_uk > 1) total_uk = 1;
             kc.total_uk = total_uk;
-			if(att==0 || (att==0 && total_uk==0 && edition<0)){
+
+			//disable concepts that have never been attempted and have an estimated knowledge level of zero
+			if(att<2 || (att==0 && uk==0 && edition>0)){
 				kc.disabledForRec = true;
 			}
         });
 
-		calculateKcDifficultyScores(data.kcs,0.6,0.4)
+		calculateKcDifficultyScores(data.kcs,0.7,0.3)
 
         data.kcs.sort(function(a, b) {
+			// Disabled concepts should be considered smaller (sorted to the end)
+    		if (a.disabledForRec === true && b.disabledForRec !== true) return 1;
+    		if (b.disabledForRec === true && a.disabledForRec !== true) return -1;
+
+			// Handle NaN values for diff by treating them as 0
 			const diffA = isNaN(a.diff) ? 0 : a.diff;
 			const diffB = isNaN(b.diff) ? 0 : b.diff;
 			const bothNaN = isNaN(a.diff) && isNaN(b.diff);
+
 			if (bothNaN) {
 				// Sort by ascending total_uk if both diffs are NaN
 				const totalUkA = typeof a.total_uk === 'number' ? a.total_uk : 0;
@@ -2358,7 +2426,7 @@ function sortKCSByLearningGoal(learningGoal){
 			if(diffA==diffB){
 				const normalizedAttA = a.a/a.cnt.length
 				const normalizedAttB = b.a/b.cnt.length
-				return normalizedAttB- normalizedAttA; //tie breaker: more normalized attempts first
+				return normalizedAttB - normalizedAttA; //tie breaker: more normalized attempts first
 			}
 			// Otherwise, sort by descending diff
 			return diffB - diffA;
@@ -2369,12 +2437,14 @@ function sortKCSByLearningGoal(learningGoal){
 	}
 	//knowledge gaps
 	if(learningGoal==1){
+		
 		//lower limit attempts to consider a concept as a knowledge gap
 		let lower_limit_attempts = 1;
 		//lower limit knowledge gap to consider a concept as a knowledge gap
 		let lower_limit_kc_knowledge_gap = 0.0
 		//filling knowledge gaps
 		data.kcs.forEach(function(kc) {
+			kc.disabledForRec = false;
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
             let edition = typeof kc.edition === 'number' ? editImpactValues.get(kc.edition) : 0;
@@ -2389,6 +2459,10 @@ function sortKCSByLearningGoal(learningGoal){
         });
 		// Sort in place by total attempts, tie-breaker: lowest total_uk
         data.kcs.sort((a, b) => {
+			// Disabled concepts should be considered smaller (sorted to the end)
+    		if (a.disabledForRec === true && b.disabledForRec !== true) return 1;
+    		if (b.disabledForRec === true && a.disabledForRec !== true) return -1;
+
 			const attA = typeof a.a === 'number' ? a.a : 0;
 			const attB = typeof b.a === 'number' ? b.a : 0;
 			if (attB != attA) return attA - attB; // Primary sort: ascending
@@ -2404,7 +2478,10 @@ function sortKCSByLearningGoal(learningGoal){
 	}
 
 	//Keep me up with the class
-	//Here we should 
+	//Here we should sort the concepts based on the recency of the topics covered in class
+	//First the concepts of the current topic, then the concepts of the previous topics based on the order of the topics
+	//We assume that data.topics have an attribute order that indicates the order of the topics in the course
+	//In case of a tie, we sort based on the knowledge level either estimated or edited by the students (ascending order)
 	if(learningGoal==2){
 		data.kcs.forEach(function(kc) {
 			//assign priority to the current concept based on its recency
@@ -2443,11 +2520,10 @@ function setTopConceptsForRecommendations(num_concepts){
     if (!container) return;
     container.innerHTML = ''; // Clear previous content
 
-    // Defensive: sort by total_uk descending (if not already sorted)
 	// Only include kcs that do not have disabledForRec or have it set to false
 	const filteredKcs = data.kcs.filter(kc => !kc.hasOwnProperty('disabledForRec') || kc.disabledForRec === false);
-	const sortedKcs = [...filteredKcs].sort((a, b) => (a.total_uk || 0) - (b.total_uk || 0));
-	const topKcs = sortedKcs.slice(0, num_concepts);
+	//const sortedKcs = [...filteredKcs].sort((a, b) => (a.total_uk || 0) - (b.total_uk || 0));
+	const topKcs = filteredKcs.slice(0, num_concepts);
 
     topKcs.forEach((kc, idx) => {
         // Calculate values
@@ -2469,7 +2545,7 @@ function setTopConceptsForRecommendations(num_concepts){
     });
 
 	let moreKCsButtonDiv = document.createElement('div')
-	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">Inspect more concepts</button>'
+	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">Inspect more concepts 🔎</button>'
 	container.appendChild(moreKCsButtonDiv)
 }
 

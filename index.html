@@ -182,6 +182,24 @@ function loadLearningGoals() {
         input.onchange = function() {
           if (typeof window[prepareRecFunction] === 'function') {
             state.args.learningGoal = goal.recFunction;
+            //log user selection
+            log(
+              "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
+              "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01,
+              /*"activity-original-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+              "activity-original-id" + CONST.log.sep02 + getAct().id + CONST.log.sep01 +
+              "activity-recommended-topic-id" + CONST.log.sep02 + rec.topicId + CONST.log.sep01 +
+              "activity-recommended-resource-id" + CONST.log.sep02 + rec.resourceId + CONST.log.sep01 +
+              "activity-recommended-id" + CONST.log.sep02 + rec.activityId + CONST.log.sep01 +
+              "recommendation-id" + CONST.log.sep02 + rec.recommendationId + CONST.log.sep01 +
+              "recommendation-rank" + CONST.log.sep02 + rec.rank + CONST.log.sep01 +
+              "recommendation-score" + CONST.log.sep02 + rec.score,*/
+              true
+            );
+            //set selectedForRec to false for all concepts when a new learning goal is selected
+            data.kcs.forEach(function(kc) {
+              kc.selectedForRec = false;
+            });
             window[prepareRecFunction]();
           }
         };
@@ -206,7 +224,7 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
 <!-- Concept Selection Section -->
 <div id="concept-selection-div">
   <div class="concept-selection-container">
-    <span class="concept-selection-label">2. What specific concepts would you like to focus on? (these are the 5 concepts you ...)</span>
+    <span class="concept-selection-label">2. What concepts would you like to focus on? (these are the 5 concepts you ...)</span>
     <div class="concept-selection-options">
       <div class="concept-checkbox-item">
         <input type="checkbox" id="concept-1" name="concept-selection" value="concept1" />
@@ -255,7 +273,7 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
       
       <div class="concept-checkbox-item">
         <button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">
-          Inspect more concepts
+        <span data-i18n="inspectMoreConcepts"></span>
         </button>
       </div>
             </div>
@@ -265,7 +283,7 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
     <!-- Generate Learning Path Button -->
     <div style="margin: 10px; text-align: center;">
       <button id="show-learning-path-btn" class="learning-path-btn" onclick="generateLearningRecommendations()">
-        Generate Learning Recommendations
+        <span data-i18n="generateRecs"></span>
       </button>
     </div>
 

@@ -326,7 +326,16 @@ img.info-icon{position:relative;display:block;float:right;}
 .level1-exp-text{border-radius:5px;background-color:#0e7415;color:white;padding:2px;}
 .level2-exp-text{border-radius:5px;background-color:#219A19;color:white;padding:2px;}
 .level3-exp-text{border-radius:5px;background-color:#5cae62;color:white;padding:2px;}
+.level3-exp-text{border-radius:5px;background-color:#87e18d;color:white;padding:2px;}
+.level1-exp-text-chosen-kcs{border-radius:5px;background-color:#ea9000;color:white;padding:2px;}
+.level2-exp-text-chosen-kcs{border-radius:5px;background-color:#ffab0f;color:white;padding:2px;}
+.level3-exp-text-chosen-kcs{border-radius:5px;background-color:#ffb347;color:rgb(0, 0, 0);padding:2px;}
+.level4-exp-text-chosen-kcs{border-radius:5px;background-color:#fdd091;color:rgb(0, 0, 0);padding:2px;}
 .important-text{color:rgb(241, 105, 19);font-weight: bold}
+.text-highlighted-kcs{
+  font-style: italic;
+  font-weight: bold;
+}
 #rec-tooltip-content > ul{padding-left:2em;margin-top:0;padding-top:0;margin-bottom:0;padding-bottom:0;}
 
 #min-progress-check{font-size: 13px;margin-left:4px;}
@@ -701,4 +710,23 @@ img.info-icon{position:relative;display:block;float:right;}
 
 #div-kcs-inspection{
   max-width:25%;
+}
+
+.learning-path-btn {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #fff;
+  background: #d35400;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  max-width: 200px;
+  white-space: normal;
+  word-break: break-word;
+  text-align: center;
+}
+.learning-path-btn:hover {
+  background: #e67e22;
 }

@@ -2510,6 +2510,8 @@ function processData() {
 }
 
 function addRecommendationStarToTopic(g_cell_topic, topic_name) {
+  removePolygonsByClass('rec_topic');//Remove stars from previous recommendations
+  
   var rank_rec = map_topic_max_rank_rec_act[topic_name];
 
   // function for adding two numbers.
