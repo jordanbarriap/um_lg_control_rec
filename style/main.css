@@ -452,9 +452,9 @@ img.info-icon{position:relative;display:block;float:right;}
 
 /* Learning Goals Section Styles */
 #learning-goals-div {
-  background-color: #f8f9fa;
+  /*background-color: #f8f9fa;
   border: 1px solid #dee2e6;
-  border-radius: 6px;
+  border-radius: 6px;*/
   margin: 10px;
   padding: 15px;
 }
@@ -662,19 +662,18 @@ img.info-icon{position:relative;display:block;float:right;}
 
 .bar-container-html {
     position: relative;
-    height: 14px;
+    height: 9px;
     background: #f5f7fa;
-    border-radius: 4px;
+    border-radius: 2px;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
     width: 80px;
     overflow: hidden;
-    border: 1px solid #e0e5ec;
 }
 
 .bar-main-html {
     position: absolute;
     height: 100%;
-    background: linear-gradient(to right, #2196f3, #64b5f6);
+    background: linear-gradient(to right, #41ba15, #58b651);
     border-radius: 3px;
     transition: width 0.3s ease;
 }
@@ -691,6 +690,11 @@ img.info-icon{position:relative;display:block;float:right;}
     background: #90a4ae;
     opacity: 0.6;
     border-radius: 3px;
+}
+
+.concept-label-html{
+  width: 120px;
+  font-size: 11px;
 }
 
 .concept-value-html {
@@ -712,6 +716,7 @@ img.info-icon{position:relative;display:block;float:right;}
   max-width:25%;
 }
 
+/*learning goals selection section!*/
 .learning-path-btn {
   font-size: 1.2em;
   font-weight: bold;
@@ -729,4 +734,68 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 .learning-path-btn:hover {
   background: #e67e22;
+}
+
+.learning-goal-tooltip {
+  position: absolute;
+  background: #222;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: pre-line;
+  z-index: 9999;
+  min-width: 180px;
+  max-width: 240px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  border: 1px solid #444;
+  pointer-events: none;
+}
+.learning-goal-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: -12px;
+  border: 8px solid transparent;
+  border-bottom-color: #222;
+}
+
+.learning-goals-options {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px; /* space between each goal option */
+}
+.learning-goal-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.learning-goal-option label{
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+input[type="checkbox"] {
+  width: 11px; /* Adjust to your desired smaller width */
+  height: 11px; /* Adjust to your desired smaller height */
+}
+
+.RemedialRecommendations{
+  background-color: #9D8313;
+}
+
+.FillKnowledgeGapsRecommendations{
+  background-color: #139D83;
+}
+
+.KeepMeUpWithTheClassRecommendations{
+  background-color: #83139D;
 }

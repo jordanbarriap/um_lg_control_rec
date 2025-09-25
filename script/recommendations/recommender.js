@@ -190,19 +190,35 @@ function generateLearningPathGraph(learningPathObj, containerId = 'learning-path
  * to examples first and then more complex content
 **/
 function prepareFillKnowledgeGapsRecommendations(){
-	alert("prepare fill knowledge gaps recommendations");
+	alert("FKG")
 	sortKCSByLearningGoal(1)
 	setTopConceptsForRecommendations(5);
 }
 
 function prepareRemedialRecommendations(){
-	alert("prepare remedial recommendations");
+	alert("Rem")
+	//check if there are concepts that can be target for recommendation first, if not show modal message
 	sortKCSByLearningGoal(0)
-	setTopConceptsForRecommendations(5);
+	var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
+	if(target_difficult_concepts.length>0){
+		setTopConceptsForRecommendations(5);
+	}else{
+		var errorMsg = "It looks like the system cannot infer which concepts have been difficult to you! Go and attempt some activities, and once you fail on some, then it will be able to make the estimations that are needed."
+		showCustomModal(errorMsg);
+		document.querySelector('input[name="learning-goals"][value="RemedialRecommendations"]').checked = false;
+		log(
+              "action" + CONST.log.sep02 + "lg-unselected" + CONST.log.sep01 +
+              "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
+              "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
+              false
+          );
+		state.args.learningGoal = "";
+	}
+	
 }
 
 function prepareKeepMeUpWithTheClassRecommendations(){
-	alert("prepare remedial recommendations");
+	alert("Keep")
 	sortKCSByLearningGoal(2)
 	setTopConceptsForRecommendations(5);
 }
@@ -1739,12 +1755,16 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   for(var i=0;i<kcs_ids.length;i++){
   	var kc_id = kcs_ids[i];
 	//here we have to use total_uk instead of uk because we want to consider the students input
-  	var kc_level = kc_levels[kc_id]["total_uk"];
+  	
 	var kc_level_original = kc_levels[kc_id]["uk"];
 	var kc_has_edits = kc_levels[kc_id]["hasEdition"];
 	var kc_edition = kc_levels[kc_id]["edition"];
   	var lastk_sr = kc_levels[kc_id]["lastk-sr"];
   	var overall_sr = kc_levels[kc_id]["sr"];
+	var kc_level = kc_level_original + (kc_has_edits ? editImpactValues.get(kc_edition):0)
+	if(kc_level<0) kc_level = 0
+	if(kc_level>1) kc_level = 1
+	kc_levels[kc_id]["uk_total"] = kc_level
 	var attempts = kc_levels[kc_id]["a"];
   	var kc_difficulty_score = NaN;
 	console.log("KC: "+kc_id+" -> calculating diff score...");
@@ -1763,6 +1783,7 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 			}
 		}
   	}
+	console.log(kc_difficulty_score)
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
   console.log("kc diff scores:");
@@ -2108,7 +2129,7 @@ function addRecommendationsToUI(){
 						if(act_is_recommended){
 							console.log(d);
 							//This is to fix the globally stored top_recommended_activities array. (To solve the problem of first topic openning)
-							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id)
+							let recommended_activity = top_recommended_activities.find(x => x.id === mg_activity.id )
 							console.log(recommended_activity)
 							recommended_activity['actIdx'] = d.actIdx
 							recommended_activity['topicIdx'] = d.topicIdx
@@ -2383,6 +2404,10 @@ function sortKCSByLearningGoal(learningGoal){
 	 * first the ones with zero knowledge level and zero attempts, then the ones with zero estimated knowledge but edited positiviely by the student
 	 * and then all the rest sorted incrementally basedd on the knowledge level
 	 */
+	//remove all existing attribute disabledForRec before adding that attribute in other context (3 LGs)
+	data.kcs.forEach(function(kc) {
+		delete kc.disabledForRec
+	})
 	//remedial recommendations
 	if (learningGoal==0){
 		data.kcs.forEach(function(kc) {
@@ -2403,8 +2428,6 @@ function sortKCSByLearningGoal(learningGoal){
 				kc.disabledForRec = true;
 			}
         });
-
-		calculateKcDifficultyScores(data.kcs,0.7,0.3)
 
         data.kcs.sort(function(a, b) {
 			// Disabled concepts should be considered smaller (sorted to the end)
@@ -2441,7 +2464,7 @@ function sortKCSByLearningGoal(learningGoal){
 		//lower limit attempts to consider a concept as a knowledge gap
 		let lower_limit_attempts = 1;
 		//lower limit knowledge gap to consider a concept as a knowledge gap
-		let lower_limit_kc_knowledge_gap = 0.0
+		let lower_limit_kc_knowledge_gap = 0.25
 		//filling knowledge gaps
 		data.kcs.forEach(function(kc) {
 			kc.disabledForRec = false;
@@ -2453,7 +2476,7 @@ function sortKCSByLearningGoal(learningGoal){
             if (total_uk < 0) total_uk = 0;
             if (total_uk > 1) total_uk = 1;
             kc.total_uk = total_uk;
-			if(total_uk>lower_limit_kc_knowledge_gap || (total_uk==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
+			if((kc.recencyPriority==2 || kc.recencyPriority==0) || total_uk>lower_limit_kc_knowledge_gap || (total_uk==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
 				kc.disabledForRec = true;
 			}
         });
@@ -2466,10 +2489,14 @@ function sortKCSByLearningGoal(learningGoal){
 			const attA = typeof a.a === 'number' ? a.a : 0;
 			const attB = typeof b.a === 'number' ? b.a : 0;
 			if (attB != attA) return attA - attB; // Primary sort: ascending
+
 			const totalA = a.total_uk || 0;
 			const totalB = b.total_uk || 0;
-			
-			return totalA - totalB
+			if(totalA!==totalB) return totalA - totalB
+
+			const recencyA = typeof a.recencyPriority === 'number' ? a.recencyPriority : 0
+			const recencyB = typeof b.recencyPriority === 'number' ? b.recencyPriority : 0
+			return recencyB - recencyA;//descending recency in case the number of attempts and total uk are the same
 			
 		});
 
@@ -2484,26 +2511,12 @@ function sortKCSByLearningGoal(learningGoal){
 	//In case of a tie, we sort based on the knowledge level either estimated or edited by the students (ascending order)
 	if(learningGoal==2){
 		data.kcs.forEach(function(kc) {
-			//assign priority to the current concept based on its recency
-			//first check if the concept belongs to the current topic
-			const topic = data.topics.find(t => t.name === kc.t);
-			var recencyPriority = 0
-			if(Object.hasOwn(topic,'timeline')){
-				console.log("Topic timeline found for concept: ");
-				console.log(topic)
-				if(topic.timeline.current){
-					recencyPriority = 2
-				}else{
-					if(topic.timeline.covered){
-						recencyPriority = 1
-					}else{
-						recencyPriority = 0
-					}
-				}
+			kc.disabledForRec=false;
+			if(kc.recencyPriority==0){
+				kc.disabledForRec=true;
 			}
-			kc.recencyPriority = recencyPriority;
-			kc.topicOrder = Number(topic.order) || 0;
 		})
+		
 		data.kcs.sort((a, b) => {
 			const recA = a.recencyPriority || 0;
 			const recB = b.recencyPriority || 0;
@@ -2511,7 +2524,10 @@ function sortKCSByLearningGoal(learningGoal){
 			const orderA = typeof a.topicOrder === 'number' ? a.topicOrder : 0;
 			const orderB = typeof b.topicOrder === 'number' ? b.topicOrder : 0;
 			return orderB - orderA;
-});
+		});
+
+		console.log("KCs sorted by recency:");
+		console.log(data.kcs);
 	}
 }
 function setTopConceptsForRecommendations(num_concepts){
@@ -2521,10 +2537,11 @@ function setTopConceptsForRecommendations(num_concepts){
     container.innerHTML = ''; // Clear previous content
 
 	// Only include kcs that do not have disabledForRec or have it set to false
-	const filteredKcs = data.kcs.filter(kc => !kc.hasOwnProperty('disabledForRec') || kc.disabledForRec === false);
+	const filteredKcs = data.kcs.filter(kc => kc.disabledForRec == false || typeof kc.disabledForRec === 'undefined');
 	//const sortedKcs = [...filteredKcs].sort((a, b) => (a.total_uk || 0) - (b.total_uk || 0));
 	const topKcs = filteredKcs.slice(0, num_concepts);
-
+	console.log("About to set the top kcs...")
+	console.log(topKcs.length)
     topKcs.forEach((kc, idx) => {
         // Calculate values
         const uk = typeof kc.uk === 'number' ? kc.uk : 0;
@@ -2535,8 +2552,8 @@ function setTopConceptsForRecommendations(num_concepts){
         if (total > 1) total = 1;
 		kc.name = kc.dn
 		kc.selectedForRec = true; // Default to selected
-
-        const row = createConceptBarRow(kc, label_top=true, add_checkbox=true);
+		console.log("this is a new row...")
+        var row = createConceptBarRow(kc, label_top=true, add_checkbox=true);
 		
 		container.appendChild(row);
 
@@ -2555,4 +2572,83 @@ function selectConceptForRecommendation(conceptId, isChecked) {
     if (kc) {
         kc.selectedForRec = !!isChecked;
     }
+}
+
+function showCustomModal(message) {
+    // Remove existing modal if present
+    const existing = document.getElementById('custom-modal');
+    if (existing) existing.remove();
+
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'custom-modal';
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.background = 'rgba(0,0,0,0.35)';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '9999';
+
+    // Create modal box
+    const modal = document.createElement('div');
+    modal.style.background = '#fff';
+    modal.style.borderRadius = '8px';
+    modal.style.boxShadow = '0 4px 24px rgba(0,0,0,0.18)';
+    modal.style.padding = '32px 28px 20px 28px';
+    modal.style.maxWidth = '400px';
+    modal.style.textAlign = 'center';
+    modal.style.fontFamily = 'sans-serif';
+
+    // Modal content
+    const msg = document.createElement('div');
+    msg.style.fontSize = '15px';
+    msg.style.marginBottom = '24px';
+    msg.innerText = message;
+
+    const btn = document.createElement('button');
+    btn.innerText = 'OK';
+    btn.style.padding = '8px 24px';
+    btn.style.fontSize = '15px';
+    btn.style.background = '#1976d2';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '4px';
+    btn.style.cursor = 'pointer';
+    btn.onclick = function() {
+        overlay.remove();
+    };
+
+    modal.appendChild(msg);
+    modal.appendChild(btn);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
+
+function addRecencyDataToKCs(){
+	data.kcs.forEach(function(kc) {
+		//assign priority to the current concept based on its recency
+		//first check if the concept belongs to the current topic
+		console.log(kc);
+		const topic = data.topics.find(t => t.name == kc.t);
+		var recencyPriority = 0
+		if(Object.hasOwn(topic,'timeline')){
+			console.log("Topic timeline found for concept: ");
+			console.log(topic)
+			if(topic.timeline.current){
+				recencyPriority = 2 //2 ->current topic
+			}else{
+				if(topic.timeline.covered){
+					recencyPriority = 1 //1 -> past topic
+				}else{
+					recencyPriority = 0 //0 -> future topic
+				}
+			}
+		}
+		kc.recencyPriority = recencyPriority;
+		kc.topicOrder = Number(topic.order) || 0;
+	})
 }

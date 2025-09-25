@@ -99,10 +99,11 @@ function updateAllText() {
     }
   });
 }
+//stores the text that will be shown in tooltips for each learning goal
+var learningGoalTooltips = {};
 
 // Call this after DOMContentLoaded and after any language change
 document.addEventListener('DOMContentLoaded', updateAllText);
-
 
 var CONST = {
   appName: LANGUAGES[currentLang].appName,
@@ -2045,6 +2046,9 @@ function websocketCallback(message) {
 function initUI() {
   // (1) The actual UI:
   $(document).ready(function () {
+    //add the learning goal selection interface
+    loadLearningGoals();
+
     // (1.1) Hide elements of the toolbar:
     if (!state.args.uiTBarVis) {
       $("body").addClass("tbar-0");
@@ -2277,6 +2281,7 @@ function initUI() {
     log("action" + CONST.log.sep02 + "init-kcmap-hidden", false);
   }
 
+
 }
 
 
@@ -2324,6 +2329,7 @@ function loadStaticData() {
         }
         console.log(data.topics[topic_order]);
       }
+      console.log("about to process data")
       processData()
     });
   } else {
@@ -2371,16 +2377,6 @@ function processData() {
     }
     concept_weights[kc_data.id] = kc_data;
   }
-
-  //update finalValue in data.kcs
-  data.kcs.forEach(kc => {
-    console.log("add additional info to kcs");
-    console.log(typeof kc.uk)
-    console.log(kc.uk)
-    kc.finalValue = Number(kc.uk) + (kc.edition ? editImpactValues.get(kc.edition) : 0);
-    kc.hasEdition = kc.edition ? true : false;
-    console.log(kc);
-  });
 
   for (var i = 0; i < data_topics.length; i++) {
     topic_data = data_topics[i];
@@ -2460,6 +2456,12 @@ function processData() {
     }
   }
 
+    //update finalValue in data.kcs
+    data.kcs.forEach(kc => {
+      kc.finalValue = Number(kc.uk) + (kc.edition!=undefined ? editImpactValues.get(kc.edition) : 0);
+      kc.hasEdition = kc.edition ? true : false;
+    });
+    
 
   if (!data.vis.color.value2color) data.vis.color.value2color = function (x) { var y = Math.log(x) * 0.25 + 1; return (y < 0 ? 0 : y); };  // use the logarithm function by default
 
@@ -2538,6 +2540,7 @@ function processData() {
   // added by @Jordan
   // (5) Generates recommendations and display concept knowledge visualization
   // Get kcs estimates fron BN_general student model developed by @Roya
+
   if (data.configprops.agg_kc_student_modeling) {
 
     if (data.configprops.agg_kc_student_modeling == "bn") {
@@ -2749,11 +2752,49 @@ function processData() {
       }
     }
   }
-
-
-
   //end of code added by @Jordan
-}
+
+  //add recency data to kcs
+  addRecencyDataToKCs();
+  //calculate difficulty scores
+  calculateKcDifficultyScores(data.kcs,0.7,0.3)
+
+  // If lgControlMode is "random", preselect a random learning goal
+  var preselectedLG = -1
+
+  const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
+
+  var preselectedLG = -1;
+  if(state.args.controlModeLG == "random"){
+    sortKCSByLearningGoal(0)
+    var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
+    if(target_difficult_concepts.length==0){
+      preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
+      while(preselectedLG!=0){
+        preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
+      }
+    }
+  }
+  // Iterate with forEach
+  lg_checkboxes.forEach((cb,idx) => {
+    if (idx == preselectedLG) {
+        cb.checked = true;
+        var learning_goal = cb.value;
+        state.args.learningGoal = learning_goal; // Set the initial learning goal in state
+        const prepareRecFunction = "prepare"+learning_goal;
+        if (typeof window[prepareRecFunction] === 'function') {
+          window[prepareRecFunction]();
+        }
+        log(
+            "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
+            "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
+            "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
+            false
+        );
+      }
+    });
+  }
+
 
 function addRecommendationStarToTopic(g_cell_topic, topic_name) {
   var rank_rec = map_topic_max_rank_rec_act[topic_name];
@@ -3192,7 +3233,8 @@ function stateArgsSet02() {
   state.args.showKcmap = false;//check if fine-grained OLM is shown or not
   state.args.controlKcmap = false;//check if users have access to choose if fine-grained OLM is shown or not
   state.args.learningGoal = "";
-
+  state.args.editModeSM = "";
+  state.args.controlModeLG = "";
 
   //end of code added by @Jordan
 
@@ -3231,7 +3273,6 @@ function stateArgsSet02() {
     state.args.uiRecExpOnDemand = (data.vis.ui.params.group.uiRecExpOnDemand != undefined ? data.vis.ui.params.group.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
     state.args.uiTopicTimeMapFile = (data.vis.ui.params.group.uiTopicTimeMapFile != undefined ? data.vis.ui.params.group.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
     state.args.uiMinProgressCheck = (data.vis.ui.params.group.uiMinProgressCheck != undefined ? data.vis.ui.params.group.uiMinProgressCheck : state.args.uiMinProgressCheck);
-
     //added by @Jordan
     state.args.kcMap = (data.vis.ui.params.group.kcMap != undefined ? data.vis.ui.params.group.kcMap : state.args.kcMap);
     state.args.kcMapMode = (data.vis.ui.params.group.kcMapMode != undefined ? data.vis.ui.params.group.kcMapMode : state.args.kcMapMode);
@@ -3241,6 +3282,10 @@ function stateArgsSet02() {
     state.args.effortMsg = (data.vis.ui.params.group.effortMsg != undefined ? data.vis.ui.params.group.effortMsg : state.args.effortMsg);
     state.args.recExp = (data.vis.ui.params.group.recExp != undefined ? data.vis.ui.params.group.recExp : state.args.recExp);//added for rec_exp
     state.args.kcResouceIds = (data.vis.ui.params.group.kcResouceIds != undefined ? data.vis.ui.params.group.kcResouceIds : state.args.kcResouceIds);
+    //how can the student model can be edited
+    state.args.editModeSM = (data.vis.ui.params.group.editModeSM != undefined ? data.vis.ui.params.group.editModeSM : state.args.editModeSM);
+    //tells if learning goal for controlling recommendations is setup or not
+    state.args.controlModeLG = (data.vis.ui.params.group.controlModeLG != undefined ? data.vis.ui.params.group.controlModeLG : state.args.controlModeLG);
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.group.dbqa_exp != undefined ? data.vis.ui.params.group.dbqa_exp : state.args.dbqaExplanations);
@@ -3275,7 +3320,6 @@ function stateArgsSet02() {
     state.args.uiRecExpOnDemand = (data.vis.ui.params.user.uiRecExpOnDemand != undefined ? data.vis.ui.params.user.uiRecExpOnDemand : state.args.uiRecExpOnDemand);
     state.args.uiTopicTimeMapFile = (data.vis.ui.params.user.uiTopicTimeMapFile != undefined ? data.vis.ui.params.user.uiTopicTimeMapFile : state.args.uiTopicTimeMapFile);
     state.args.uiMinProgressCheck = (data.vis.ui.params.user.uiMinProgressCheck != undefined ? data.vis.ui.params.user.uiMinProgressCheck : state.args.uiMinProgressCheck);
-
     //added by @Jordan
     state.args.kcMap = (data.vis.ui.params.user.kcMap != undefined ? data.vis.ui.params.user.kcMap : state.args.kcMap);
     state.args.kcMapMode = (data.vis.ui.params.user.kcMapMode != undefined ? data.vis.ui.params.user.kcMapMode : state.args.kcMapMode);
@@ -3289,6 +3333,7 @@ function stateArgsSet02() {
     //@Jordan edition of the student model (SM)
     emptyEditSM = "" //in case there are no editions made by the user
     state.args.editSM = parseCustomStringToJSON(data.vis.ui.params.user.editSM != undefined ? data.vis.ui.params.user.editSM : emptyEditSM);
+    state.args.editModeSM = parseCustomStringToJSON(data.vis.ui.params.user.editModeSM != undefined ? data.vis.ui.params.user.editModeSM : emptyEditSM);
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);
@@ -7611,6 +7656,8 @@ function populateConceptsDiv(concepts) {
   divEditSm.style.width = '25%';
   var divActFrame = document.getElementById('div-act-frame');
   divActFrame.style.width = '60%';
+  var iframe = divActFrame.querySelector('iframe');
+  iframe.style.width = '100%';
 
   // Add a title for the sidebar
   var titleDiv = document.createElement('div');
@@ -7667,52 +7714,6 @@ function populateConceptsDiv(concepts) {
     conceptItem.style.marginBottom = '10px';
 
     var row = createConceptBarRow(concept, label_top = true, extra_info = false);
-
-    // // Concept name (title per row)
-    // //if (index < max_num_concepts_to_show) {
-    // var nameDiv = document.createElement('div');
-    // nameDiv.className = 'concept-name';
-    // nameDiv.textContent = concept.dn;
-    // nameDiv.style.flex = '1';
-    // nameDiv.style.fontWeight = 'bold';
-    // nameDiv.style.marginRight = '10px';
-    // conceptItem.appendChild(nameDiv);
-    // //}
-
-    // // Bar chart container
-    // var barContainer = document.createElement('div');
-    // barContainer.className = 'concept-bar-container';
-    // barContainer.style.display = 'flex';
-    // barContainer.style.alignItems = 'center';
-    // barContainer.style.marginRight = '10px';
-
-    // var bar = document.createElement('div');
-    // bar.className = 'concept-bar';
-
-    // var finalBarValue=0
-    // if(Object.hasOwn(state.args.editSM,concept.id) && state.args.editSM[concept.id]<0){
-    //   var current_edition = state.args.editSM[concept.id]
-    //   finalBarValue = (concept.uk+editImpactValues.get(current_edition))<0 ? 0 : (concept.uk+editImpactValues.get(current_edition));
-    //   bar.style.width = (finalBarValue * 100) + '%';
-    // }else{
-    //   finalBarValue = concept.uk;
-    //   bar.style.width = (concept.uk * 100) + '%';
-    // }
-    // bar.style.height = '16px';
-    // bar.style.background = '#2196f3';
-    // bar.style.borderRadius = '0px';
-    // bar.style.marginRight = '0px';
-
-    // var valueDiv = document.createElement('div');
-    // valueDiv.className = 'concept-value';
-    // valueDiv.textContent = Math.round(concept.uk * 100) + '%';
-    // valueDiv.style.marginLeft = '4px';
-
-    // // Actions container (thumbs up/down)
-    // var actionsDiv = document.createElement('div');
-    // actionsDiv.className = 'concept-actions';
-    // actionsDiv.style.display = 'flex';
-    // actionsDiv.style.alignItems = 'center';
 
     // // Thumbs down button
     var thumbsDownBtn = document.createElement('button');
@@ -7827,6 +7828,7 @@ function populateConceptsDiv(concepts) {
       if (Object.hasOwn(state.args.editSM, concept.id)) {
         current_max_level = state.args.editSM[concept.id];
       }
+
       if (current_max_level > -3) {
         handleThumbsClick(concept.id, "down")
         this.style.color = '#fff';
@@ -7927,9 +7929,17 @@ function handleThumbsClick(conceptId, direction) {
 
   var value_change = 0
   if (direction == "up") {
-    value_change = 1
+    if(state.args.editSM[conceptId] && state.args.editSM[conceptId] == 3){
+      value_change = 0
+    }else{
+      value_change = 1
+    }
   } else {
-    value_change = -1
+    if(state.args.editSM[conceptId] && state.args.editSM[conceptId] == -3){
+      value_change = 0
+    }else{
+      value_change = -1
+    }
   }
 
   //replace the value of confidence by the value clicked by the student
@@ -8462,7 +8472,7 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   row.className = 'concept-bar-row-html';
   row.style.display = 'flex';
   row.style.flexDirection = 'column';
-  row.style.gap = '2px';
+  row.style.gap = '1px';
 
   // First line: label+checkbox and bar, side by side
   const firstLine = document.createElement('div');
@@ -8472,7 +8482,7 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
 
   // Label container with fixed width
   const labelContainer = document.createElement('div');
-  labelContainer.style.width = '100px';
+  labelContainer.style.width = '120px';
   labelContainer.style.flexShrink = '0';
   labelContainer.style.overflow = 'hidden';
   labelContainer.style.textOverflow = 'ellipsis';
@@ -8535,10 +8545,10 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   const label = document.createElement('span');
   label.className = 'concept-label-html';
   label.title = d.dn;
-  if (d.dn.length > 18) {
-    let splitIdx = d.dn.lastIndexOf(' ', 18);
-    if (splitIdx === -1) splitIdx = 18;
-    label.innerHTML = d.dn.slice(0, splitIdx) + '<br>' + d.dn.slice(splitIdx).trim();
+  if (d.dn.length > 20) {
+    let splitIdx = d.dn.lastIndexOf(' ', 20);
+    if (splitIdx === -1) splitIdx = 20;
+    label.innerHTML = d.dn.slice(0, splitIdx) + "..."//'<br>' + d.dn.slice(splitIdx).trim();
   } else {
     label.innerText = d.dn;
   }
@@ -8739,4 +8749,126 @@ function showCustomModal(message) {
 
 function removePolygonsByClass(className) {
   document.querySelectorAll(`polygon.${className}`).forEach(p => p.remove());
+}
+
+function loadLearningGoals() {
+  fetch('./data/learning_goals_data.json')
+    .then(response => response.json())
+    .then(goals => {
+      const container = document.querySelector('.learning-goals-options');
+      container.innerHTML = ''; // Clear existing
+      
+      goals.forEach((goal, idx) => {
+        // Create a container for each goal option
+        const goalDiv = document.createElement('div');
+        goalDiv.className = 'learning-goal-option '+goal.recFunction;
+        
+
+        // Create image
+        const img = document.createElement('img');
+        img.src = `img/${goal.recFunction}.png`;
+        img.alt = goal.name || goal.recFunction;
+        img.style.width = '48px';
+        img.style.height = '48px';
+        img.style.marginBottom = '4px';
+
+        // Create radio input
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.id = `goal-${idx}`;
+        input.name = 'learning-goals';
+        input.value = goal.recFunction;
+
+        const prepareRecFunction = "prepare" + goal.recFunction;
+        input.onchange = function() {
+          if (typeof window[prepareRecFunction] === 'function') {
+            state.args.learningGoal = goal.recFunction;
+            log(
+              "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
+              "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01 +
+              "orig" + CONST.log.sep02 + "user" + CONST.log.sep01,
+              true
+            );
+            data.kcs.forEach(function(kc) {
+              kc.selectedForRec = false;
+            });
+            window[prepareRecFunction]();
+          }
+        };
+
+        // Create label
+        const label = document.createElement('label');
+        label.htmlFor = input.id;
+        label.textContent = goal.name || `Goal ${idx}`;
+
+        // Append elements to the goalDiv
+        goalDiv.appendChild(img);
+        goalDiv.appendChild(input);
+        goalDiv.appendChild(label);
+
+        // Append goalDiv to the container
+        container.appendChild(goalDiv);
+
+        // Map each learning goal value to its tooltip text
+        learningGoalTooltips = {
+          RemedialRecommendations: "Focus on reviewing concepts you struggled with in previous activities.",
+          FillKnowledgeGapsRecommendations: "Fill in gaps in your knowledge by targeting concepts you haven't mastered yet.",
+          KeepMeUpWithTheClassRecommendations: "Advance to new topics and concepts beyond your current mastery."
+        };
+
+        //const container = document.querySelector('.learning-goals-options');
+        if (!container) return;
+
+        // Remove any previous listeners/tooltips
+        container.querySelectorAll('input, label').forEach(el => {
+          el.removeEventListener('mouseenter', showTooltip);
+          el.removeEventListener('mouseleave', hideTooltip);
+          el.removeEventListener('mousemove', moveTooltip);
+        });
+
+        // Attach listeners
+        container.querySelectorAll('input[type="radio"][name="learning-goals"], label').forEach(el => {
+          el.addEventListener('mouseenter', showTooltip);
+          el.addEventListener('mouseleave', hideTooltip);
+          el.addEventListener('mousemove', moveTooltip);
+        });
+      });
+    })
+    .catch(err => {
+      console.error('Could not load learning goals:', err);
+    });
+}
+
+function showTooltip(e) {
+  let value = this.value || (this.htmlFor && document.getElementById(this.htmlFor)?.value);
+  if (!value || !learningGoalTooltips[value]) return;
+
+  let tooltip = document.createElement('div');
+  tooltip.className = 'learning-goal-tooltip';
+  tooltip.innerText = learningGoalTooltips[value];
+  document.body.appendChild(tooltip);
+
+  positionTooltip(e, tooltip);
+  this._learningGoalTooltip = tooltip;
+}
+
+function moveTooltip(e) {
+  if (this._learningGoalTooltip) {
+    positionTooltip(e, this._learningGoalTooltip);
+  }
+}
+
+function hideTooltip(e) {
+  if (this._learningGoalTooltip) {
+    this._learningGoalTooltip.remove();
+    this._learningGoalTooltip = null;
+  }
+}
+
+function positionTooltip(e, tooltip) {
+  const padding = 10;
+  let x = e.clientX + padding;
+  let y = e.clientY + padding;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
 }

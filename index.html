@@ -162,64 +162,6 @@
   </div>
 </div>
 <!-- Place this before </body> -->
-<script>
-function loadLearningGoals() {
-  fetch('./data/learning_goals_data.json')
-    .then(response => response.json())
-    .then(goals => {
-      const container = document.querySelector('.learning-goals-options');
-      container.innerHTML = ''; // Clear existing
-
-      goals.forEach((goal, idx) => {
-        // Create radio input
-        const input = document.createElement('input');
-        input.type = 'radio';
-        input.id = `goal-${idx}`;
-        input.name = 'learning-goals';
-        input.value = `goal${idx}`;
-        const prepareRecFunction = "prepare"+goal.recFunction
-        console.log("prepareRecFunction: " + prepareRecFunction);
-        input.onchange = function() {
-          if (typeof window[prepareRecFunction] === 'function') {
-            state.args.learningGoal = goal.recFunction;
-            //log user selection
-            log(
-              "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
-              "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01,
-              /*"activity-original-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
-              "activity-original-id" + CONST.log.sep02 + getAct().id + CONST.log.sep01 +
-              "activity-recommended-topic-id" + CONST.log.sep02 + rec.topicId + CONST.log.sep01 +
-              "activity-recommended-resource-id" + CONST.log.sep02 + rec.resourceId + CONST.log.sep01 +
-              "activity-recommended-id" + CONST.log.sep02 + rec.activityId + CONST.log.sep01 +
-              "recommendation-id" + CONST.log.sep02 + rec.recommendationId + CONST.log.sep01 +
-              "recommendation-rank" + CONST.log.sep02 + rec.rank + CONST.log.sep01 +
-              "recommendation-score" + CONST.log.sep02 + rec.score,*/
-              true
-            );
-            //set selectedForRec to false for all concepts when a new learning goal is selected
-            data.kcs.forEach(function(kc) {
-              kc.selectedForRec = false;
-            });
-            window[prepareRecFunction]();
-          }
-        };
-
-        // Create label
-        const label = document.createElement('label');
-        label.htmlFor = input.id;
-        label.textContent = goal.name || `Goal ${idx}`;
-
-        container.appendChild(input);
-        container.appendChild(label);
-      });
-    })
-    .catch(err => {
-      console.error('Could not load learning goals:', err);
-    });
-}
-
-document.addEventListener('DOMContentLoaded', loadLearningGoals);
-</script>
 
 <!-- Concept Selection Section -->
 <div id="concept-selection-div">
@@ -389,10 +331,9 @@ document.addEventListener('DOMContentLoaded', loadLearningGoals);
 </div>
 
 
+
 <!-- Footer -->
 <!-- <div id="footer"><nobr>Tomek D Loboda &bull; 2013</nobr></div> -->
-
-
 </body>
 
 
