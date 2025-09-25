@@ -478,21 +478,6 @@ img.info-icon{position:relative;display:block;float:right;}
   flex-wrap: wrap;
 }
 
-.learning-goals-options input[type="radio"] {
-  margin-right: 5px;
-}
-
-.learning-goals-options label {
-  font-size: 13px;
-  color: #555;
-  cursor: pointer;
-}
-
-.learning-goals-options input[type="radio"]:checked + label {
-  color: #007bff;
-  font-weight: bold;
-}
-
 /* Concept Selection Section Styles */
 #concept-selection-div {
   background-color: #f8f9fa;
@@ -766,15 +751,37 @@ img.info-icon{position:relative;display:block;float:right;}
   align-items: flex-start;
   gap: 32px; /* space between each goal option */
 }
+
 .learning-goal-option {
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-radius: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  border-radius: 7px;
+  padding: 10px 18px;
+  margin: 0 8px;
+  color: #333;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  border: none;
+  position: relative;
+}
+.learning-goal-option:focus {
+  box-shadow: 0 0 0 3px #007bff55;
+}
+
+.learning-goal-option .learning-goal-btn {
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border: none;
+  box-shadow: none;
+  margin: 0 0 0 10px;
+  padding: 0;
+  cursor: inherit;
 }
 
 .learning-goal-option label{
@@ -788,14 +795,44 @@ input[type="checkbox"] {
   height: 11px; /* Adjust to your desired smaller height */
 }
 
-.RemedialRecommendations{
-  background-color: #9D8313;
+.learning-goal-option[aria-pressed="false"].RemedialRecommendations{
+  background-color: #9d8413a3;
 }
 
-.FillKnowledgeGapsRecommendations{
-  background-color: #139D83;
+.learning-goal-option[aria-pressed="false"].FillKnowledgeGapsRecommendations{
+  background-color: #139d84a9;
 }
 
-.KeepMeUpWithTheClassRecommendations{
-  background-color: #83139D;
+.learning-goal-option[aria-pressed="false"].KeepMeUpWithTheClassRecommendations{
+  background-color: #84139db8;
+}
+
+.learning-goal-option[aria-pressed="true"].RemedialRecommendations/*,
+.learning-goal-radio:checked + .learning-goal-btn,
+.learning-goals-options input[type="radio"]:checked + .learning-goal-btn*/
+{
+  background: #9d8413;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+  font-weight: bold;
+}
+
+.learning-goal-option[aria-pressed="true"].FillKnowledgeGapsRecommendations/*,
+.learning-goal-radio:checked + .learning-goal-btn,
+.learning-goals-options input[type="radio"]:checked + .learning-goal-btn*/
+{
+  background: #139D83;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+  font-weight: bold;
+}
+
+.learning-goal-option[aria-pressed="true"].KeepMeUpWithTheClassRecommendations/*,
+.learning-goal-radio:checked + .learning-goal-btn,
+.learning-goals-options input[type="radio"]:checked + .learning-goal-btn*/
+{
+  background: #83139D;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+  font-weight: bold;
 }

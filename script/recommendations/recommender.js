@@ -190,13 +190,11 @@ function generateLearningPathGraph(learningPathObj, containerId = 'learning-path
  * to examples first and then more complex content
 **/
 function prepareFillKnowledgeGapsRecommendations(){
-	alert("FKG")
 	sortKCSByLearningGoal(1)
 	setTopConceptsForRecommendations(5);
 }
 
 function prepareRemedialRecommendations(){
-	alert("Rem")
 	//check if there are concepts that can be target for recommendation first, if not show modal message
 	sortKCSByLearningGoal(0)
 	var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
@@ -218,7 +216,6 @@ function prepareRemedialRecommendations(){
 }
 
 function prepareKeepMeUpWithTheClassRecommendations(){
-	alert("Keep")
 	sortKCSByLearningGoal(2)
 	setTopConceptsForRecommendations(5);
 }

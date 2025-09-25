@@ -8759,10 +8759,12 @@ function loadLearningGoals() {
       container.innerHTML = ''; // Clear existing
       
       goals.forEach((goal, idx) => {
-        // Create a container for each goal option
-        const goalDiv = document.createElement('div');
-        goalDiv.className = 'learning-goal-option '+goal.recFunction;
-        
+  // Create a container for each goal option (treat as button)
+  const goalDiv = document.createElement('div');
+  goalDiv.className = 'learning-goal-option ' + goal.recFunction;
+  goalDiv.tabIndex = 0; // Make focusable
+  goalDiv.setAttribute('role', 'button');
+  goalDiv.setAttribute('aria-pressed', 'false');
 
         // Create image
         const img = document.createElement('img');
@@ -8772,12 +8774,45 @@ function loadLearningGoals() {
         img.style.height = '48px';
         img.style.marginBottom = '4px';
 
-        // Create radio input
+        // Create radio input (hidden, but keep for logic)
         const input = document.createElement('input');
         input.type = 'radio';
         input.id = `goal-${idx}`;
         input.name = 'learning-goals';
         input.value = goal.recFunction;
+        input.className = 'learning-goal-radio';
+        input.style.display = 'none';
+
+        // When the div is clicked or activated, select the radio and trigger logic
+        function selectGoal() {
+          // Uncheck all other radios and set all goalDivs aria-pressed to false
+          document.querySelectorAll('input[name="learning-goals"]').forEach(radio => {
+            if (radio !== input) {
+              radio.checked = false;
+              radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          });
+          document.querySelectorAll('.learning-goal-option').forEach(div => {
+            if (div !== goalDiv) {
+              div.setAttribute('aria-pressed', 'false');
+            }
+          });
+          if (!input.checked) {
+            input.checked = true;
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+        goalDiv.addEventListener('click', selectGoal);
+        goalDiv.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            selectGoal();
+          }
+        });
+        // Update aria-pressed when checked
+        input.addEventListener('change', function() {
+          goalDiv.setAttribute('aria-pressed', 'true');
+        });
 
         const prepareRecFunction = "prepare" + goal.recFunction;
         input.onchange = function() {
@@ -8796,10 +8831,12 @@ function loadLearningGoals() {
           }
         };
 
-        // Create label
-        const label = document.createElement('label');
-        label.htmlFor = input.id;
-        label.textContent = goal.name || `Goal ${idx}`;
+        // Create label styled as button
+  const label = document.createElement('label');
+  label.htmlFor = input.id;
+  label.textContent = goal.name || `Goal ${idx}`;
+  label.classList.add('learning-goal-btn');
+  label.classList.add(goal.recFunction); // keep color class
 
         // Append elements to the goalDiv
         goalDiv.appendChild(img);
