@@ -91,7 +91,7 @@ const LANGUAGES = {
 async function loadGlossaryConcepts() {
 
   // Fetch the file from your server (must be accessible at this URL)
-  const response = await fetch("../data/glossary_python_concepts_en_es.xlsx");
+  const response = await fetch(window.location.origin + "/data/glossary_python_concepts_en_es.xlsx");
   const arrayBuffer = await response.arrayBuffer();
 
   // Parse with SheetJS
