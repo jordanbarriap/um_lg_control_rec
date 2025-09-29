@@ -1,8 +1,8 @@
-
 // --- Internationalization (i18n) setup ---
 const LANGUAGES = {
   en: {
     appName: "MasteryGrids",
+    MyProgress: "My Progress",
     actLoadRec_notFound: "Due to an error the activity you have selected is not available at this time despite being on the recommended list. Please select a different activity.",
     othersTitle: "Students in the class",
     noConceptsSelected: "Learning content recommendations cannot be generated if no concept to focus on have been selected by you",
@@ -42,7 +42,15 @@ const LANGUAGES = {
     FillKnowledgeGapsRecommendationsExpLabel2: "This is recommended because it covers <span class='level2-exp-text-chosen-kcs'>a major portion</span> of the concepts that you haven't much attempted yet and you chose to focus on (",
     FillKnowledgeGapsRecommendationsExpLabel3: "This is recommended because it covers <span class='level3-exp-text-chosen-kcs'>some</span> of the concepts that you haven't attempted much yet and you chose to focus on (",
     FillKnowledgeGapsRecommendationsExpLabel4: "This is recommended because it covers <span class='level4-exp-text-chosen-kcs'>at least one</span> concept that you haven't attempted much yet and you chose to focus on (",
-    ProficiencyExpLabel1: ", and also, on average, you <span class='level1-exp-text'>master</span> the other concepts present in this activity."
+    ProficiencyExpLabel1: ", and also, on average, you <span class='level1-exp-text'>master</span> the other concepts present in this activity.",
+    ProficiencyExpLabel2: ", and also on average you are <span class='level2-exp-text'>proficient</span> in the other concepts present in this activity",
+    ProficiencyExpLabel3: ", and also on average you have a <span class='level3-exp-text'>good</span> understanding in the other concepts present in this activity.",
+    ProficiencyExpLabel4: ", and also, although it is low, your knowledge level on the other <span class='level4-exp-text'>practiced concepts</span> is one of the highest overall.",
+    RemedialRecommendationsExpLabel1:"This is recommended because it allows you to practice <b>",
+    RemedialRecommendationsExpLabel2:"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (",
+    RemedialRecommendationsExpLabel3: ", and you have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>",
+    RemedialRecommendationsExpLabel4: " that are needed to adress this activity.",
+    allActivities: "All Activities"
   },
   es: {
     appName: "MasteryGrids",
@@ -85,6 +93,17 @@ const LANGUAGES = {
     FillKnowledgeGapsRecommendationsExpLabel2: "Esta recomendación se sugiere porque cubre <span class='level2-exp-text-chosen-kcs'>una gran parte</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
     FillKnowledgeGapsRecommendationsExpLabel3: "Esta recomendación se sugiere porque cubre <span class='level3-exp-text-chosen-kcs'>algunos</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
     FillKnowledgeGapsRecommendationsExpLabel4: "Esta recomendación se sugiere porque cubre <span class='level4-exp-text-chosen-kcs'>al menos uno</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
+    ProficiencyExpLabel1: ", y también, en promedio, <span class='level1-exp-text'>dominas</span> los otros conceptos presentes en esta actividad.",
+    ProficiencyExpLabel2: ", y también, en promedio, eres <span class='level2-exp-text'>competente</span> en los otros conceptos presentes en esta actividad.",
+    ProficiencyExpLabel3: ", y también, en promedio, tienes un <span class='level3-exp-text'>buen</span> entendimiento en los otros conceptos presentes en esta actividad.",
+    ProficiencyExpLabel4: ", y también, aunque es bajo, tu nivel de conocimiento sobre los otros <span class='level4-exp-text'>conceptos practicados</span> es uno de los más altos en general.",
+    RemedialRecommendationsExpLabel1: "Te la recomendamos porque te permite practicar <b>",
+    RemedialRecommendationsExpLabel2: "</b> concepto(s) que <span style='color:red; font-weight: bold;'>podrían haberte causado problemas</span> en el pasado (",
+    RemedialRecommendationsExpLabel3: ", y tienes <span style='color:green; font-weight: bold;' >buen conocimiento</span> de <b>",
+    RemedialRecommendationsExpLabel4: "</b> concepto(s) que son necesarios para abordar esta actividad.",
+    MyProgress: "Mi progreso",
+    allActivities: "Todas las actividades de aprendizaje"
+    
   }
 };
 
@@ -337,6 +356,7 @@ let editImpactValues = new Map()
 editImpactValues.set(1, .2)
 editImpactValues.set(2, .3)
 editImpactValues.set(3, .35)
+editImpactValues.set(0, .0)
 editImpactValues.set(-1, -.2)
 editImpactValues.set(-2, -.3)
 editImpactValues.set(-3, -.35)
@@ -1017,7 +1037,7 @@ function helpDialogShow(origin, x, y) {
   //$($$input("button", ui.vis.helpDlgTitle, "btn-act-lst-close", "small-btn", "close")).button().click(helpDialogHide);
 
   //Code added by @Jordan
-  $($$input("button", ui.vis.helpDlgTitle, "btn-act-lst-close", "small-btn", "close"))
+  $($$input("button", ui.vis.helpDlgTitle, "btn-act-lst-close", "small-btn", LANGUAGES[state.curr.lang].close))
     .button()
     .click(function (event) {
       event.stopPropagation();
@@ -1116,7 +1136,7 @@ function actLstShow(doMe, doVs, doGrp) {
     addRecommendationsToUI();
   }
 
-  $($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", "close")).button().click(actLstHide);
+  $($$input("button", ui.vis.actLst.cont, "btn-act-lst-close", "small-btn", LANGUAGES[state.curr.lang].close)).button().click(actLstHide);
 
   // (1) Generate the activities grid:
   // (1.1) All resources:
@@ -2947,7 +2967,7 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
     //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
     .attr("stroke", "white")
     .attr("max_rec_rank_act", map_topic_max_rank_rec_act[topic_name])
-    .attr("class", "rec_topic "+state.args.learningGoal)
+    .attr("class", "rec_topic "+state.args.learningGoalForRec)
     .style("shape-rendering", "geometricPrecision")
 }
 
@@ -3357,6 +3377,9 @@ function stateArgsSet02() {
   state.args.editModeSM = "";
   state.args.controlModeLG = "";
   state.args.kcSelectionForRec = false;
+
+  //only changes when the goal has generated recommendations
+  state.args.learningGoalForRec = "";
 
   //end of code added by @Jordan
 
@@ -3930,7 +3953,7 @@ function visDo(doMe, doGrp, doOthers) {
           // Topics and activites in a non-AVG resource-focus:
           if (topic === null || (topic !== null && res.id !== "AVG") || (state.args.uiGridActLstMode)) {
 
-            var title = (state.args.uiGridOneHeadMeVis ? (state.args.uiGridGrpVis ? "Me and group (" + othersTitle + ")" : "My Progress") + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
+            var title = (state.args.uiGridOneHeadMeVis ? (state.args.uiGridGrpVis ? "Me and group (" + othersTitle + ")" : LANGUAGES[state.curr.lang].MyProgress) + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
             var seriesNames = ["Me", "Me vs group", "Group"];
 
             var colorScales = [
@@ -4479,7 +4502,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
   if (data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to be checked by a parameter
     var titleTr = $$("tr", tbl);
     var recommendationTitle = $$("td", titleTr, null, "rec-title", LANGUAGES[state.curr.lang].recommendedActivities)
-    var allActivitiesTitle = $$("td", titleTr, null, "rec-title", 'All Activities')
+    var allActivitiesTitle = $$("td", titleTr, null, "rec-title", LANGUAGES[state.curr.lang].allActivities)
     $setAttr(recommendationTitle, { colspan: 1 });
     $setAttr(allActivitiesTitle, { colspan: 1 });
 
@@ -8353,6 +8376,7 @@ function generateLearningRecommendations() {
 
   if (typeof window[generateRecFunction] === 'function') {
     if (state.args.learningGoal != "") {
+      state.args.learningGoalForRec = state.args.learningGoal;
       if (state.args.learningGoal == "RemedialRecommendations") {
         var usr_index = data.learners.indexOf(data.learners.filter(function (d) { return d.id == state.curr.usr })[0]);
         //Here both things are needed, low success rate but also low mastery (low success rate and higher mastery can be signs of slip concepts)
@@ -8459,7 +8483,7 @@ function generateLearningRecommendations() {
             "cid": state.curr.cid,
             "sid": state.curr.sid,
             "logRecId": millisecondsDate.toString(),
-            "recMethod": state.args.learningGoal,
+            "recMethod": state.args.learningGoalForRec,
             "recommendations": recommended_activities
           }),
           url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
@@ -9105,6 +9129,7 @@ function loadLearningGoals() {
         const prepareRecFunction = "prepare" + goal.recFunction;
         input.onchange = function() {
           if (typeof window[prepareRecFunction] === 'function') {
+            document.getElementById('concept-selection-options').style.filter = 'none';
             state.args.learningGoal = goal.recFunction;
             goalDiv.setAttribute('aria-pressed', 'true');
             log(
@@ -9202,4 +9227,24 @@ function positionTooltip(e, tooltip) {
 // Inserts spaces before each uppercase letter (except the first one)
 function camelCaseToWords(str) {
   return str.replace(/([a-z])([A-Z])/g, '$1 $2');
+}
+
+//Translate kc names
+function convertKCNamesToCurrentLanguage(list_kcs){
+  //let list_kcs = str_list_kcs.split(",");
+  let translated_lst_kcs = "";
+  for(let i=0; i<list_kcs.length; i++){
+    let kc_name=list_kcs[i].trim();
+    if (Object.prototype.hasOwnProperty.call(LANGUAGES[state.curr.lang], kc_name+"_name")) {
+      let translated_kc_name = LANGUAGES[state.curr.lang][kc_name+"_name"];
+      translated_kc_name = camelCaseToWords(translated_kc_name);
+      translated_lst_kcs += translated_kc_name;
+    } else {
+      translated_lst_kcs += kc_name;
+    }
+    if(i < list_kcs.length - 1){
+      translated_lst_kcs += ", ";
+    }
+  }
+  return translated_lst_kcs;
 }

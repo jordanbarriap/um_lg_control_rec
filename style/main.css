@@ -503,6 +503,7 @@ img.info-icon{position:relative;display:block;float:right;}
   gap: 15px;
   flex-wrap: wrap;
   flex: 1;
+  filter: blur(5px);
 }
 
 .concept-checkbox-item {
@@ -715,7 +716,7 @@ img.info-icon{position:relative;display:block;float:right;}
   font-size: 1.2em;
   font-weight: bold;
   color: #fff;
-  background: #d35400;
+  background: #adadad;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -727,7 +728,7 @@ img.info-icon{position:relative;display:block;float:right;}
   text-align: center;
 }
 .learning-path-btn:hover {
-  background: #e67e22;
+  background: #848484;
 }
 
 .learning-goal-tooltip {
@@ -806,15 +807,15 @@ input[type="checkbox"] {
 }
 
 .learning-goal-option[aria-pressed="false"].RemedialRecommendations{
-  background-color: #ffe186;
+  background-color: #fde18c;
 }
 
 .learning-goal-option[aria-pressed="false"].FillKnowledgeGapsRecommendations{
-  background-color: #139d8497;
+  background-color: #82b4e3;
 }
 
 .learning-goal-option[aria-pressed="false"].KeepMeUpWithTheClassRecommendations{
-  background-color: #84139d9e;
+  background-color: #ce9ed9;
 }
 
 .learning-goal-option[aria-pressed="true"].RemedialRecommendations/*,
@@ -831,7 +832,7 @@ input[type="checkbox"] {
 .learning-goal-radio:checked + .learning-goal-btn,
 .learning-goals-options input[type="radio"]:checked + .learning-goal-btn*/
 {
-  background: #139D83;
+  background: #13539d;
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,123,255,0.15);
   font-weight: bold;
@@ -854,7 +855,7 @@ polygon.RemedialRecommendations
 
 polygon.FillKnowledgeGapsRecommendations
 {
-  fill: #139D83 !important;
+  fill: #13539d !important;
 }
 
 polygon.KeepMeUpWithTheClassRecommendations

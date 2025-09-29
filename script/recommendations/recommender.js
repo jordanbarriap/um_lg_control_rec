@@ -258,21 +258,21 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 
 				activity.topic_name = topic_name;
 				activity.topic_id = i;
-				sample_covered_concepts = covered.slice(0,3).map(function(d){return data.kcs.filter(function(kc){return kc.id==d})[0].dn})
+				sample_covered_concepts = covered.slice(0,3).map(function(d){return data.kcs.filter(function(kc){return kc.id==d})[0].n})
 				explanation = ""
 				//Explanations about the target concepts covered
 				ratio_covered_selected_kcs = activity.ratio_covered_selected_kcs
 				if(ratio_covered_selected_kcs==1){
-					explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel1+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+					explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel1+"<span class='text-highlighted-kcs'>"+convertKCNamesToCurrentLanguage(sample_covered_concepts)+")</span>.";
 				}else{
 					if(ratio_covered_selected_kcs>=0.5){
-						explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel2+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+						explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel2+"<span class='text-highlighted-kcs'>"+convertKCNamesToCurrentLanguage(sample_covered_concepts)+")</span>.";
 					}else{
 						if(ratio_covered_selected_kcs>0.25){
-							explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel3+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+							explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel3+"<span class='text-highlighted-kcs'>"+convertKCNamesToCurrentLanguage(sample_covered_concepts)+")</span>.";
 						}else{
 							if(ratio_covered_selected_kcs>0.0){
-								explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel4+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+								explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel4+"<span class='text-highlighted-kcs'>"+convertKCNamesToCurrentLanguage(sample_covered_concepts)+")</span>.";
 							}
 						}
 					}
@@ -323,15 +323,15 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		
 		explanation_other_kcs_part=activity.explanation
 		if(avg_uk_non_target>=mastery_threshold){
-			explanation_other_kcs_part+=", and also on average you <span class='level1-exp-text'>master</span> the other <span class='important-text'>concepts present in this activity</span>.";
+			explanation_other_kcs_part+=LANGUAGES[state.curr.lang].ProficiencyExpLabel1;
 		}else{
 			if(avg_uk_non_target>=proficiency_threshold){
-				explanation_other_kcs_part+=", and also on average you are <span class='level2-exp-text'>proficient</span> in the other <span class='important-text'>concepts present in this activity</span>";
+				explanation_other_kcs_part+=LANGUAGES[state.curr.lang].ProficiencyExpLabel2;
 			}else{
 				if(avg_uk_non_target>=good_threshold){
-					explanation_other_kcs_part+=", and also on average you have a <span class='level3-exp-text'>good</span> understanding in the other <span class='important-text'>concepts present in this activity</span>.";
+					explanation_other_kcs_part+=LANGUAGES[state.curr.lang].ProficiencyExpLabel3;
 				}else{
-					explanation_other_kcs_part+=", and also, although it is low, your knowledge level on the other <span class='level4-exp-text'>concepts present in this activity</span> is one of the highest overall.";
+					explanation_other_kcs_part+=LANGUAGES[state.curr.lang].ProficiencyExpLabel4;
 				}
 			}
 		}
@@ -784,10 +784,10 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						helpful_kcs = helpful_kcs.sort((a, b) => (a.kclevel > b.kclevel) ? 1 : -1)
 
 		
-						var rec_explanation = "This activity is recommended because ";
+						var rec_explanation = "";
 		
 						if ((problematic_kcs+slip_kcs)>0){
-							rec_explanation = rec_explanation + " it allows you to practice <b>"+(problematic_kcs + slip_kcs)+"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (e.g. "+misconception_kcs[0].name+").</li>"
+							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2+misconception_kcs[0].name+")"
 							//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
 							// Peter suggested to hide this part of the explanation
 							// if (slip_kcs){
@@ -796,16 +796,16 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 							//rec_explanation = rec_explanation + "<br>";
 						}
 						if (helpful_kcs_number>0){
-							rec_explanation = rec_explanation + "<li>You have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>"+helpful_kcs_number+"</b> concept(s)</b> that are necessary to ";//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
+							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel3+helpful_kcs_number+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel4;//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
 							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0 || activity["url"].indexOf("quizpet")>=0 || activity["url"].indexOf("pcrs")>=0;
 							var is_example = activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae") || activity["url"].indexOf("pcex")>=0;
-							if(is_problem){
+							/*if(is_problem){
 								rec_explanation = rec_explanation + " solve this problem.";
 							}else{
 								if(is_example){
 									rec_explanation = rec_explanation + " understand this example.";
 								}
-							}	
+							}*/
 
 							rec_explanation = rec_explanation + "(e.g. " + helpful_kcs[0].name + ")</li>"
 
@@ -2198,7 +2198,7 @@ function addRecommendationsToUI(){
 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
 								.attr("stroke", "white")
 								.attr("max_rec_rank_act",rank_recommended_activities[act_id])
-								.attr("class","act_topic "+state.args.learningGoal)
+								.attr("class","act_topic "+state.args.learningGoalForRec)
 								.style("shape-rendering", "geometricPrecision")
 								.style("pointer-events","none");
 							
