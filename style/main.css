@@ -758,7 +758,7 @@ img.info-icon{position:relative;display:block;float:right;}
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: 32px; /* space between each goal option */
+  gap: 15px; /* space between each goal option */
 }
 
 .learning-goal-option {
@@ -766,8 +766,8 @@ img.info-icon{position:relative;display:block;float:right;}
   flex-direction: row;
   align-items: center;
   border-radius: 7px;
-  padding: 8px 15px;
-  margin: 0 8px;
+  padding: 5px 12px;
+  margin: 0 5px;
   color: #333;
   font-size: 12px;
   cursor: pointer;

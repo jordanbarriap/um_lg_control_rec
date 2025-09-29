@@ -5,10 +5,10 @@
         {"topicOrder":3, "focusDate": "2025-08-18T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
         {"topicOrder":4, "focusDate": "2025-08-25T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
         {"topicOrder":5, "focusDate": "2025-09-01T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
-        {"topicOrder":6, "focusDate": "2025-09-08T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
-        {"topicOrder":7, "focusDate": "2025-09-22T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
-        {"topicOrder":8, "focusDate": "2025-10-01T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
-        {"topicOrder":9, "focusDate": "2025-10-20T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"}
+        {"topicOrder":6, "focusDate": "2025-10-05T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
+        {"topicOrder":7, "focusDate": "2025-10-15T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
+        {"topicOrder":8, "focusDate": "2025-10-19T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"},
+        {"topicOrder":9, "focusDate": "2025-11-02T07:00:00+0100", "releaseDate": "2025-08-20T07:00:00+0100", "dueDate": "2025-12-11T00:00:01+0100"}
     ],
     "incentives": {
         "report_mode": "topic_level",

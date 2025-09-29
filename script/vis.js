@@ -42,7 +42,7 @@ const LANGUAGES = {
     FillKnowledgeGapsRecommendationsExpLabel2: "This is recommended because it covers <span class='level2-exp-text-chosen-kcs'>a major portion</span> of the concepts that you haven't much attempted yet and you chose to focus on (",
     FillKnowledgeGapsRecommendationsExpLabel3: "This is recommended because it covers <span class='level3-exp-text-chosen-kcs'>some</span> of the concepts that you haven't attempted much yet and you chose to focus on (",
     FillKnowledgeGapsRecommendationsExpLabel4: "This is recommended because it covers <span class='level4-exp-text-chosen-kcs'>at least one</span> concept that you haven't attempted much yet and you chose to focus on (",
-
+    ProficiencyExpLabel1: ", and also, on average, you <span class='level1-exp-text'>master</span> the other concepts present in this activity."
   },
   es: {
     appName: "MasteryGrids",
@@ -122,7 +122,7 @@ async function loadGlossaryConcepts() {
   });
 }
 
-loadGlossaryConcepts();
+
 
 
 // Example usage for new keys:
@@ -2056,7 +2056,8 @@ function grpSetCellH(h) {
 
 
 // ------------------------------------------------------------------------------------------------------
-function init() {
+async function init() {
+  await loadGlossaryConcepts();
   stateArgsSet01();
 
   log(
