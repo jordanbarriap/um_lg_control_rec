@@ -263,16 +263,16 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 				//Explanations about the target concepts covered
 				ratio_covered_selected_kcs = activity.ratio_covered_selected_kcs
 				if(ratio_covered_selected_kcs==1){
-					explanation+="This is recommended because it covers <span class='level1-exp-text-chosen-kcs'>ALL the concept(s)</span> that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+					explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel1+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 				}else{
 					if(ratio_covered_selected_kcs>=0.5){
-						explanation+="This is recommended because it covers <span class='level2-exp-text-chosen-kcs'>more than half</span> of the concept(s) that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+						explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel2+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 					}else{
 						if(ratio_covered_selected_kcs>0.25){
-							explanation+="This is recommended because it covers <span class='level3-exp-text-chosen-kcs'>few</span> of the concept(s) that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+							explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel3+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 						}else{
 							if(ratio_covered_selected_kcs>0.0){
-								explanation+="This is recommended because it covers <span class='level4-exp-text-chosen-kcs'>at least one concept</span> that you haven't attempted yet and you chose to focus on (e.g., <span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
+								explanation+=LANGUAGES[state.curr.lang].FillKnowledgeGapsRecommendationsExpLabel4+"<span class='text-highlighted-kcs'>"+sample_covered_concepts+")</span>.";
 							}
 						}
 					}
@@ -2550,7 +2550,7 @@ function setTopConceptsForRecommendations(num_concepts){
 		kc.name = kc.dn
 		kc.selectedForRec = true; // Default to selected
 		console.log("this is a new row...")
-        var row = createConceptBarRow(kc, label_top=true, add_checkbox=true);
+        var row = createConceptBarRow(kc, label_top=true, add_checkbox=state.args.kcSelectionForRec);
 		
 		container.appendChild(row);
 

@@ -35,7 +35,13 @@ const LANGUAGES = {
     KeepMeUpWithTheClassRecommendations: "Keep me up with the class",
     RemedialRecommendations_description: "Focus on reviewing concepts you struggled with in previous activities.",
     FillKnowledgeGapsRecommendations_description: "Work on concepts I haven't learned yet.",
-    KeepMeUpWithTheClassRecommendations_description: "Stay updated with the class content."
+    KeepMeUpWithTheClassRecommendations_description: "Stay updated with the class content.",
+    noConceptsSelectedForRec: "Learning content recommendations cannot be generated if no concept to focus on have been selected by you.",
+    conceptSelectionLabel: "2. Which concepts would you like to focus on?",
+    FillKnowledgeGapsRecommendationsExpLabel1: "This is recommended because it covers <span class='level1-exp-text-chosen-kcs'>all/span> the concepts that you haven't attempted much yet and you chose to focus on (",
+    FillKnowledgeGapsRecommendationsExpLabel2: "This is recommended because it covers <span class='level2-exp-text-chosen-kcs'>a major portion</span> of the concepts that you haven't much attempted yet and you chose to focus on (",
+    FillKnowledgeGapsRecommendationsExpLabel3: "This is recommended because it covers <span class='level3-exp-text-chosen-kcs'>some</span> of the concepts that you haven't attempted much yet and you chose to focus on (",
+    FillKnowledgeGapsRecommendationsExpLabel4: "This is recommended because it covers <span class='level4-exp-text-chosen-kcs'>at least one</span> concept that you haven't attempted much yet and you chose to focus on (",
 
   },
   es: {
@@ -72,7 +78,13 @@ const LANGUAGES = {
     KeepMeUpWithTheClassRecommendations: "Ponerme al día con la clase",
     RemedialRecommendations_description: "Enfócate en revisar los conceptos con los que has tenido dificultades en actividades previas.",
     FillKnowledgeGapsRecommendations_description: "Trabaja en conceptos en los cuales no existe evidencia de que sean dominados.",
-    KeepMeUpWithTheClassRecommendations_description: "Mantente actualizado con los conceptos de la unidad actual."
+    KeepMeUpWithTheClassRecommendations_description: "Mantente actualizado con los conceptos de la unidad actual.",
+    noConceptsSelectedForRec: "No se pueden generar recomendaciones de contenido de aprendizaje si no ha seleccionado ningún concepto en el que enfocarse.",
+    conceptSelectionLabel: "2. ¿En qué conceptos te gustaría enfocarte?",
+    FillKnowledgeGapsRecommendationsExpLabel1: "Esta recomendación se sugiere porque cubre <span class='level1-exp-text-chosen-kcs'>todos</span> los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
+    FillKnowledgeGapsRecommendationsExpLabel2: "Esta recomendación se sugiere porque cubre <span class='level2-exp-text-chosen-kcs'>una gran parte</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
+    FillKnowledgeGapsRecommendationsExpLabel3: "Esta recomendación se sugiere porque cubre <span class='level3-exp-text-chosen-kcs'>algunos</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
+    FillKnowledgeGapsRecommendationsExpLabel4: "Esta recomendación se sugiere porque cubre <span class='level4-exp-text-chosen-kcs'>al menos uno</span> de los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
   }
 };
 
@@ -114,40 +126,25 @@ loadGlossaryConcepts();
 
 
 // Example usage for new keys:
-// LANGUAGES[currentLang].loading
-// LANGUAGES[currentLang].help
-// LANGUAGES[currentLang].barChartTitle
-// LANGUAGES[currentLang].recommendedActivities
-// LANGUAGES[currentLang].selectLanguage
-// LANGUAGES[currentLang].english
-// LANGUAGES[currentLang].spanish
-// LANGUAGES[currentLang].close
-// LANGUAGES[currentLang].confirm
-// LANGUAGES[currentLang].cancel
-// LANGUAGES[currentLang].tableCreation
-// LANGUAGES[currentLang].tableDeletionAlteration
-// LANGUAGES[currentLang].keyConstraints
-// LANGUAGES[currentLang].tupleInsertion
-// LANGUAGES[currentLang].tupleDeletion
-// LANGUAGES[currentLang].tupleUpdate
-// LANGUAGES[currentLang].generalConstraints
-// LANGUAGES[currentLang].derivedRelationsViews
-let currentLang = 'es';
-function setLanguage(lang) {
-  if (LANGUAGES[lang]) {
-    currentLang = lang;
-    updateAllText();
-  }
-}
+// LANGUAGES[state.curr.lang].loading
+// LANGUAGES[state.curr.lang].help
+// LANGUAGES[state.curr.lang].barChartTitle
+// LANGUAGES[state.curr.lang].recommendedActivities
+// LANGUAGES[state.curr.lang].selectLanguage
+// LANGUAGES[state.curr.lang].english
+// LANGUAGES[state.curr.lang].spanish
+// LANGUAGES[state.curr.lang].close
+// LANGUAGES[state.curr.lang].confirm
+// LANGUAGES[state.curr.lang].cancel
+// LANGUAGES[state.curr.lang].tableCreation
+// LANGUAGES[state.curr.lang].tableDeletionAlteration
+// LANGUAGES[state.curr.lang].keyConstraints
+// LANGUAGES[state.curr.lang].tupleInsertion
+// LANGUAGES[state.curr.lang].tupleDeletion
+// LANGUAGES[state.curr.lang].tupleUpdate
+// LANGUAGES[state.curr.lang].generalConstraints
+// LANGUAGES[state.curr.lang].derivedRelationsViews
 
-function updateAllText() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (LANGUAGES[currentLang][key]) {
-      el.textContent = LANGUAGES[currentLang][key];
-    }
-  });
-}
 //stores the text that will be shown in tooltips for each learning goal
 var learningGoalTooltips = {};
 
@@ -155,12 +152,12 @@ var learningGoalTooltips = {};
 document.addEventListener('DOMContentLoaded', updateAllText);
 
 var CONST = {
-  appName: LANGUAGES[currentLang].appName,
+  appName: "MasteryGrids",
   cookies: { days: 355 },
   defTopN: 10,  // the default 'n' in the "Top n" group
   log: { sep01: ",", sep02: ":" },  // separators used for logging
   msg: {
-    actLoadRec_notFound: LANGUAGES[currentLang].actLoadRec_notFound
+    actLoadRec_notFound: "Due to an error the activity you have selected is not available at this time despite being on the recommended list. Please select a different activity."//LANGUAGES[state.curr.lang].actLoadRec_notFound
   },
   scrollTime: 500,  // after how much time log scrolling position [ms]
   vis: {
@@ -3253,6 +3250,9 @@ function stateArgsSet01() {
   state.curr.grp = qs.grp;
   state.curr.sid = qs.sid;
   state.curr.cid = qs.cid;
+  state.curr.lang = qs.lang;
+
+  setLanguage(state.curr.lang);
 
   // Data:
   state.args.dataLive = (qs["data-live"] === "0" ? false : true);
@@ -3265,6 +3265,22 @@ function stateArgsSet01() {
     $call("GET", surveyTrackUrl, null, null, true, false);
   }
 
+}
+
+
+function setLanguage(lang) {
+  if (LANGUAGES[lang]) {
+    updateAllText();
+  }
+}
+
+function updateAllText() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (LANGUAGES[state.curr.lang][key]) {
+      el.textContent = LANGUAGES[state.curr.lang][key];
+    }
+  });
 }
 
 
@@ -3337,6 +3353,7 @@ function stateArgsSet02() {
   state.args.learningGoal = "";
   state.args.editModeSM = "";
   state.args.controlModeLG = "";
+  state.args.kcSelectionForRec = false;
 
   //end of code added by @Jordan
 
@@ -3388,6 +3405,7 @@ function stateArgsSet02() {
     state.args.editModeSM = (data.vis.ui.params.group.editModeSM != undefined ? data.vis.ui.params.group.editModeSM : state.args.editModeSM);
     //tells if learning goal for controlling recommendations is setup or not
     state.args.controlModeLG = (data.vis.ui.params.group.controlModeLG != undefined ? data.vis.ui.params.group.controlModeLG : state.args.controlModeLG);
+    state.args.kcSelectionForRec = (data.vis.ui.params.group.kcSelectionForRec != undefined ? data.vis.ui.params.group.kcSelectionForRec : state.args.kcSelectionForRec);
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.group.dbqa_exp != undefined ? data.vis.ui.params.group.dbqa_exp : state.args.dbqaExplanations);
@@ -3438,6 +3456,8 @@ function stateArgsSet02() {
     emptyEditSM = "" //in case there are no editions made by the user
     state.args.editSM = parseCustomStringToJSON(data.vis.ui.params.user.editSM != undefined ? data.vis.ui.params.user.editSM : emptyEditSM);
     state.args.editModeSM = parseCustomStringToJSON(data.vis.ui.params.user.editModeSM != undefined ? data.vis.ui.params.user.editModeSM : emptyEditSM);
+    state.args.kcSelectionForRec = (data.vis.ui.params.user.kcSelectionForRec != undefined ? data.vis.ui.params.user.kcSelectionForRec : state.args.kcSelectionForRec);
+    //learning goal (LG) for controlling recommendations
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);
@@ -4455,7 +4475,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 
   if (data.configprops.agg_proactiverec_enabled && !title) { //Added for proactive recommendation, need to be checked by a parameter
     var titleTr = $$("tr", tbl);
-    var recommendationTitle = $$("td", titleTr, null, "rec-title", LANGUAGES[currentLang].recommendedActivities)
+    var recommendationTitle = $$("td", titleTr, null, "rec-title", LANGUAGES[state.curr.lang].recommendedActivities)
     var allActivitiesTitle = $$("td", titleTr, null, "rec-title", 'All Activities')
     $setAttr(recommendationTitle, { colspan: 1 });
     $setAttr(allActivitiesTitle, { colspan: 1 });
@@ -4586,14 +4606,14 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
             })
         } else {
           var topicMastered = document.createElement('div');
-          $(topicMastered).html(LANGUAGES[currentLang].noRecommendationInTopic).addClass('no_recommendation');
+          $(topicMastered).html(LANGUAGES[state.curr.lang].noRecommendationInTopic).addClass('no_recommendation');
           $(recommendationtr).append(topicMastered);
         }
 
 
       } else {
         var topicMastered = document.createElement('div');
-        $(topicMastered).html(LANGUAGES[currentLang].noRecommendationInTopic).addClass('no_recommendation');
+        $(topicMastered).html(LANGUAGES[state.curr.lang].noRecommendationInTopic).addClass('no_recommendation');
         $(recommendationtr).append(topicMastered);
       }
     } else if (data.configprops.agg_proactiverec_method == "random") {
@@ -7216,38 +7236,38 @@ function generateHelp(origin) {
   var helpText = "";
   if (["Animated Examples"].includes(origin)) {
     var height = 90;
-    helpText = `<b>${LANGUAGES[currentLang]["help_ae_title"]}</b>: ${LANGUAGES[currentLang]["help_ae_desc"]}`;
+    helpText = `<b>${LANGUAGES[state.curr.lang]["help_ae_title"]}</b>: ${LANGUAGES[state.curr.lang]["help_ae_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Quizzes", "Tracing Problems"].includes(origin)) {
     var height = 90;
-    helpText = `<b>${LANGUAGES[currentLang]["help_tp_title"]}</b>: ${LANGUAGES[currentLang]["help_tp_desc"]}`;
+    helpText = `<b>${LANGUAGES[state.curr.lang]["help_tp_title"]}</b>: ${LANGUAGES[state.curr.lang]["help_tp_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Examples", "Programming Examples"].includes(origin)) {
     var height = 90;
-    helpText = `<b>${LANGUAGES[currentLang]["help_pe_title"]}</b>: ${LANGUAGES[currentLang]["help_pe_desc"]}`;
+    helpText = `<b>${LANGUAGES[state.curr.lang]["help_pe_title"]}</b>: ${LANGUAGES[state.curr.lang]["help_pe_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Challenges", "Programming Challenges"].includes(origin)) {
     var height = 90;
-    helpText = `<b>${LANGUAGES[currentLang]["help_pc_title"]}</b>: ${LANGUAGES[currentLang]["help_pc_desc"]}`;
+    helpText = `<b>${LANGUAGES[state.curr.lang]["help_pc_title"]}</b>: ${LANGUAGES[state.curr.lang]["help_pc_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Coding", "Coding Problems"].includes(origin)) {
     var height = 90;
-    helpText = `<b>${LANGUAGES[currentLang]["help_cp_title"]}</b>: ${LANGUAGES[currentLang]["help_cp_desc"]}`;
+    helpText = `<b>${LANGUAGES[state.curr.lang]["help_cp_title"]}</b>: ${LANGUAGES[state.curr.lang]["help_cp_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (origin === "one-res-me-h") {
     var height = 150;
 
-    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_progress_title"]}</h3><p>${LANGUAGES[currentLang]["help_progress_desc"]}</p>`;
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[state.curr.lang]["help_progress_title"]}</h3><p>${LANGUAGES[state.curr.lang]["help_progress_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
 
     if (data.configprops.agg_kc_student_modeling == "cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial") {
@@ -7339,7 +7359,7 @@ function generateHelp(origin) {
     //"#edf8e9","#c7e9c0","#a1d99b","#74c476","#31a354","#006d2c"
   }
   if (origin === "one-res-mevsgrp-h") {
-    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_comparison_title"]}</h3><p style='margin-top: 2px;margin-bottom:5px;'>${LANGUAGES[currentLang]["help_comparison_desc"]}</p>`;
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[state.curr.lang]["help_comparison_title"]}</h3><p style='margin-top: 2px;margin-bottom:5px;'>${LANGUAGES[state.curr.lang]["help_comparison_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
     helpText += "<tr>" +
       "<td style='padding:2px 5px 2px 0px;font-size: 10px;'>group +</td>" +
@@ -7359,7 +7379,7 @@ function generateHelp(origin) {
     helpText += "</table>";
   }
   if (origin === "one-res-grp-h") {
-    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_group_title"]}</h3><p>${LANGUAGES[currentLang]["help_group_desc"]}</p>`;
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[state.curr.lang]["help_group_title"]}</h3><p>${LANGUAGES[state.curr.lang]["help_group_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
     helpText += "<tr>" +
       "<td style='padding:2px 5px 2px 0px;'>0%</td>" +
@@ -7767,7 +7787,7 @@ count = function (ary, classifier) {
 //     // Add a title for the sidebar
 //     var titleDiv = document.createElement('div');
 //     titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
-//     titleDiv.textContent = LANGUAGES[currentLang].barChartTitle;
+//     titleDiv.textContent = LANGUAGES[state.curr.lang].barChartTitle;
 //     divEditSm.appendChild(titleDiv);
 
 //     concepts.forEach(function(concept, index) {
@@ -8106,7 +8126,7 @@ function populateConceptsDiv(concepts) {
   // Add 'See more concepts' button if needed
   if (concepts.length > max_num_concepts_to_show) {
     var seeMoreBtn = document.createElement('button');
-    seeMoreBtn.textContent = LANGUAGES[currentLang].seeMoreConcepts || 'See more concepts';
+    seeMoreBtn.textContent = LANGUAGES[state.curr.lang].seeMoreConcepts || 'See more concepts';
     seeMoreBtn.style.margin = '10px auto';
     seeMoreBtn.style.display = 'block';
     seeMoreBtn.onclick = function () {
@@ -8315,7 +8335,7 @@ function generateLearningRecommendations() {
   // Check if any concepts are selected for recommendation
   if (data.kcs.every(kc => !kc.selectedForRec)) {
     // Show modal message and exit function
-    let message = "Learning content recommendations cannot be generated if no concept to focus on have been selected by you";
+    let message = LANGUAGES[state.curr.lang].noConceptsSelectedForRec || "Please select at least one concept for generating recommendations.";
     showCustomModal(message);
     return;
   }
@@ -8669,7 +8689,7 @@ function createConceptsBarChart() {
   data.kcs.forEach(d => {
 
     // row.appendChild(barContainer);
-    let row = createConceptBarRow(d, label_top = false, add_checkbox = true);
+    let row = createConceptBarRow(d, label_top = false, add_checkbox = state.args.kcSelectionForRec);
     chart.appendChild(row);
   });
 
@@ -8758,8 +8778,8 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
 
   // Label
   let kc_name="";
-  if (Object.prototype.hasOwnProperty.call(LANGUAGES[currentLang], d.n+"_name")) {
-    kc_name = LANGUAGES[currentLang][d.n+"_name"];
+  if (Object.prototype.hasOwnProperty.call(LANGUAGES[state.curr.lang], d.n+"_name")) {
+    kc_name = LANGUAGES[state.curr.lang][d.n+"_name"];
     kc_name = camelCaseToWords(kc_name);
   } else {
     kc_name = d.dn;
@@ -8900,10 +8920,10 @@ row.addEventListener('mouseenter', function(e) {
     let kc_name = d.dn;
     let kc_description = '';
     let kc_code = '';
-    if (Object.prototype.hasOwnProperty.call(LANGUAGES[currentLang], d.n+"_name")) {
-      kc_name = camelCaseToWords(LANGUAGES[currentLang][d.n+"_name"]);
-      kc_description = LANGUAGES[currentLang][d.n+"_description"] || '';
-      kc_code = LANGUAGES[currentLang][d.n+"_code"] || '';
+    if (Object.prototype.hasOwnProperty.call(LANGUAGES[state.curr.lang], d.n+"_name")) {
+      kc_name = camelCaseToWords(LANGUAGES[state.curr.lang][d.n+"_name"]);
+      kc_description = LANGUAGES[state.curr.lang][d.n+"_description"] || '';
+      kc_code = LANGUAGES[state.curr.lang][d.n+"_code"] || '';
     }
 
     // Build tooltip HTML
@@ -8997,7 +9017,7 @@ function showCustomModal(message) {
   msg.innerText = message;
 
   const btn = document.createElement('button');
-  btn.innerText = LANGUAGES[currentLang].confirm;
+  btn.innerText = LANGUAGES[state.curr.lang].confirm;
   btn.style.padding = '8px 24px';
   btn.style.fontSize = '15px';
   btn.style.background = '#1976d2';
@@ -9038,7 +9058,7 @@ function loadLearningGoals() {
         // Create image
         const img = document.createElement('img');
         img.src = `img/${goal.recFunction}.png`;
-        img.alt = LANGUAGES[currentLang][goal.recFunction];
+        img.alt = LANGUAGES[state.curr.lang][goal.recFunction];
         img.style.width = '48px';
         img.style.height = '48px';
         img.style.marginBottom = '4px';
@@ -9048,7 +9068,7 @@ function loadLearningGoals() {
         input.type = 'radio';
         input.id = `goal-${idx}`;
         input.name = 'learning-goals';
-        input.value = LANGUAGES[currentLang][goal.recFunction+"_description"];
+        input.value = LANGUAGES[state.curr.lang][goal.recFunction+"_description"];
         input.className = 'learning-goal-radio';
         input.style.display = 'none';
 
@@ -9100,7 +9120,7 @@ function loadLearningGoals() {
         // Create label styled as button
         const label = document.createElement('label');
         label.htmlFor = input.id;
-        label.textContent = LANGUAGES[currentLang][goal.recFunction] || `Goal ${idx}`;
+        label.textContent = LANGUAGES[state.curr.lang][goal.recFunction] || `Goal ${idx}`;
         label.classList.add('learning-goal-btn');
         label.classList.add(goal.recFunction); // keep color class
 
@@ -9114,7 +9134,7 @@ function loadLearningGoals() {
 
         // Map each learning goal value to its tooltip text
         // learningGoalTooltips = {
-        //   RemedialRecommendations: LANGUAGES[currentLang][state.args.learningGoal+"_description"], 
+        //   RemedialRecommendations: LANGUAGES[state.curr.lang][state.args.learningGoal+"_description"], 
         //   FillKnowledgeGapsRecommendations: "Fill in gaps in your knowledge by targeting concepts you haven't mastered yet.",
         //   KeepMeUpWithTheClassRecommendations: "Advance to new topics and concepts beyond your current mastery."
         // };
