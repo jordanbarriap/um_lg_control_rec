@@ -91,7 +91,9 @@ const LANGUAGES = {
 async function loadGlossaryConcepts() {
 
   // Fetch the file from your server (must be accessible at this URL)
-  const response = await fetch(window.location.origin + "/data/glossary_python_concepts_en_es.xlsx");
+  var fetch_url = window.location.origin + "/data/glossary_python_concepts_en_es.xlsx";
+  fetch_url = fetch_url.replace("http://adapt2.sis.pitt.edu/", "http://adapt2.sis.pitt.edu/um_lg_control_rec/");
+  const response = await fetch(fetch_url);
   const arrayBuffer = await response.arrayBuffer();
 
   // Parse with SheetJS
