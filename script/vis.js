@@ -29,7 +29,13 @@ const LANGUAGES = {
     seeMoreConcepts: "See more concepts",
     inspectMoreConcepts: "Select more concepts 🔎",
     generateRecs: "Generate Learning Recommendations ⚙️",
-    disabledForRec: "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying"
+    disabledForRec: "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying",
+    RemedialRecommendations: "Improve on difficult concepts",
+    FillKnowledgeGapsRecommendations: "Work on concepts I haven't learned yet",
+    KeepMeUpWithTheClassRecommendations: "Keep me up with the class",
+    RemedialRecommendations_description: "Focus on reviewing concepts you struggled with in previous activities.",
+    FillKnowledgeGapsRecommendations_description: "Work on concepts I haven't learned yet.",
+    KeepMeUpWithTheClassRecommendations_description: "Stay updated with the class content."
 
   },
   es: {
@@ -60,9 +66,52 @@ const LANGUAGES = {
     seeMoreConcepts: "Ver más conceptos",
     inspectMoreConcepts: "Seleccionar más conceptos 🔎",
     generateRecs: "Generar recomendaciones de aprendizaje ⚙️",
-    disabledForRec: "Basándonos en el objetivo de aprendizaje en el que has decidido enfocarte, creemos que este concepto no es relevante para enfocarse en estudiarlo" 
+    disabledForRec: "Basándonos en el objetivo de aprendizaje en el que has decidido enfocarte, creemos que este concepto no es relevante para enfocarse en estudiarlo" ,
+    RemedialRecommendations: "Superar mis dificultades",
+    FillKnowledgeGapsRecommendations: "Practicar lo que no he demostrado evidencia de aprendizaje",
+    KeepMeUpWithTheClassRecommendations: "Ponerme al día con la clase",
+    RemedialRecommendations_description: "Enfócate en revisar los conceptos con los que has tenido dificultades en actividades previas.",
+    FillKnowledgeGapsRecommendations_description: "Trabaja en conceptos en los cuales no existe evidencia de que sean dominados.",
+    KeepMeUpWithTheClassRecommendations_description: "Mantente actualizado con los conceptos de la unidad actual."
   }
 };
+
+async function loadGlossaryConcepts() {
+
+  // Fetch the file from your server (must be accessible at this URL)
+  const response = await fetch("../data/glossary_python_concepts_en_es.xlsx");
+  const arrayBuffer = await response.arrayBuffer();
+
+  // Parse with SheetJS
+  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+  // Get first sheet
+  const sheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[sheetName];
+
+  // Convert to JSON (array of objects)
+  const rows = XLSX.utils.sheet_to_json(worksheet);
+
+  // Iterate over rows
+  rows.forEach((row, idx) => {
+    console.log(`Row ${idx + 1}:`, row);
+    concept_name = row['concept_name'];
+    concept_name_es = row['spanish_concept_name'];
+    concept_description = row['description'];
+    concept_description_es = row['spanish_description'];
+    code_snippet = row['code_snippet_example'];
+    code_snippet_es = row['code_description_spanish'];
+    LANGUAGES['en'][concept_name+"_name"] = concept_name;
+    LANGUAGES['es'][concept_name+"_name"] = concept_name_es;
+    LANGUAGES['en'][concept_name+"_description"] = concept_description;
+    LANGUAGES['es'][concept_name+"_description"] = concept_description_es;
+    LANGUAGES['en'][concept_name+"_code"] = code_snippet;
+    LANGUAGES['es'][concept_name+"_code"] = code_snippet_es;
+  });
+}
+
+loadGlossaryConcepts();
+
 
 // Example usage for new keys:
 // LANGUAGES[currentLang].loading
@@ -2852,7 +2901,7 @@ function addRecommendationStarToTopic(g_cell_topic, topic_name) {
     //.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
     .attr("stroke", "white")
     .attr("max_rec_rank_act", map_topic_max_rank_rec_act[topic_name])
-    .attr("class", "rec_topic")
+    .attr("class", "rec_topic "+state.args.learningGoal)
     .style("shape-rendering", "geometricPrecision")
 }
 
@@ -7067,42 +7116,82 @@ function starPoints(cx, cy, R, r, n) {
   return pts.join(" ");
 }
 
+// Language definitions for help text
+if (!LANGUAGES["en"]) LANGUAGES["en"] = {};
+if (!LANGUAGES["es"]) LANGUAGES["es"] = {};
+
+// Help text translations
+LANGUAGES["en"]["help_ae_title"] = "Animated Examples (AE)";
+LANGUAGES["en"]["help_ae_desc"] = "AEs show visually how each step of an example problem is executed. This examples are useful to lean about the behavior of different programming constructs.";
+LANGUAGES["en"]["help_tp_title"] = "Tracing Problems (TP)";
+LANGUAGES["en"]["help_tp_desc"] = "TPs assess your knowledge of how different programming contracts behave when being executed. If you feel that these problems are too hard, check <b>Animated Examples</b>.";
+LANGUAGES["en"]["help_pe_title"] = "Programming Examples (PE)";
+LANGUAGES["en"]["help_pe_desc"] = "PEs walk you through complete solutions of meaningful programming problems. Use it to understand how programs should be constructed.";
+LANGUAGES["en"]["help_pc_title"] = "Programming Challenges (PC)";
+LANGUAGES["en"]["help_pc_desc"] = "PCs assess your basic knowledge of problem construction. In these challenges, you are provided with a clear context and have to choose the correct programming construct to achieve the given goal.";
+LANGUAGES["en"]["help_cp_title"] = "Coding Problems (CP)";
+LANGUAGES["en"]["help_cp_desc"] = "CPs is the ultimate check of your program construction knowledge. Given the task, you need to write code to solve it. Your solution is checked using a set of tests.";
+LANGUAGES["en"]["help_progress_title"] = "My Progress Grid";
+LANGUAGES["en"]["help_progress_desc"] = "This row represents your progress in the topics of the course. Each topic is a cell. Gray means 0% of progress and darker color means more progress.";
+LANGUAGES["en"]["help_comparison_title"] = "Comparison Grid";
+LANGUAGES["en"]["help_comparison_desc"] = "This row shows the difference between your progress and the average progress of other students. GREEN color means you have more progress than the others and BLUE color means that in average other students are more advance than you. Gray means equal progress.";
+LANGUAGES["en"]["help_group_title"] = "Group Grid";
+LANGUAGES["en"]["help_group_desc"] = "This row shows the average of progress of other students in the class using BLUE colors. Depending on the set up of Mastery Grids, others students might include all the class or top students.";
+
+// Spanish translations
+LANGUAGES["es"]["help_ae_title"] = "Ejemplos Animados (EA)";
+LANGUAGES["es"]["help_ae_desc"] = "Los EA muestran visualmente cómo se ejecuta cada paso de un problema ejemplo. Estos ejemplos son útiles para comprender el comportamiento de diferentes construcciones de programación.";
+LANGUAGES["es"]["help_tp_title"] = "Problemas de Rastreo (PR)";
+LANGUAGES["es"]["help_tp_desc"] = "Los PR evalúan tu conocimiento sobre cómo se comportan diferentes contratos de programación durante la ejecución. Si estos problemas te parecen muy difíciles, revisa los <b>Ejemplos Animados</b>.";
+LANGUAGES["es"]["help_pe_title"] = "Ejemplos de Programación (EP)";
+LANGUAGES["es"]["help_pe_desc"] = "Los EP te guían a través de soluciones completas de problemas significativos de programación. Úsalos para entender cómo deben construirse los programas.";
+LANGUAGES["es"]["help_pc_title"] = "Desafíos de Programación (DP)";
+LANGUAGES["es"]["help_pc_desc"] = "Los DP evalúan tu conocimiento básico de construcción de problemas. En estos desafíos, se te proporciona un contexto claro y debes elegir la construcción de programación correcta para alcanzar el objetivo dado.";
+LANGUAGES["es"]["help_cp_title"] = "Problemas de Codificación (PC)";
+LANGUAGES["es"]["help_cp_desc"] = "Los PC son la prueba definitiva de tu conocimiento en construcción de programas. Dado un problema, debes escribir código para resolverlo. Tu solución se verifica usando un conjunto de pruebas.";
+LANGUAGES["es"]["help_progress_title"] = "Mi Cuadrícula de Progreso";
+LANGUAGES["es"]["help_progress_desc"] = "Esta fila representa tu progreso en los temas del curso. Cada tema es una celda. El gris significa 0% de progreso y el color más oscuro significa más progreso.";
+LANGUAGES["es"]["help_comparison_title"] = "Cuadrícula de Comparación";
+LANGUAGES["es"]["help_comparison_desc"] = "Esta fila muestra la diferencia entre tu progreso y el progreso promedio de otros estudiantes. El color VERDE significa que tienes más progreso que los demás y el color AZUL significa que en promedio otros estudiantes están más avanzados que tú. El gris significa progreso igual.";
+LANGUAGES["es"]["help_group_title"] = "Cuadrícula de Grupo";
+LANGUAGES["es"]["help_group_desc"] = "Esta fila muestra el promedio de progreso de otros estudiantes en la clase usando colores AZULES. Dependiendo de la configuración de Mastery Grids, otros estudiantes pueden incluir toda la clase o los mejores estudiantes.";
+
 function generateHelp(origin) {
   var helpText = "";
   if (["Animated Examples"].includes(origin)) {
     var height = 90;
-    helpText = "<b>Animated Examples (AE)</b>: AEs show visually how each step of an example problem is executed. This examples are useful to lean about the behavior of different programming constructs."
+    helpText = `<b>${LANGUAGES[currentLang]["help_ae_title"]}</b>: ${LANGUAGES[currentLang]["help_ae_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Quizzes", "Tracing Problems"].includes(origin)) {
     var height = 90;
-    helpText = "<b>Tracing Problems (TP)</b>: TPs assess your knowledge of how different programming contracts behave when being executed. If you feel that these problems are too hard, check <b>Animated Examples</b>."
+    helpText = `<b>${LANGUAGES[currentLang]["help_tp_title"]}</b>: ${LANGUAGES[currentLang]["help_tp_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Examples", "Programming Examples"].includes(origin)) {
     var height = 90;
-    helpText = "<b>Programming Examples (PE)</b>: PEs walk you through complete solutions of meaningful programming problems. Use it to understand how programs should be constructed."
+    helpText = `<b>${LANGUAGES[currentLang]["help_pe_title"]}</b>: ${LANGUAGES[currentLang]["help_pe_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Challenges", "Programming Challenges"].includes(origin)) {
     var height = 90;
-    helpText = "<b>Programming Challenges (PC)</b>: PCs assess your basic knowledge of problem construction. In these challenges, you are provided with a clear context and have to choose the correct programming construct to achieve the given goal."
+    helpText = `<b>${LANGUAGES[currentLang]["help_pc_title"]}</b>: ${LANGUAGES[currentLang]["help_pc_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (["Coding", "Coding Problems"].includes(origin)) {
     var height = 90;
-    helpText = "<b>Coding Problems (CP)</b>: CPs is the ultimate check of your program construction knowledge. Given the task, you need to write code to solve it. Your solution is checked using a set of tests."
+    helpText = `<b>${LANGUAGES[currentLang]["help_cp_title"]}</b>: ${LANGUAGES[currentLang]["help_cp_desc"]}`;
     ui.vis.helpDlg.style.height = height + "px";
   }
 
   if (origin === "one-res-me-h") {
     var height = 150;
 
-    helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>My Progress Grid</h3><p>This row represents your progress in the topics of the course. Each topic is a cell. Gray means 0% of progress and darker color means more progress.</p>";
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_progress_title"]}</h3><p>${LANGUAGES[currentLang]["help_progress_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
 
     if (data.configprops.agg_kc_student_modeling == "cumulate" && data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method == "remedial") {
@@ -7194,7 +7283,7 @@ function generateHelp(origin) {
     //"#edf8e9","#c7e9c0","#a1d99b","#74c476","#31a354","#006d2c"
   }
   if (origin === "one-res-mevsgrp-h") {
-    helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Comparison Grid</h3><p style='margin-top: 2px;margin-bottom:5px;'>This row shows the <i>difference</i> between your progress and the average progress of other students. <span style='color: #006d2c;font-weight:bold;'>GREEN</span> color means you have more progress than the others and <span style='color: #08519c;font-weight:bold;'>BLUE</span> color means that in average other students are more advance than you. Gray means equal progress. </p>";
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_comparison_title"]}</h3><p style='margin-top: 2px;margin-bottom:5px;'>${LANGUAGES[currentLang]["help_comparison_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
     helpText += "<tr>" +
       "<td style='padding:2px 5px 2px 0px;font-size: 10px;'>group +</td>" +
@@ -7214,7 +7303,7 @@ function generateHelp(origin) {
     helpText += "</table>";
   }
   if (origin === "one-res-grp-h") {
-    helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Group Grid</h3><p>This row shows the average of progress of other students in the class using <span style='color: #08519c;font-weight:bold;'>BLUE</span> colors. Depending on the set up of Mastery Grids, others students might include all the class or top students.</p>";
+    helpText = `<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>${LANGUAGES[currentLang]["help_group_title"]}</h3><p>${LANGUAGES[currentLang]["help_group_desc"]}</p>`;
     helpText += "<table border=0 cellpadding=0 cellspacing=0>";
     helpText += "<tr>" +
       "<td style='padding:2px 5px 2px 0px;'>0%</td>" +
@@ -7728,7 +7817,6 @@ function populateConceptsDiv(concepts) {
     thumbsUpBtn.className = 'thumbs-btn thumbs-up';
     thumbsUpBtn.innerHTML = '<span class="thumbs-icon">➕</span>';//👍
     thumbsUpBtn.style.transition = 'background 0.2s';
-    thumbsUpBtn.dataset.clickCount = '0';
 
     //barContainer.appendChild(bar);
     //barContainer.appendChild(valueDiv);
@@ -7739,12 +7827,12 @@ function populateConceptsDiv(concepts) {
     // Color arrays for up/down
     var upColors = ['#a5d6a7', '#81c784', '#66bb6a'];      // lighter greens
     var downColors = ['#ef9a9a', '#e57373', '#ef5350'];
-    var current_edition = 0;
+    var current_max_level = 0;
 
     if (Object.hasOwn(state.args.editSM, concept.id)) {
-      current_edition = state.args.editSM[concept.id];
-      if (current_edition > 0) {
-        thumbsUpBtn.style.background = upColors[current_edition - 1];
+      current_max_level = state.args.editSM[concept.id];
+      if (current_max_level > 0) {
+        thumbsUpBtn.style.background = upColors[current_max_level - 1];
         thumbsUpBtn.style.color = '#fff';
         // var editionBar = document.createElement('div');
         // editionBar.className = 'concept-edition-bar';
@@ -7754,9 +7842,12 @@ function populateConceptsDiv(concepts) {
         // editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
         // editionBar.style.width = (concept.uk+editImpactValues.get(current_edition)>1) ? (100-(concept.uk*100))+"%": ((editImpactValues.get(current_edition))*100)+'%';
         // barContainer.appendChild(editionBar);
+        if(current_max_level==3){
+          thumbsUpBtn.disabled = true;
+        }
       }
-      if (current_edition < 0) {
-        thumbsDownBtn.style.background = downColors[(current_edition * -1) - 1];
+      if (current_max_level < 0) {
+        thumbsDownBtn.style.background = downColors[(current_max_level * -1) - 1];
         thumbsDownBtn.style.color = '#fff';
         // var editionBarRed = document.createElement('div');
         // editionBarRed.className = 'concept-edition-bar';
@@ -7766,120 +7857,188 @@ function populateConceptsDiv(concepts) {
         // editionBarRed.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
         // editionBarRed.style.width = (concept.uk+editImpactValues.get(current_edition)<0) ? (concept.uk*100)+"%": ((editImpactValues.get(current_edition)*-1)*100)+'%';
         // barContainer.appendChild(editionBarRed);
+        if(current_max_level==-3){
+          thumbsDownBtn.disabled = true;
+        }
+      }
+      if(concept.uk<=0){
+        thumbsDownBtn.disabled = true;
+      }
+      if(concept.uk>=1){
+        thumbsUpBtn.disabled = true;
       }
     }
 
-    // Click handler for thumbs up
+    // THUMBS UP CLICK HANDLER
     thumbsUpBtn.onclick = function () {
-      var current_max_level = 0;
+      thumbsDownBtn.disabled = false;
       if (Object.hasOwn(state.args.editSM, concept.id)) {
         current_max_level = state.args.editSM[concept.id];
       }
+      console.log("up clicked -> current max level")
+      console.log(current_max_level)
       if (current_max_level < 3) {
-        handleThumbsClick(concept.id, "up");
+        var barMain = this.parentElement.querySelector('.concept-value-html')
+        barMain.innerHTML = (concept.uk + editImpactValues.get(current_max_level + 1))>1?'100%':Math.round((concept.uk + editImpactValues.get(current_max_level + 1)) * 100) + '%';
         this.style.color = '#fff';
+        
         if (current_max_level >= 0) {
           // already positive or zero
-          this.style.background = upColors[current_max_level];
-          var editionBarWidth = editImpactValues.get(current_edition + 1) * 100;
 
-          // Find the .bar-main-html inside this concept row
-          var barMain = this.parentElement.querySelector('.bar-main-html');
+          this.style.background = upColors[current_max_level-1];
+
+
+          var editionBarWidth = editImpactValues.get(current_max_level + 1) * 100 > 100 ? 100 : editImpactValues.get(current_max_level + 1) * 100;
+
           // Find the .bar-main-html inside this concept row
           var barMain = this.parentElement.querySelector('.bar-main-html');
           if (barMain) {
             var barContainer = barMain.parentNode;
-            // Remove any existing edition bar
-            var oldEditionBar = barContainer.querySelector('.concept-edition-bar');
-            if (oldEditionBar) oldEditionBar.remove();
+            if(current_max_level==0){
+              //increase the current green bar based on the editImpactValues
 
-            // Create new edition bar
-            var editionBar = document.createElement('div');
-            editionBar.className = 'concept-edition-bar';
-            editionBar.style.position = 'absolute';
-            editionBar.style.left = barMain.style.width;
-            editionBar.style.top = '0';
-            editionBar.style.height = '14px';
-            editionBar.style.background = '#43a047';
-            editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
-            editionBar.style.width = '0%';
-            editionBar.style.transition = 'width 0.5s cubic-bezier(0.4,0,0.2,1)';
-            barContainer.style.position = 'relative';
-            barContainer.appendChild(editionBar);
+              // Create new edition bar
+              var editionBar = document.createElement('div');
+              editionBar.className = 'concept-edition-bar';
 
-            setTimeout(function () {
+              editionBar.style.left = barMain.style.width;
+              editionBar.style.top = '0';
+              editionBar.style.height = '14px';
+              editionBar.style.background = '#43a047';
+              editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #43a047 0px, #43a047 6px, #a5d6a7 6px, #a5d6a7 12px)';
+              barContainer.appendChild(editionBar);
+
               editionBar.style.width = editionBarWidth + '%';
-            }, 20);
+
+            }else{
+              // Remove any existing edition bar
+              var oldEditionBar = barContainer.querySelector('.concept-edition-bar');
+              oldEditionBar.style.width = editionBarWidth + '%';
+            }
           }
         } else {
+          
           if (current_max_level == -1) {
             thumbsDownBtn.style.background = 'none';
+            // Find the .bar-main-html inside this concept row
+            var barMain = this.parentElement.querySelector('.bar-main-html');
+            var barMainNewWidth = (concept.uk*100);
+            if (barMain) {
+              var barContainer = barMain.parentNode;
+              barMain.style.width = barMainNewWidth + '%';
+              var oldEditionBar = barContainer.querySelector('.concept-edition-negative-bar');
+              oldEditionBar.style.left = barMainNewWidth+'%';
+              oldEditionBar.style.width = '0%';
+              // Remove after 0.3 seconds (300 milliseconds)
+              setTimeout(() => {
+                 oldEditionBar.remove();
+              }, 300);
+             
+            }
+
           } else {
-            thumbsDownBtn.style.background = downColors[(current_max_level * -1) - 2];
+            //there is a red bar existing already
+            //increase the value of the red bar and its width
+            // Find the .bar-main-html inside this concept row
+            var barMain = this.parentElement.querySelector('.bar-main-html');
+            var barMainNewWidth = (concept.uk+editImpactValues.get(current_max_level + 1)<0 ? 0 : (concept.uk + editImpactValues.get(current_max_level + 1))*100);
+            if (barMain) {
+              var barContainer = barMain.parentNode;
+              barMain.style.width = barMainNewWidth + '%';
+              var editionBarWidth = Math.abs(editImpactValues.get(current_max_level + 1)) * 100;
+              
+              var oldEditionBar = barContainer.querySelector('.concept-edition-negative-bar');
+              oldEditionBar.style.left = barMainNewWidth+'%';
+              oldEditionBar.style.width = editionBarWidth + '%';
+
+              thumbsDownBtn.style.background = downColors[(current_max_level * -1) - 2];
+            }
           }
         }
-        thumbsDownBtn.disabled = false;
         if (current_max_level == 2) this.disabled = true;
+        handleThumbsClick(concept.id, "up");
       }
     };
-
+    // THUMBS DOWN CLICK HANDLER
     thumbsDownBtn.onclick = function () {
-      var current_max_level = 0;
+      thumbsUpBtn.disabled = false;
       if (Object.hasOwn(state.args.editSM, concept.id)) {
         current_max_level = state.args.editSM[concept.id];
       }
+      console.log("down clicked -> current max level")
+      console.log(current_max_level)
 
       if (current_max_level > -3) {
-        handleThumbsClick(concept.id, "down")
+        var barMain = this.parentElement.querySelector('.concept-value-html')
+        barMain.innerHTML = (concept.uk + editImpactValues.get(current_max_level - 1))<0?'0%':Math.round((concept.uk + editImpactValues.get(current_max_level - 1)) * 100) + '%';
         this.style.color = '#fff';
         if (current_max_level <= 0) {
-          this.style.background = downColors[current_max_level * -1];
+          this.style.background = downColors[(current_max_level)*-1];
 
           // --- PATCH START: Animate negative edition bar ---
-          var editionBarWidth = Math.abs(editImpactValues.get(current_max_level - 1)) * 100;
+          var editionBarWidth = (concept.uk+editImpactValues.get(current_max_level - 1)<0 ? concept.uk * 100 : Math.abs(editImpactValues.get(current_max_level - 1)*100));
+          var barMainNewWidth = (concept.uk+editImpactValues.get(current_max_level - 1)<0 ? 0 : (concept.uk + editImpactValues.get(current_max_level - 1))*100);
 
           // Find the .bar-main-html inside this concept row
           var barMain = this.parentElement.querySelector('.bar-main-html');
           if (barMain) {
             var barContainer = barMain.parentNode;
             // Remove any existing edition bar
-            var oldEditionBar = barContainer.querySelector('.bar-edition-negative-html');
-            if (oldEditionBar) oldEditionBar.remove();
+            barMain.style.width =  barMainNewWidth + '%';
+            if(current_max_level==0){
+              // Create new edition bar
+              var editionBar = document.createElement('div');
+              editionBar.className = 'concept-edition-negative-bar';
+              editionBar.style.left = barMainNewWidth+'%';
+              editionBar.style.top = '0';
+              editionBar.style.height = '14px';
+              editionBar.style.background = '#e57373'; // red
+              editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
 
-            // Animate barMain width decrease
-            var newMainWidth = (concept.uk + editImpactValues.get(current_max_level - 1));
-            if (newMainWidth < 0) newMainWidth = 0;
-            barMain.style.transition = 'width 0.5s cubic-bezier(0.4,0,0.2,1)';
-            barMain.style.width = (newMainWidth * 100) + '%';
-
-            // Create new negative edition bar
-            var editionBar = document.createElement('div');
-            editionBar.className = 'bar-edition-negative-html';
-            editionBar.style.position = 'absolute';
-            editionBar.style.height = '14px';
-            editionBar.style.top = '0';
-            editionBar.style.left = (newMainWidth * 100) + '%';
-            editionBar.style.background = '#e57373';
-            editionBar.style.backgroundImage = 'repeating-linear-gradient(45deg, #e57373 0px, #e57373 6px, #ef9a9a 6px, #ef9a9a 12px)';
-            editionBar.style.width = '0%';
-            editionBar.style.transition = 'width 0.5s cubic-bezier(0.4,0,0.2,1)';
-            barContainer.style.position = 'relative';
-            barContainer.appendChild(editionBar);
-
-            setTimeout(function () {
+              barContainer.appendChild(editionBar);
               editionBar.style.width = editionBarWidth + '%';
-            }, 20);
+            }else{
+              var oldEditionBar = barContainer.querySelector('.concept-edition-negative-bar');
+              oldEditionBar.style.width = editionBarWidth + '%';
+            } 
           }
           // --- PATCH END ---
 
         } else {
           if (current_max_level == 1) {
             thumbsUpBtn.style.background = 'none';
+            var barMain = this.parentElement.querySelector('.bar-main-html');
+            if (barMain) {
+                barMain.style.width = (concept.uk*100) + '%';
+                var barContainer = barMain.parentNode;
+                // Remove any existing edition bar
+                var oldEditionBar = barContainer.querySelector('.concept-edition-bar');
+                oldEditionBar.style.width = '0%';
+                setTimeout(() => {
+                  oldEditionBar.remove();
+                }, 300);
+            }
           } else {
             thumbsUpBtn.style.background = upColors[current_max_level - 2];
+
+            //there is a green bar existing already
+            //decrease the value of the green bar and its width
+            var editionBarWidth = Math.abs(editImpactValues.get(current_max_level - 1)) * 100;
+
+            // Find the .bar-main-html inside this concept row
+            var barMain = this.parentElement.querySelector('.bar-main-html');
+            if(barMain){
+              var barContainer = barMain.parentNode;
+
+              var oldEditionBar = barContainer.querySelector('.concept-edition-bar');
+              oldEditionBar.style.width = editionBarWidth+'%';
+              //if (oldEditionBar) oldEditionBar.remove();
+            }
+            
           }
         }
         if (current_max_level == -2) this.disabled = true;
+        handleThumbsClick(concept.id, "down")
       }
     };
     conceptItem.appendChild(thumbsUpBtn);
@@ -8035,9 +8194,9 @@ function loadEditionsSM(objEditionsSM) {
         // Add or update the edition attribute
         concept.edition = editionValue;
 
-        console.log(`Updated concept ${conceptId} with edition value: ${editionValue}`);
+        //console.log(`Updated concept ${conceptId} with edition value: ${editionValue}`);
       } else {
-        console.warn(`Concept with id ${conceptId} not found in data.kcs now`);
+        //console.warn(`Concept with id ${conceptId} not found in data.kcs now`);
       }
     });
 
@@ -8542,15 +8701,22 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   }
 
   // Label
+  let kc_name="";
+  if (Object.prototype.hasOwnProperty.call(LANGUAGES[currentLang], d.n+"_name")) {
+    kc_name = LANGUAGES[currentLang][d.n+"_name"];
+    kc_name = camelCaseToWords(kc_name);
+  } else {
+    kc_name = d.dn;
+  }
   const label = document.createElement('span');
   label.className = 'concept-label-html';
-  label.title = d.dn;
-  if (d.dn.length > 20) {
-    let splitIdx = d.dn.lastIndexOf(' ', 20);
+  //label.title = d.dn;
+  if (kc_name.length > 20) {
+    let splitIdx = kc_name.lastIndexOf(' ', 20);
     if (splitIdx === -1) splitIdx = 20;
-    label.innerHTML = d.dn.slice(0, splitIdx) + "..."//'<br>' + d.dn.slice(splitIdx).trim();
+    label.innerHTML = kc_name.slice(0, splitIdx) + "...";
   } else {
-    label.innerText = d.dn;
+    label.innerText = kc_name;
   }
   label.onclick = function () {
     checkbox.onclick();
@@ -8614,7 +8780,7 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   if (d.hasEdition && d.edition < 0) {
     mainBar.style.width = (d.finalValue * 100) + '%';
     const editionBar = document.createElement('div');
-    editionBar.className = 'bar-edition-negative-html';
+    editionBar.className = 'concept-edition-negative-bar';
     editionBar.style.position = 'absolute';
     editionBar.style.height = '12px';
     editionBar.style.top = '0';
@@ -8669,6 +8835,53 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
     infoLabelWrapper.appendChild(infoLabel);
     row.appendChild(infoLabelWrapper);
   }
+  // --- Tooltip logic start ---
+row.addEventListener('mouseenter', function(e) {
+    let tooltip = document.createElement('div');
+    tooltip.className = 'concept-tooltip';
+
+    // Get localized name, description, and code
+    let kc_name = d.dn;
+    let kc_description = '';
+    let kc_code = '';
+    if (Object.prototype.hasOwnProperty.call(LANGUAGES[currentLang], d.n+"_name")) {
+      kc_name = camelCaseToWords(LANGUAGES[currentLang][d.n+"_name"]);
+      kc_description = LANGUAGES[currentLang][d.n+"_description"] || '';
+      kc_code = LANGUAGES[currentLang][d.n+"_code"] || '';
+    }
+
+    // Build tooltip HTML
+    tooltip.innerHTML = `
+      <div style="font-weight:bold; margin-bottom:4px;">${kc_name}</div>
+      <div style="margin-bottom:6px;">${kc_description}</div>
+      ${kc_code ? `<pre style="background:#23272e;color:#fff;padding:8px;border-radius:4px;overflow-x:auto;font-size:13px;margin:0;"><code class="language-python">${kc_code}</code></pre>` : ''}
+    `;
+
+    document.body.appendChild(tooltip);
+
+    // Position above the row
+    const rect = row.getBoundingClientRect();
+    tooltip.style.position = 'absolute';
+    tooltip.style.left = rect.left + window.scrollX + 'px';
+    tooltip.style.top = (rect.top + window.scrollY - tooltip.offsetHeight - 8) + 'px';
+    tooltip.style.background = '#333';
+    tooltip.style.color = '#fff';
+    tooltip.style.padding = '6px 12px';
+    tooltip.style.borderRadius = '4px';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.zIndex = 10000;
+
+    row._tooltip = tooltip;
+});
+
+  row.addEventListener('mouseleave', function() {
+      if (row._tooltip) {
+          row._tooltip.remove();
+          row._tooltip = null;
+      }
+  });
+    // --- Tooltip logic end ---
+  
 
   return row;
 }
@@ -8759,17 +8972,17 @@ function loadLearningGoals() {
       container.innerHTML = ''; // Clear existing
       
       goals.forEach((goal, idx) => {
-  // Create a container for each goal option (treat as button)
-  const goalDiv = document.createElement('div');
-  goalDiv.className = 'learning-goal-option ' + goal.recFunction;
-  goalDiv.tabIndex = 0; // Make focusable
-  goalDiv.setAttribute('role', 'button');
-  goalDiv.setAttribute('aria-pressed', 'false');
+        // Create a container for each goal option (treat as button)
+        const goalDiv = document.createElement('div');
+        goalDiv.className = 'learning-goal-option ' + goal.recFunction;
+        goalDiv.tabIndex = 0; // Make focusable
+        goalDiv.setAttribute('role', 'button');
+        goalDiv.setAttribute('aria-pressed', 'false');
 
         // Create image
         const img = document.createElement('img');
         img.src = `img/${goal.recFunction}.png`;
-        img.alt = goal.name || goal.recFunction;
+        img.alt = LANGUAGES[currentLang][goal.recFunction];
         img.style.width = '48px';
         img.style.height = '48px';
         img.style.marginBottom = '4px';
@@ -8779,7 +8992,7 @@ function loadLearningGoals() {
         input.type = 'radio';
         input.id = `goal-${idx}`;
         input.name = 'learning-goals';
-        input.value = goal.recFunction;
+        input.value = LANGUAGES[currentLang][goal.recFunction+"_description"];
         input.className = 'learning-goal-radio';
         input.style.display = 'none';
 
@@ -8789,7 +9002,7 @@ function loadLearningGoals() {
           document.querySelectorAll('input[name="learning-goals"]').forEach(radio => {
             if (radio !== input) {
               radio.checked = false;
-              radio.dispatchEvent(new Event('change', { bubbles: true }));
+              //radio.dispatchEvent(new Event('change', { bubbles: true }));
             }
           });
           document.querySelectorAll('.learning-goal-option').forEach(div => {
@@ -8809,15 +9022,12 @@ function loadLearningGoals() {
             selectGoal();
           }
         });
-        // Update aria-pressed when checked
-        input.addEventListener('change', function() {
-          goalDiv.setAttribute('aria-pressed', 'true');
-        });
 
         const prepareRecFunction = "prepare" + goal.recFunction;
         input.onchange = function() {
           if (typeof window[prepareRecFunction] === 'function') {
             state.args.learningGoal = goal.recFunction;
+            goalDiv.setAttribute('aria-pressed', 'true');
             log(
               "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
               "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01 +
@@ -8832,11 +9042,11 @@ function loadLearningGoals() {
         };
 
         // Create label styled as button
-  const label = document.createElement('label');
-  label.htmlFor = input.id;
-  label.textContent = goal.name || `Goal ${idx}`;
-  label.classList.add('learning-goal-btn');
-  label.classList.add(goal.recFunction); // keep color class
+        const label = document.createElement('label');
+        label.htmlFor = input.id;
+        label.textContent = LANGUAGES[currentLang][goal.recFunction] || `Goal ${idx}`;
+        label.classList.add('learning-goal-btn');
+        label.classList.add(goal.recFunction); // keep color class
 
         // Append elements to the goalDiv
         goalDiv.appendChild(img);
@@ -8847,11 +9057,11 @@ function loadLearningGoals() {
         container.appendChild(goalDiv);
 
         // Map each learning goal value to its tooltip text
-        learningGoalTooltips = {
-          RemedialRecommendations: "Focus on reviewing concepts you struggled with in previous activities.",
-          FillKnowledgeGapsRecommendations: "Fill in gaps in your knowledge by targeting concepts you haven't mastered yet.",
-          KeepMeUpWithTheClassRecommendations: "Advance to new topics and concepts beyond your current mastery."
-        };
+        // learningGoalTooltips = {
+        //   RemedialRecommendations: LANGUAGES[currentLang][state.args.learningGoal+"_description"], 
+        //   FillKnowledgeGapsRecommendations: "Fill in gaps in your knowledge by targeting concepts you haven't mastered yet.",
+        //   KeepMeUpWithTheClassRecommendations: "Advance to new topics and concepts beyond your current mastery."
+        // };
 
         //const container = document.querySelector('.learning-goals-options');
         if (!container) return;
@@ -8878,11 +9088,11 @@ function loadLearningGoals() {
 
 function showTooltip(e) {
   let value = this.value || (this.htmlFor && document.getElementById(this.htmlFor)?.value);
-  if (!value || !learningGoalTooltips[value]) return;
+  if (!value) return;
 
   let tooltip = document.createElement('div');
   tooltip.className = 'learning-goal-tooltip';
-  tooltip.innerText = learningGoalTooltips[value];
+  tooltip.innerText = value;
   document.body.appendChild(tooltip);
 
   positionTooltip(e, tooltip);
@@ -8908,4 +9118,9 @@ function positionTooltip(e, tooltip) {
   let y = e.clientY + padding;
   tooltip.style.left = x + 'px';
   tooltip.style.top = y + 'px';
+}
+
+// Inserts spaces before each uppercase letter (except the first one)
+function camelCaseToWords(str) {
+  return str.replace(/([a-z])([A-Z])/g, '$1 $2');
 }

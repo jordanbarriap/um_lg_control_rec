@@ -2198,7 +2198,7 @@ function addRecommendationsToUI(){
 								//.attr("style", function (d) { return "border: 1px solid #FFFFFF;"; })
 								.attr("stroke", "white")
 								.attr("max_rec_rank_act",rank_recommended_activities[act_id])
-								.attr("class","act_topic")
+								.attr("class","act_topic "+state.args.learningGoal)
 								.style("shape-rendering", "geometricPrecision")
 								.style("pointer-events","none");
 							
