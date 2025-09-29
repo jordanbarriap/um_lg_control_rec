@@ -2356,6 +2356,9 @@ function loadData_cb(res) {
   // (2) Process arguments (fuse those passed through the query string and those passed in the server's response (the latter take precedence):
   stateArgsSet02();
 
+  //Check if pre-surveys have to be done
+  checkPreSurveys();
+
   loadStaticData()
 }
 
@@ -2384,6 +2387,49 @@ function loadStaticData() {
   } else {
     processData()
   }
+}
+
+function checkPreSurveys() {
+  if(state.args.requiredPreSurveys && state.args.requiredPreSurveys.length > 0) {
+    //Check if all pre-surveys are completed from session storage
+    var preSurveysCompleted = JSON.parse(sessionStorage.getItem(state.curr.grp + "_preSurveysCompleted")) || false;
+
+    if(!preSurveysCompleted) {
+      $("#overlay").css("display","block");
+      $call("GET", CONST.uriServer+"GetSurveyActions?usr=" + state.curr.usr + 
+        "&grp=" + state.curr.grp, null, surveyAction_cb, true, false );
+    }
+  }
+}
+
+function surveyAction_cb(rsp) {
+    var surveyActions = rsp;
+    var allCompleted = true;
+    var incompleteSurveyId = -1;
+    var redirectSurveyId = state.args.completedSurveyId;
+
+    for (var i=0; i < state.args.requiredPreSurveys.length; i++) {
+       var surveyURL = state.args.requiredPreSurveys[i]
+       // Extract the survey ID from the URL
+       var surveyId = surveyURL.split("/").pop()
+
+       var completionActions = surveyActions.filter(a=> (a.surveyId == surveyId && a.action === "complete"));
+       if(completionActions.length == 0 && surveyId != redirectSurveyId) {
+          allCompleted = false;
+          incompleteSurveyId = i;
+          break;
+       }
+    }
+     $("#overlay").css("display","none");
+    if(allCompleted) {
+        // If all pre-surveys are completed, set the flag to true
+        sessionStorage.setItem(state.curr.grp + "_preSurveysCompleted", true);
+    } else {
+        // Redirect to the incomplete survey on Qualtrics
+        var surveyUrl = state.args.requiredPreSurveys[incompleteSurveyId] + "?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&sid=" + state.curr.sid + "&cid=" + state.curr.cid;
+        // Change current page url to the survey url
+        window.location.href = surveyUrl;
+    }
 }
 
 function processData() {
@@ -3213,6 +3259,11 @@ function stateArgsSet01() {
   state.args.dataTopNGrp = (isNaN(parseInt(qs["data-top-n-grp"])) || parseInt(qs["data-top-n-grp"]) <= 0 ? CONST.defTopN : parseInt(qs["data-top-n-grp"]));
   state.args.dataReqOtherLearners = (qs["data-req-other-learners"] === "1" ? true : false);
 
+  state.args.completedSurveyId = (qs["surveyId"]  !== undefined ? qs["surveyId"] : undefined);
+  if(state.args.completedSurveyId) {
+    var surveyTrackUrl = CONST.uriServer + "TrackSurveyAction?usr=" + state.curr.usr + "&grp=" + state.curr.grp + "&surveyId=" + state.args.completedSurveyId + "&action=complete";
+    $call("GET", surveyTrackUrl, null, null, true, false);
+  }
 
 }
 
@@ -3270,6 +3321,8 @@ function stateArgsSet02() {
   state.args.uiMinProgressCheck = (qs["ui-min-progress-vis-check"] !== undefined ? qs["ui-min-progress-check"] : undefined);
 
   state.args.dbqaExplanations = false
+
+  state.args.requiredPreSurveys = []
 
   //added by @Jordan
   state.args.kcMap = "";
@@ -3338,6 +3391,8 @@ function stateArgsSet02() {
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.group.dbqa_exp != undefined ? data.vis.ui.params.group.dbqa_exp : state.args.dbqaExplanations);
+  
+          state.args.requiredPreSurveys    = (data.vis.ui.params.group.requiredPreSurveys != undefined ? data.vis.ui.params.group.requiredPreSurveys : state.args.requiredPreSurveys);
   }
   if (data.vis.ui.params.user) {
     state.args.defValRepLvl = (data.vis.ui.params.user.defValRepLvlId != undefined ? data.vis.ui.params.user.defValRepLvlId : state.args.defValRepLvl);
@@ -3386,6 +3441,7 @@ function stateArgsSet02() {
     //end of code added by @Jordan
 
     state.args.dbqaExplanations = (data.vis.ui.params.user.dbqa_exp != undefined ? data.vis.ui.params.user.dbqa_exp : state.args.dbqaExplanations);
+    state.args.requiredPreSurveys    = (data.vis.ui.params.user.requiredPreSurveys != undefined ? data.vis.ui.params.user.requiredPreSurveys : state.args.requiredPreSurveys);
   }
 
   CONST.comparison.grpActive = state.args.uiGridGrpVis;
