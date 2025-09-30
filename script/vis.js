@@ -50,7 +50,16 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel2:"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (",
     RemedialRecommendationsExpLabel3: ", and you have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>",
     RemedialRecommendationsExpLabel4: " that are needed to adress this activity.",
-    allActivities: "All Activities"
+    allActivities: "All Activities",
+    SideSectionConceptsTitle: "List of all concepts in the course",
+    SideSectionConceptsDescription: "Each bar represents the mastery estimation the system has about you based on your attempts on learning activities within the platform.",
+    difficultyMsg: "Difficulty level (based on the system's knowledge estimations)",
+    low:"low",
+    easy:"easy",
+    hard:"hard",
+    high:"high",
+    descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Activity's difficulty</h3>p>This gauge estimates the difficulty of a learning activity based on the level of knowledge required to attempt it and you current level of knowledge.</p>",
+    randomGoalSelected: "The system selected a learning goal to guide your study session. You can change it at any time by selecting a different learning goal.",
   },
   es: {
     appName: "MasteryGrids",
@@ -102,8 +111,16 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel3: ", y tienes <span style='color:green; font-weight: bold;' >buen conocimiento</span> de <b>",
     RemedialRecommendationsExpLabel4: "</b> concepto(s) que son necesarios para abordar esta actividad.",
     MyProgress: "Mi progreso",
-    allActivities: "Todas las actividades de aprendizaje"
-    
+    allActivities: "Todas las actividades de aprendizaje",
+    SideSectionConceptsTitle: "Lista de todos los conceptos del curso",
+    SideSectionConceptsDescription: "Cada barra representa la estimación de competencia que el sistema tiene sobre ti, basada en tus intentos en actividades de aprendizaje dentro de la plataforma.",
+    difficultyMsg: "Nivel de dificultad (basado en las estimaciones de conocimiento del sistema)",
+    low:"bajo",
+    easy:"fácil",
+    hard:"difícil",
+    high:"alto",
+    descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Dificultad de la actividad</h3><p>Esta medidor estima la dificultad de una actividad de aprendizaje basada en el nivel de conocimiento requerido para resolver la actividad y tu nivel actual de conocimiento.</p>",
+    randomGoalSelected: "El sistema seleccionó un objetivo de aprendizaje para guiar tu sesión de estudio. Puedes cambiarlo en cualquier momento seleccionando un objetivo de aprendizaje diferente.",
   }
 };
 
@@ -2874,40 +2891,9 @@ function processData() {
   //calculate difficulty scores
   calculateKcDifficultyScores(data.kcs,0.7,0.3)
 
-  // If lgControlMode is "random", preselect a random learning goal
-  var preselectedLG = -1
+  
 
-  const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
-
-  var preselectedLG = -1;
-  if(state.args.controlModeLG == "random"){
-    sortKCSByLearningGoal(0)
-    var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
-    if(target_difficult_concepts.length==0){
-      preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
-      while(preselectedLG!=0){
-        preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
-      }
-    }
-  }
-  // Iterate with forEach
-  lg_checkboxes.forEach((cb,idx) => {
-    if (idx == preselectedLG) {
-        cb.checked = true;
-        var learning_goal = cb.value;
-        state.args.learningGoal = learning_goal; // Set the initial learning goal in state
-        const prepareRecFunction = "prepare"+learning_goal;
-        if (typeof window[prepareRecFunction] === 'function') {
-          window[prepareRecFunction]();
-        }
-        log(
-            "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
-            "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
-            "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
-            false
-        );
-      }
-    });
+  
   }
 
 
@@ -5903,6 +5889,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
               //this part should show rec-tooltip in the list part of the interface
 
             } else {
+
               explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
               $('#kcs_act_info').prepend(explanationTxt)
             }
@@ -7539,10 +7526,12 @@ function generateHelp(origin) {
     /*helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
                   "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. This estimations are based on previous attempts on activities.</p>"; 
     ui.vis.helpDlg.style.height = "150px";*/
-    if (data.configprops.agg_kc_student_modeling == "cumulate" || data.configprops.agg_proactiverec_method == "km") {
+    if (data.configprops.agg_kc_student_modeling == "cumulate" || data.configprops.agg_proactiverec_method == "km" && state.curr.learningGoal==undefined) {
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Appropriateness for expanding your knowledge</h3>" +
         "<p>This gauge estimates the appropriateness of a learning activity to help you to increase your knowledge about the current topic. This calculation is based on the balance between the level of knowledge in the concepts required to attempt the activity (pre-requisites) and how much knowledge can be acquired in the current topic's concepts by attempting it. These knowledge estimations are based on previous attempts on activities.</p>";
       ui.vis.helpDlg.style.height = "175px";
+    } else if(state.args.learningGoal!=undefined){
+      helpText = LANGUAGES[state.curr.lang].descriptionDifficultyGauge;
     } else {
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
         "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. These estimations are based on previous attempts on activities.</p>";
@@ -9095,7 +9084,7 @@ function loadLearningGoals() {
         input.type = 'radio';
         input.id = `goal-${idx}`;
         input.name = 'learning-goals';
-        input.value = LANGUAGES[state.curr.lang][goal.recFunction+"_description"];
+        input.value = goal.recFunction;
         input.className = 'learning-goal-radio';
         input.style.display = 'none';
 
@@ -9184,6 +9173,96 @@ function loadLearningGoals() {
           el.addEventListener('mousemove', moveTooltip);
         });
       });
+      // If lgControlMode is "random", preselect a random learning goal
+      var preselectedLG = -1
+
+      const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
+
+      if(state.args.controlModeLG == "random"){
+        sortKCSByLearningGoal(0)
+        var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
+        if(target_difficult_concepts.length==0){
+          preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
+          while(preselectedLG!=0){
+            preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
+          }
+        }else{
+          preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
+        }
+      }
+      // Iterate with forEach
+      lg_checkboxes.forEach((cb,idx) => {
+        if (idx == preselectedLG) {
+            //cb.checked = true;
+            
+            var learning_goal = cb.value;
+            state.args.learningGoal = learning_goal; // Set the initial learning goal in state
+            const prepareRecFunction = "prepare"+learning_goal;
+            if (typeof window[prepareRecFunction] === 'function') {
+              window[prepareRecFunction]();
+            }
+            const lg_div = document.querySelector('div.learning-goal-option.'+ learning_goal);
+            lg_div.setAttribute('aria-pressed', 'true');
+            document.getElementById('concept-selection-options').style.filter = 'none';
+            //add tooltip
+
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.style.position = 'absolute';
+            tooltip.style.display = 'block';
+            tooltip.style.background = 'rgba(255, 255, 255, 1)';
+            tooltip.style.color = '#000000ff';
+            tooltip.style.padding = '8px 24px 8px 8px';
+            tooltip.style.borderRadius = '4px';
+            tooltip.style.fontSize = '12px';
+            tooltip.style.zIndex = '1000';
+            tooltip.style.maxWidth = '200px';
+            tooltip.style.marginLeft = '8px'; // Add margin for the arrow
+            tooltip.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)'; // Add shadow
+
+            // Create arrow element
+            const arrow = document.createElement('div');
+            arrow.style.position = 'absolute';
+            arrow.style.left = '-6px'; // Position arrow on the left
+            arrow.style.top = '10px'; // Position from top
+            arrow.style.width = '0';
+            arrow.style.height = '0';
+            arrow.style.borderTop = '6px solid transparent';
+            arrow.style.borderBottom = '6px solid transparent';
+            arrow.style.borderRight = '6px solid rgba(255, 255, 255, 1)'; // Same color as tooltip
+
+            // Create close button
+            const closeButton = document.createElement('div');
+            closeButton.innerHTML = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.right = '8px';
+            closeButton.style.top = '4px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.fontSize = '16px';
+            closeButton.style.fontWeight = 'bold';
+            closeButton.style.color = '#000000ff';
+            closeButton.onclick = () => tooltip.remove();
+
+            // Add message and elements to tooltip
+            tooltip.textContent = LANGUAGES[state.curr.lang].randomGoalSelected;
+            tooltip.appendChild(arrow);
+            tooltip.appendChild(closeButton);
+
+            // Position tooltip relative to lg_div
+            const rect = lg_div.getBoundingClientRect();
+            tooltip.style.left = (rect.right) + 'px';
+            tooltip.style.top = rect.top + 'px';
+
+            document.body.appendChild(tooltip);
+            
+            log(
+                "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
+                "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
+                "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
+                false
+            );
+          }
+        });
     })
     .catch(err => {
       console.error('Could not load learning goals:', err);
@@ -9196,7 +9275,7 @@ function showTooltip(e) {
 
   let tooltip = document.createElement('div');
   tooltip.className = 'learning-goal-tooltip';
-  tooltip.innerText = value;
+  tooltip.innerText = LANGUAGES[state.curr.lang][value+"_description"]
   document.body.appendChild(tooltip);
 
   positionTooltip(e, tooltip);

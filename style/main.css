@@ -483,6 +483,7 @@ img.info-icon{position:relative;display:block;float:right;}
   border-radius: 6px;
   margin: 10px;
   padding: 15px;
+  width:850px;
 }
 
 .concept-selection-container {
@@ -576,7 +577,7 @@ img.info-icon{position:relative;display:block;float:right;}
   position: fixed;
   top: 0;
   right: 0;
-  width: 25%;
+  width: 30%;
   height: 100vh;
   background-color: white;
   border-left: 2px solid #dee2e6;
@@ -588,9 +589,7 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 
 .kcs-inspection-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  
   padding: 15px 20px;
   border-bottom: 1px solid #dee2e6;
   background-color: #f8f9fa;
@@ -707,13 +706,9 @@ img.info-icon{position:relative;display:block;float:right;}
   width: 110px;
 }
 
-#div-kcs-inspection{
-  max-width:25%;
-}
-
 /*learning goals selection section!*/
 .learning-path-btn {
-  font-size: 1.2em;
+  font-size: 13px;
   font-weight: bold;
   color: #fff;
   background: #adadad;
@@ -725,8 +720,9 @@ img.info-icon{position:relative;display:block;float:right;}
   max-width: 200px;
   white-space: normal;
   word-break: break-word;
-  text-align: center;
+  margin-left: 250px;
 }
+
 .learning-path-btn:hover {
   background: #848484;
 }

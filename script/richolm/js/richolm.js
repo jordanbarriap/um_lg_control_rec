@@ -4570,7 +4570,8 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
       percent = 0;
       for(var i=0; i < actId_kcs[actId].length; i++){
         var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-        var kc_level = kcs_estimates[kc_info.n];
+        var kc_level = kc_info.uk_total || 0; //kcs_estimates[kc_info.n];
+
         if (kc_level>=0.666){
           kcsKnown = kcsKnown + 1;
         }else{
@@ -4597,7 +4598,7 @@ function highlightKcsOnActivityMouseOver(actId,resIdx){
           estimate = 0;
           for(var i=0; i < actId_kcs[actId].length; i++){
             var kc_info= map_kcs_id_info[actId_kcs[actId][i]];
-            var kc_level = kcs_estimates[kc_info.n];
+            var kc_level = kc_info.uk_total || 0; //kcs_estimates[kc_info.n];
             //console.log(kc_info.n);
             //console.log(kc_level);
             estimate = estimate + kc_level;
@@ -5909,7 +5910,7 @@ function createKcsInfo(){
         .call(wrap,40);
 
 
-       if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="km"){
+       if(data.configprops.agg_proactiverec_enabled && data.configprops.agg_proactiverec_method=="km" && state.args.learningGoal == undefined){
 
           gsvg.append("text")
           //.attr("id","label-prob-act")
@@ -5938,7 +5939,19 @@ function createKcsInfo(){
           //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
           .call(wrap,40);*/
        }
+       if(state.args.learningGoal != undefined){
+        gsvg.append("text")
+          //.attr("id","label-prob-act")
+          .attr("id","label-rec-score")
+          .text(LANGUAGES[state.curr.lang].difficultyMsg)
+          .attr("x",(2.5*gwidth) / 5 + margin.left)
+          .attr("y",(gheight + margin.top) / 2 + 30)
+          //.attr('transform', "translate(" + ((1.5*gwidth) / 5 + margin.left) + ", " + ((gheight + margin.top) / 2 +60) + ")")
+          .call(wrap,120);
 
+          d3.selectAll(".label-kc").style("display","none");
+          d3.selectAll(".text-kc").style("display","none");
+       }
     }else{
       gsvg.append("text")
       .attr("id","kcsNotKnown")
@@ -6014,18 +6027,18 @@ function createKcsInfo(){
             return "less appropriate to fix misconceptions"
           }
           if(data.configprops.agg_proactiverec_method == "km"){
-            return "low"
+            return LANGUAGES[state.curr.lang].low
           }
         }else if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
-            return "easy";
+            return LANGUAGES[state.curr.lang].easy;
           }
           if(state.args.impactMsg){
             return "learn less";
           }
         }
         else{
-          return "Low";
+          return LANGUAGES[state.curr.lang].low;
         }
       })
       .attr('transform', function(d){
@@ -6059,18 +6072,18 @@ function createKcsInfo(){
             return "more appropriate to fix misconceptions"
           }
           if(data.configprops.agg_proactiverec_method == "km"){
-            return "high"
+            return LANGUAGES[state.curr.lang].high
           }
         }else if(state.args.difficultyMsg || state.args.impactMsg){
           if(state.args.difficultyMsg){
-            return "hard";
+            return LANGUAGES[state.curr.lang].hard;
           }
           if(state.args.impactMsg){
             return "learn more";
           }
         }
         else{
-          return "High";
+          return LANGUAGES[state.curr.lang].high;
         }
       })
       .attr('transform', function(d){
