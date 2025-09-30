@@ -13,9 +13,9 @@
     "incentives": {
         "report_mode": "topic_level",
         "topic_overall": {
-            "resource_ids":["psp", "Tracing Problems"],
+            "resource_ids":["Codificacion"],
             "mode": "resource_type",
-            "activity_per_resource": [1,1],
+            "activity_per_resource": [2],
             "total_activity_per_topic": 2,
             "points_per_activity": 1,
             "completion_progress_limit": 1

@@ -201,7 +201,7 @@ function prepareRemedialRecommendations(){
 	if(target_difficult_concepts.length>0){
 		setTopConceptsForRecommendations(5);
 	}else{
-		var errorMsg = "It looks like the system cannot infer which concepts have been difficult to you! Go and attempt some activities, and once you fail on some, then it will be able to make the estimations that are needed."
+		var errorMsg = LANGUAGES[state.curr.lang].remedialNotMeaningfulMsg;
 		showCustomModal(errorMsg);
 		document.querySelector('input[name="learning-goals"][value="RemedialRecommendations"]').checked = false;
 		log(
@@ -715,7 +715,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 									//if(kc_level>= knowledge_level_limit){
 									if(kc_att > 0 && kc_sr <= success_rate_limit){
 									//if(kc_lastk_att > 0 && kc_lastksr <= last_success_rate_limit){
-										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].dn , "lastksr": kc_lastksr, "sr": kc_sr})
+										misconception_kcs.push({"name": data.kcs.filter(function(d){return d.id == kc_id;})[0].n , "lastksr": kc_lastksr, "sr": kc_sr})
 										if (kc_level < proficiency_threshold){
 											problematic_kcs ++;
 										} else{
@@ -736,7 +736,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								console.log("kc "+kc_id+" not in selected kcs");
 								if(kc_level >= knowledge_level_limit){// && (kc_lastksr == -1 || kc_lastksr>.5)){
 									var helpfulkc = data.kcs.filter(function(d){return d.id == kc_id;})[0]
-									helpful_kcs.push({"name": helpfulkc.dn , "kclevel": kc_level, "lastksr":kc_lastksr})
+									helpful_kcs.push({"name": helpfulkc.n , "kclevel": kc_level, "lastksr":kc_lastksr})
 
 									helpful_kcs_number ++;
 								}
@@ -787,7 +787,9 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						var rec_explanation = "";
 		
 						if ((problematic_kcs+slip_kcs)>0){
-							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2+misconception_kcs[0].name+")"
+							console.log(misconception_kcs)
+							//rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2+misconception_kcs[0].name+")"
+							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2 + convertKCNamesToCurrentLanguage(misconception_kcs)+")"
 							//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
 							// Peter suggested to hide this part of the explanation
 							// if (slip_kcs){
@@ -796,6 +798,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 							//rec_explanation = rec_explanation + "<br>";
 						}
 						if (helpful_kcs_number>0){
+							
 							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel3+helpful_kcs_number+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel4;//out of <b>"+total_kcs+"</b> necessary to succesfully ";//attempt this activity.</li>"
 							var is_problem = activity["url"].indexOf("sqlknot")>=0 || activity["url"].indexOf("sqltutor")>=0 || activity["url"].indexOf("parson")>=0 || activity["url"].indexOf("quizpet")>=0 || activity["url"].indexOf("pcrs")>=0;
 							var is_example = activity["url"].indexOf("webex")>=0 || activity["url"].indexOf("sql_ae") || activity["url"].indexOf("pcex")>=0;
@@ -1030,8 +1033,8 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						
 						//console.log(activity.id)
 						//console.log("Rec score: "+rec_score);
-
-						var rec_explanation = "This example is recommended because it presents <span class='important-text'>concept(s) that are new</span> to you (e.g. <i>"+kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];})[0].dn+"</i>).";
+						var new_kcs = convertKCNamesToCurrentLanguage(kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];}))
+						var rec_explanation = LANGUAGES[state.curr.lang].exampleExpLabel+ " <i>"+new_kcs+"</i>.";
 
 						ranked_activity = Object.assign({}, activity);
 						ranked_activity["rec_score"] = rec_score;
@@ -1169,15 +1172,15 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						//console.log("Average most important prerequisites:");
 						//console.log(avg_k_prerequisite_concepts);
 						if(avg_k_prerequisite_concepts>=mastery_threshold){
-							prerequisite_explanation+="<li>It looks like on average you <span class='level1-exp-text'>master</span> the main <span class='important-text'>prerequisite concepts</span>.</li>";
+							prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel1;
 						}else{
 							if(avg_k_prerequisite_concepts>=proficiency_threshold){
-								prerequisite_explanation+="<li>It looks like on average you are <span class='level2-exp-text'>proficient</span> in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+								prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel2;
 							}else{
 								if(avg_k_prerequisite_concepts>=good_threshold){
-									prerequisite_explanation+="<li>It looks like on average you have a <span class='level3-exp-text'>good</span> understanding in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+									prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel3;
 								}else{
-									prerequisite_explanation+="<li>Although it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
+									prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel4;
 								}
 							}
 						}
@@ -1204,15 +1207,15 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						//console.log("Average learning opportunity of most important outcomes:");
 						//console.log(avg_k_outcome_concepts);
 						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
-							outcome_explanation+="<li>You have an <span class='level1-exp-text'>excellent</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+							outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel1;
 						}else{
 							if(avg_k_outcome_concepts>=good_opportunity_threshold){
-								outcome_explanation+="<li>You have a <span class='level2-exp-text'>good</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+								outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel2;
 							}else{
 								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
-									outcome_explanation+="<li>You have a <span class='level3-exp-text'>fair</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+									outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel3;
 								}else{
-									outcome_explanation+="<li>Although it is low, the opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic is one of the highest within the topic.</li>";
+									outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel4;
 								}
 							}
 						}
@@ -1482,7 +1485,7 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						//console.log(activity.id)
 						//console.log("Rec score: "+rec_score);
 
-						var rec_explanation = "This example is recommended because it presents <span class='important-text'>concept(s) that are new</span> to you (e.g. <i>"+kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];})[0].dn+"</i>).";
+						var rec_explanation = LANGUAGES[state.curr.lang].exampleExpLabel + " <i>"+kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];})[0].dn+"</i>).";
 
 						ranked_activity = Object.assign({}, activity);
 						ranked_activity["rec_score"] = rec_score;
@@ -1612,15 +1615,15 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						//console.log("Average most important prerequisites:");
 						//console.log(avg_k_prerequisite_concepts);
 						if(avg_k_prerequisite_concepts>=mastery_threshold){
-							prerequisite_explanation+="<li>It looks like on average you <span class='level1-exp-text'>master</span> the main <span class='important-text'>prerequisite concepts</span>.</li>";
+							prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel1
 						}else{
 							if(avg_k_prerequisite_concepts>=proficiency_threshold){
-								prerequisite_explanation+="<li>It looks like on average you are <span class='level2-exp-text'>proficient</span> in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+								prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel2
 							}else{
 								if(avg_k_prerequisite_concepts>=good_threshold){
-									prerequisite_explanation+="<li>It looks like on average you have a <span class='level3-exp-text'>good</span> understanding in the main <span class='important-text'>prerequisite concepts</span>.</li>";
+									prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel3
 								}else{
-									prerequisite_explanation+="<li>Although it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>";
+									prerequisite_explanation+=LANGUAGES[state.curr.lang].prereqExpLabel4
 								}
 							}
 						}
@@ -1647,15 +1650,14 @@ function generateKMRecommendations(topics_concepts, topic, topics_activities, kc
 						//console.log("Average learning opportunity of most important outcomes:");
 						//console.log(avg_k_outcome_concepts);
 						if(avg_k_outcome_concepts>=excellent_opportunity_threshold){
-							outcome_explanation+="<li>You have an <span class='level1-exp-text'>excellent</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
-						}else{
+							outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel1;
 							if(avg_k_outcome_concepts>=good_opportunity_threshold){
-								outcome_explanation+="<li>You have a <span class='level2-exp-text'>good</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+								outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel2;
 							}else{
 								if(avg_k_outcome_concepts>=fair_opportunity_threshold){
-									outcome_explanation+="<li>You have a <span class='level3-exp-text'>fair</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>";
+									outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel3;
 								}else{
-									outcome_explanation+="<li>Although it is low, the opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic is one of the highest within the topic.</li>";
+									outcome_explanation+=LANGUAGES[state.curr.lang].outcomeExpLabel4;
 								}
 							}
 						}
@@ -2082,11 +2084,30 @@ function addRecommendationsToUI(){
 	d3.selectAll(".rec_topic").remove()
 
 
-	console.log("add top recommended activities to the interface")
+	console.log("Add top recommended activities to the interface")
 	console.log(top_recommended_activities)
 
-	console.log("Rank recommended activities:");
-	console.log(rank_recommended_activities);
+	//Recommendation logging
+	var str_top_recommended_activities = "";
+	for (var k = 0; k < top_recommended_activities.length; k++) {
+		var rec_score = top_recommended_activities[k]["rec_score"] ? top_recommended_activities[k]["rec_score"] : "N/A";
+		var rec_rank = k;
+		var rec_id = top_recommended_activities[k]["id"] ? top_recommended_activities[k]["id"] : "N/A";
+		var rec_topic = top_recommended_activities[k]["topic_name"] ? top_recommended_activities[k]["topic_name"] : "N/A";
+		var rec_explanation = top_recommended_activities[k]["explanation"] ? top_recommended_activities[k]["explanation"] : "N/A";
+		//var rec_diff = top_recommended_activities[k]["diff"] ? top_recommended_activities[k]["diff"] : "N/A";
+		var rec_kcs = top_recommended_activities[k]["kcs"] ? top_recommended_activities[k]["kcs"] : [];
+		str_top_recommended_activities = str_top_recommended_activities + "{id:" + rec_id + ",topic:" + rec_topic + ",rec-score:" + rec_score + ",rank:" + rec_rank + ",kcs:" + JSON.stringify(rec_kcs) + "};"
+	}
+	console.log("Top recommended activities to show in the UI:")
+	console.log(str_top_recommended_activities)
+	//To-do filtering: get name of the activity, recscore, topic name, topic id, activity id
+	log("action" + CONST.log.sep02 + "generate-recs" + CONST.log.sep01 + 
+		"lg-name" + CONST.log.sep02 + state.args.learningGoalForRec + CONST.log.sep01 +
+		"recs" + CONST.log.sep02 + str_top_recommended_activities+ CONST.log.sep01, true);
+
+	// console.log("Rank recommended activities:");
+	// console.log(rank_recommended_activities);
 
 	if(data.configprops.agg_proactiverec_method=="km" || data.configprops.agg_proactiverec_method=="remedial" || state.args.learningGoal!=undefined){
 		if(top_recommended_activities && top_recommended_activities.length > 0) {
@@ -2558,9 +2579,19 @@ function setTopConceptsForRecommendations(num_concepts){
 
     });
 
+	var sideKCsInfoDivVisible = getComputedStyle(document.querySelector('#div-kcs-inspection')).display;
+	if(sideKCsInfoDivVisible!="none"){
+		openConceptsModal();
+	}
+
 	let moreKCsButtonDiv = document.createElement('div')
-	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">Inspect more concepts 🔎</button>'
+	var spanButton = "<span data-i18n='inspectMoreConcepts'></span>"
+	if(state.args.kcSelectionForRec){
+		spanButton = "<span data-i18n='selectMoreConcepts'></span>"
+	}
+	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">'+spanButton+'</button>'
 	container.appendChild(moreKCsButtonDiv)
+	updateAllText();
 }
 
 // Helper function to update data.kcs when a checkbox is toggled

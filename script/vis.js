@@ -26,9 +26,10 @@ const LANGUAGES = {
     derivedRelationsViews: "Derived Relations and Views",
     noRecommendationInTopic: "There is no recommendation in this topic.",
     learningGoalsLabel: "1. What to focus on in this study session?",
-    seeMoreConcepts: "See more concepts",
-    inspectMoreConcepts: "Select more concepts 🔎",
-    generateRecs: "Generate Learning Recommendations ⚙️",
+    seeMoreConcepts: "See more concepts 🔎",
+    selectMoreConcepts: "Select more concepts 🔎",
+    inspectMoreConcepts: "Inspect more concepts 🔎",
+    generateRecs: "Generate Learning Recommendations 💡",
     disabledForRec: "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying",
     RemedialRecommendations: "Improve on difficult concepts",
     FillKnowledgeGapsRecommendations: "Work on concepts I haven't learned yet",
@@ -51,7 +52,7 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel3: ", and you have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>",
     RemedialRecommendationsExpLabel4: " that are needed to adress this activity.",
     allActivities: "All Activities",
-    SideSectionConceptsTitle: "List of all concepts in the course",
+    SideSectionConceptsTitle: "Course concepts",
     SideSectionConceptsDescription: "Each bar represents the mastery estimation the system has about you based on your attempts on learning activities within the platform.",
     difficultyMsg: "Difficulty level (based on the system's knowledge estimations)",
     low:"low",
@@ -59,7 +60,30 @@ const LANGUAGES = {
     hard:"hard",
     high:"high",
     descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Activity's difficulty</h3>p>This gauge estimates the difficulty of a learning activity based on the level of knowledge required to attempt it and you current level of knowledge.</p>",
+    helpTextExtraPoints: "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>",
     randomGoalSelected: "The system selected a learning goal to guide your study session. You can change it at any time by selecting a different learning goal.",
+    selfReflectionTitle: "Let's reflect about your knowledge!",
+    selfReflectionDescription: 'You just practiced the following concepts.  Let us know if you feel more or less confident than the system estimation about your knowledge. Changing these system\'s beliefs will keep a more accurate model of you, which could help generating more accurate recommendations.',
+    lessConfidentLabel: "Less confident",
+    moreConfidentLabel: "More confident",
+    disabledKcsTooltip: "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying",
+    me: "Me",
+    meVsGrp: "Me vs group",
+    group: "Group",
+    exampleExpLabel:"This example is recommended because it presents <span class='important-text'>concept(s) that are new</span> to you (e.g. ",
+    prereqExpLabel1:"<li>It looks like on average you <span class='level1-exp-text'>master</span> the main <span class='important-text'>prerequisite concepts</span>.</li>",
+		prereqExpLabel2: "<li>It looks like on average you are <span class='level2-exp-text'>proficient</span> in the main <span class='important-text'>prerequisite concepts</span>.</li>",
+		prereqExpLabel3: "<li>It looks like on average you have a <span class='level3-exp-text'>good</span> understanding in the main <span class='important-text'>prerequisite concepts</span>.</li>",
+		prereqExpLabel4: "<li>Although it is low, your knowledge level on the main <span class='important-text'>prerequisite concepts</span> is one of the highest within the topic.</li>",
+    outcomeExpLabel1:"<li>You have an <span class='level1-exp-text'>excellent</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>",
+    outcomeExpLabel2:"<li>You have a <span class='level2-exp-text'>good</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>",
+    outcomeExpLabel3:"<li>You have a <span class='level3-exp-text'>fair</span> opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic.</li>",
+    outcomeExpLabel4:"<li>Although it is low, the opportunity for <span class='important-text'>increasing your knowledge</span> on key concepts introduced in this topic is one of the highest within the topic.</li>",
+    remedialNotMeaningfulMsg: "It looks like the system cannot infer which concepts have been difficult to you! Go and attempt some activities, and once you fail on some, then it will be able to make the estimations that are needed.",
+    attention: "Important information",
+    optionToSelectKCsMsg:"Please, select which concepts you want to focus on for generating learning content recommendations.",
+    noOptionToSelectKCsMsg: "Based on the learning goal selected, these priority concepts will be consider the focus for generating learning content recommendations.",
+								
   },
   es: {
     appName: "MasteryGrids",
@@ -86,9 +110,10 @@ const LANGUAGES = {
     derivedRelationsViews: "Relaciones derivadas y vistas",
     noRecommendationInTopic: "No hay recomendaciones en este tema.",
     learningGoalsLabel: "1. ¿En qué deseas enfocarte en esta sesión de estudio?",
-    seeMoreConcepts: "Ver más conceptos",
-    inspectMoreConcepts: "Seleccionar más conceptos 🔎",
-    generateRecs: "Generar recomendaciones de aprendizaje ⚙️",
+    seeMoreConcepts: "Ver más conceptos 🔎",
+    selectMoreConcepts: "Seleccionar más conceptos 🔎",
+    inspectMoreConcepts: "Inspeccionar más conceptos 🔎",
+    generateRecs: "Generar recomendaciones de aprendizaje 💡",
     disabledForRec: "Basándonos en el objetivo de aprendizaje en el que has decidido enfocarte, creemos que este concepto no es relevante para enfocarse en estudiarlo" ,
     RemedialRecommendations: "Superar mis dificultades",
     FillKnowledgeGapsRecommendations: "Practicar lo que no he demostrado evidencia de aprendizaje",
@@ -112,7 +137,7 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel4: "</b> concepto(s) que son necesarios para abordar esta actividad.",
     MyProgress: "Mi progreso",
     allActivities: "Todas las actividades de aprendizaje",
-    SideSectionConceptsTitle: "Lista de todos los conceptos del curso",
+    SideSectionConceptsTitle: "Conceptos del curso",
     SideSectionConceptsDescription: "Cada barra representa la estimación de competencia que el sistema tiene sobre ti, basada en tus intentos en actividades de aprendizaje dentro de la plataforma.",
     difficultyMsg: "Nivel de dificultad (basado en las estimaciones de conocimiento del sistema)",
     low:"bajo",
@@ -120,7 +145,29 @@ const LANGUAGES = {
     hard:"difícil",
     high:"alto",
     descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Dificultad de la actividad</h3><p>Esta medidor estima la dificultad de una actividad de aprendizaje basada en el nivel de conocimiento requerido para resolver la actividad y tu nivel actual de conocimiento.</p>",
+    helpTextExtraPoints: "<h3>Puntos por unidad</h3><img src='./img/credit.png' alt='Crédito completo' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que obtuviste 2 puntos por completar al menos 2 problemas.</p><br><img src='./img/half_credit.png' alt='Medio crédito' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que obtuviste 1 punto por completar al menos 1 problema.</p><br><img src='./img/no_credit.png' alt='Sin crédito' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que no has completado ningún problema en este tema.</p>",
     randomGoalSelected: "El sistema seleccionó un objetivo de aprendizaje para guiar tu sesión de estudio. Puedes cambiarlo en cualquier momento seleccionando un objetivo de aprendizaje diferente.",
+    selfReflectionTitle: "¡Reflexionemos sobre tu conocimiento!",
+    selfReflectionDescription: 'Acabas de practicar los siguientes conceptos.  Dinos si te sientes más o menos confiado sobre la estimación del sistema sobre tu conocimiento. Cambiar lo que el sistema cree mantendrá un modelo más preciso de tus competencias, lo que podría ayudar a generar recomendaciones más precisas.',
+    lessConfidentLabel: "Menos confiado",
+    moreConfidentLabel: "Más confiado",
+    disabledKcsTooltip: "Basándonos en el objetivo de aprendizaje en el que has decidido enfocarte, creemos que este concepto no es relevante para enfocarse en estudiarlo",
+    me: "Yo",
+    meVsGrp: "Yo vs curso",
+    group: "Curso",
+    exampleExpLabel:"Este ejemplo se sugiere porque presenta <span class='important-text'>conceptos que son nuevos</span> para ti (e.g. ",
+    prereqExpLabel1:"<li>En promedio, parece que <span class='level1-exp-text'>dominas</span> los principales <span class='important-text'>conceptos previos</span>.</li>",
+    prereqExpLabel2: "<li>En promedio, parece que eres <span class='level2-exp-text'>competente</span> en los principales <span class='important-text'>conceptos previos</span>.</li>",
+    prereqExpLabel3: "<li>En promedio, parece que tienes un <span class='level3-exp-text'>buen</span> entendimiento en los principales <span class='important-text'>conceptos previos</span>.</li>",
+    prereqExpLabel14: "<li>Aunque es bajo, tu nivel de conocimiento sobre los principales <span class='important-text'>conceptos previos</span> es uno de los más altos dentro de esta unidad.</li>",
+    outcomeExpLabel1:"<li>Tienes una <span class='level1-exp-text'>excelente</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
+    outcomeExpLabel2:"<li>Tienes una <span class='level2-exp-text'>buena</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
+    outcomeExpLabel3:"<li>Tienes una <span class='level3-exp-text'>razonable</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
+    outcomeExpLabel4:"<li>Aunque es bajo, la oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad es una de las más altas dentro de la unidad.</li>" ,
+    remedialNotMeaningfulMsg: "Parece que el sistema no puede inferir qué conceptos te han resultado difíciles. ¡Intenta realizar algunas actividades y, una vez que falles en algunas, el sistema podrá hacer las estimaciones necesarias!",
+    attention: "Información importante",
+    optionToSelectKCsMsg:"Por favor, selecciona los conceptos en los que deseas enfocarte para generar recomendaciones de contenido de aprendizaje.",
+    noOptionToSelectKCsMsg: "Basándonos en el objetivo de aprendizaje seleccionado, estos conceptos prioritarios se considerarán como tu foco para generar recomendaciones de aprendizaje.",
   }
 };
 
@@ -144,7 +191,7 @@ async function loadGlossaryConcepts() {
 
   // Iterate over rows
   rows.forEach((row, idx) => {
-    console.log(`Row ${idx + 1}:`, row);
+    //console.log(`Row ${idx + 1}:`, row);
     concept_name = row['concept_name'];
     concept_name_es = row['spanish_concept_name'];
     concept_description = row['description'];
@@ -626,7 +673,9 @@ function actDone_cb(rsp) {
   var curr_act_ids = data.kcs.filter(item => kcs_ids.includes(item.id));
 
   //show list of concept where student can edit the SM beliefs
-  populateConceptsDiv(curr_act_ids)
+  if(state.args.editModeSM!=undefined && state.args.editModeSM=="user" && curr_act_ids.length>0){
+    populateConceptsDiv(curr_act_ids)
+  }
 
   // (4) Update the activity grids:
   var res = getRes(state.vis.act.resId);
@@ -1168,7 +1217,7 @@ function actLstShow(doMe, doVs, doGrp) {
 
       // (1.1.1) Individual comparison mode:
       case CONST.vis.mode.ind:
-        visGenGrid(ui.vis.actLst.cont, visGenGridDataAllRes_act(null, "act_me", me, null, ["Me"], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, false, 0, state.vis.grid.cornerRadius, 0, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barAbsMini, resNames, true, false, false, false);
+        visGenGrid(ui.vis.actLst.cont, visGenGridDataAllRes_act(null, "act_me", me, null, [LANGUAGES], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, false, 0, state.vis.grid.cornerRadius, 0, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barAbsMini, resNames, true, false, false, false);
         break;
     }
   }
@@ -1184,7 +1233,7 @@ function actLstShow(doMe, doVs, doGrp) {
         // Non-AVG resource-focus (e.g., questions, examples, etc.):
         if (res.id !== "AVG") {
           title = "";
-          var seriesNames = ["Me", "Me vs group", "Group"];
+          var seriesNames = [LANGUAGES[state.curr.lang].me, LANGUAGES[state.curr.lang].meVsGrp, LANGUAGES[state.curr.lang].group];
           var colorScales = [
             CONST.vis.colors.grpRev[data.vis.color.binCount - 1].concat(["#eeeeee"], CONST.vis.colors.me[data.vis.color.binCount - 1]),
             CONST.vis.colors.grpRev[data.vis.color.binCount - 1].concat(["#eeeeee"], CONST.vis.colors.me[data.vis.color.binCount - 1]),
@@ -1220,11 +1269,11 @@ function actLstShow(doMe, doVs, doGrp) {
       case CONST.vis.mode.ind:
         // Non-AVG resource-focus (e.g., questions, examples, etc.):
         if (res.id !== "AVG") {
-          visGenGrid(ui.vis.actLst.cont, visGenGridDataOneRes_act(null, "act_me", me, null, ["Me"], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barDevMini, resNames, true, false, true, false);
+          visGenGrid(ui.vis.actLst.cont, visGenGridDataOneRes_act(null, "act_me", me, null, [LANGUAGES[state.curr.lang].me], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barDevMini, resNames, true, false, true, false);
         }
 
         // AVG resource-focus:
-        else visGenGrid(ui.vis.actLst.cont, visGenGridDataAllRes_act(null, "act_me", me, null, ["Me"], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, false, 0, state.vis.grid.cornerRadius, 0, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barAbsMini, resNames, true, false, false, false);
+        else visGenGrid(ui.vis.actLst.cont, visGenGridDataAllRes_act(null, "act_me", me, null, [LANGUAGES[state.curr.lang].me], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, false), CONST.vis.gridAbsAct, title, null, false, false, 0, state.vis.grid.cornerRadius, 0, state.vis.grid.xLblAngle, 0, true,  /*BarChart*/null, CONST.vis.barAbsMini, resNames, true, false, false, false);
 
         break;
     }
@@ -3290,6 +3339,17 @@ function updateAllText() {
       el.textContent = LANGUAGES[state.curr.lang][key];
     }
   });
+
+  //Special cases here
+  const selectionLabel = document.querySelector('.concept-selection-label');
+  if (selectionLabel) {
+      // or if you want to preserve any HTML that might be in the span:
+      if(state.args.kcSelectionForRec){
+        selectionLabel.innerHTML += "<br /><span class=\"smaller-message\">" + LANGUAGES[state.curr.lang].optionToSelectKCsMsg + "</span>";
+      } else {
+        selectionLabel.innerHTML += "<br /><span class=\"smaller-message\">" + LANGUAGES[state.curr.lang].noOptionToSelectKCsMsg + "</span>";
+      }
+  }
 }
 
 
@@ -3467,7 +3527,7 @@ function stateArgsSet02() {
     //@Jordan edition of the student model (SM)
     emptyEditSM = "" //in case there are no editions made by the user
     state.args.editSM = parseCustomStringToJSON(data.vis.ui.params.user.editSM != undefined ? data.vis.ui.params.user.editSM : emptyEditSM);
-    state.args.editModeSM = parseCustomStringToJSON(data.vis.ui.params.user.editModeSM != undefined ? data.vis.ui.params.user.editModeSM : emptyEditSM);
+    state.args.editModeSM = data.vis.ui.params.user.editModeSM != undefined ? data.vis.ui.params.user.editModeSM : state.args.editModeSM;
     state.args.kcSelectionForRec = (data.vis.ui.params.user.kcSelectionForRec != undefined ? data.vis.ui.params.user.kcSelectionForRec : state.args.kcSelectionForRec);
     //learning goal (LG) for controlling recommendations
     //end of code added by @Jordan
@@ -3836,17 +3896,17 @@ function visDo(doMe, doGrp, doOthers) {
       case CONST.vis.mode.grp:
         // (a) Me + Me and group + Group:
         if (doMe && state.args.uiGridMeVis) {
-          var title = (state.args.uiGridAllHeadMeVis ? "Me" + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
-          visGenGrid(ui.vis.grid.cont.me, fnVisGenGridData(null, "me", me, null, [], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]); }, data.resources), true, true), CONST.vis.gridAbs, title, tbarMe, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barAbsMini, resNames, true, (topic === null || state.args.uiGridActLstMode ? true : false), true, true, "all-res-me");
+          var title = (state.args.uiGridAllHeadMeVis ? LANGUAGES[state.curr.lang].me + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
+          visGenGrid(ui.vis.grid.cont.me, fnVisGenGridData(null, LANGUAGES[state.curr.lang].me, me, null, [], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.me[data.vis.color.binCount - 1]); }, data.resources), true, true), CONST.vis.gridAbs, title, tbarMe, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barAbsMini, resNames, true, (topic === null || state.args.uiGridActLstMode ? true : false), true, true, "all-res-me");
         }
 
         if ((doMe || doGrp) && state.args.uiGridMeGrpVis) {
-          var title = (state.args.uiGridAllHeadMeGrpVis ? "Me versus group" : null);
+          var title = (state.args.uiGridAllHeadMeGrpVis ? LANGUAGES[state.curr.lang].meVsGrp : null);
           visGenGrid(ui.vis.grid.cont.me, fnVisGenGridData(null, "mevsgrp", me, grp, [], $map(function (x) { return CONST.vis.colors.grpRev[data.vis.color.binCount - 1].concat(["#eeeeee"], CONST.vis.colors.me[data.vis.color.binCount - 1]); }, data.resources), false, true), CONST.vis.gridDev, title, null, false, false, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barDevMini, resNames, true, false, false, true, "all-res-mevsgrp");
         }
 
         if (doGrp && state.args.uiGridGrpVis) {
-          var title = (state.args.uiGridAllHeadGrpVis ? "Group (" + othersTitle + ")" : null);
+          var title = (state.args.uiGridAllHeadGrpVis ? LANGUAGES[state.curr.lang].group + " (" + othersTitle + ")" : null);
           visGenGrid(ui.vis.grid.cont.grp, fnVisGenGridData(null, "grp", grp, null, [], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.grp[data.vis.color.binCount - 1]); }, data.resources), false, true), CONST.vis.gridAbs, title, null, false, false, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barAbsMini, resNames, true, false, false, true, "all-res-grp");
         }
 
@@ -3900,8 +3960,8 @@ function visDo(doMe, doGrp, doOthers) {
       case CONST.vis.mode.ind:
         // (a) My progress:
         if (doMe && state.args.uiGridMeVis) {
-          var title = (state.args.uiGridAllHeadMeVis ? "Me" + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
-          visGenGrid(ui.vis.grid.cont.me, fnVisGenGridData(null, "me", me, null, [], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, true), CONST.vis.gridAbs, title, tbarMe, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barAbsMini, resNames, true, (topic === null || state.args.uiGridActLstMode ? true : false), true, true, null);
+          var title = (state.args.uiGridAllHeadMeVis ? LANGUAGES[state.curr.lang].me + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
+          visGenGrid(ui.vis.grid.cont.me, fnVisGenGridData(null, LANGUAGES[state.curr.lang].me, me, null, [], $map(function (x) { return ["#eeeeee"].concat(CONST.vis.colors.indiv[data.vis.color.binCount - 1]); }, data.resources), true, true), CONST.vis.gridAbs, title, tbarMe, false, true, 0, state.vis.grid.cornerRadius, topicMaxW, state.vis.grid.xLblAngle, 30, true, BarChart, CONST.vis.barAbsMini, resNames, true, (topic === null || state.args.uiGridActLstMode ? true : false), true, true, null);
         }
 
         // (b) Others:
@@ -3940,7 +4000,7 @@ function visDo(doMe, doGrp, doOthers) {
           if (topic === null || (topic !== null && res.id !== "AVG") || (state.args.uiGridActLstMode)) {
 
             var title = (state.args.uiGridOneHeadMeVis ? (state.args.uiGridGrpVis ? "Me and group (" + othersTitle + ")" : LANGUAGES[state.curr.lang].MyProgress) + (topic === null || state.args.uiGridActLstMode ? "" : " &nbsp; <span class=\"info\">(TOPIC: " + topic.name + ")</span>") : null);
-            var seriesNames = ["Me", "Me vs group", "Group"];
+            var seriesNames = [LANGUAGES[state.curr.lang].me, LANGUAGES[state.curr.lang].meVsGrp, LANGUAGES[state.curr.lang].group];
 
             var colorScales = [
               CONST.vis.colors.grpRev[data.vis.color.binCount - 1].concat(["#eeeeee"], CONST.vis.colors.me[data.vis.color.binCount - 1]),
@@ -7356,7 +7416,7 @@ function generateHelp(origin) {
         helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for attempting at least 2 Tracing Problems and 2 Coding Problems.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not attempted at least 2 Tracing Problems and 2 Coding Problems in this topic.</p>";
         height += 150;
       } else {
-        helpText += "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>";
+        helpText += LANGUAGES[state.curr.lang].helpTextExtraPoints;
         height += 150;
       }
 
@@ -7830,6 +7890,8 @@ count = function (ary, classifier) {
 // }
 
 function populateConceptsDiv(concepts) {
+  console.log("Concepts to be edited:");
+  console.log(concepts);
   var divEditSm = document.getElementById('div-edit-sm');
   divEditSm.style.display = 'block';
   divEditSm.innerHTML = '';
@@ -7842,10 +7904,10 @@ function populateConceptsDiv(concepts) {
   // Add a title for the sidebar
   var titleDiv = document.createElement('div');
   titleDiv.style.cssText = 'font-weight: bold; font-size: 16px; margin-bottom: 15px; color: #333; text-align: center;';
-  titleDiv.textContent = "Let's reflect about your knowledge!";
+  titleDiv.textContent = LANGUAGES[state.curr.lang].selfReflectionTitle;
   var descriptionSpan = document.createElement('span');
   descriptionSpan.style.cssText = 'font-size: 12px; color: #666'
-  descriptionSpan.textContent = 'The learning activity you just attempted involves learning the following programming concepts.  Let us know if you feel more or less confident than the system estimation about that knowledge. Changing these system beliefs will improve the personalized recommendations the system generates based on the learning goal you chose.';
+  descriptionSpan.textContent = LANGUAGES[state.curr.lang].selfReflectionDescription;
   divEditSm.appendChild(titleDiv);
   divEditSm.appendChild(descriptionSpan);
 
@@ -7856,13 +7918,13 @@ function populateConceptsDiv(concepts) {
   confidenceLabelsDiv.style.margin = '10px 0 5px 0';
 
   var lessConfidentLabel = document.createElement('span');
-  lessConfidentLabel.textContent = 'Less confident';
+  lessConfidentLabel.textContent = LANGUAGES[state.curr.lang].lessConfidentLabel;
   lessConfidentLabel.style.fontSize = '13px';
   lessConfidentLabel.style.color = '#888';
   lessConfidentLabel.style.textAlign = 'left';
 
   var moreConfidentLabel = document.createElement('span');
-  moreConfidentLabel.textContent = 'More confident';
+  moreConfidentLabel.textContent = LANGUAGES[state.curr.lang].moreConfidentLabel;
   moreConfidentLabel.style.fontSize = '13px';
   moreConfidentLabel.style.color = '#888';
   moreConfidentLabel.style.textAlign = 'right';
@@ -7874,7 +7936,7 @@ function populateConceptsDiv(concepts) {
 
 
   const max_percentage_concepts_to_show = 0.1; // Show at most 10% of the concepts
-  const max_num_concepts_to_show = 4; // Show at most 4 concepts
+  const max_num_concepts_to_show = 5; // Show at most 5 concepts
 
   // --- SEE MORE CONCEPTS PATCH START ---
   const conceptItems = [];
@@ -7893,7 +7955,7 @@ function populateConceptsDiv(concepts) {
     conceptItem.style.alignItems = 'center';
     conceptItem.style.marginBottom = '10px';
 
-    var row = createConceptBarRow(concept, label_top = true, extra_info = false);
+    var row = createConceptBarRow(concept, label_top = true, extra_info = false, editable = true);
 
     // // Thumbs down button
     var thumbsDownBtn = document.createElement('button');
@@ -8142,6 +8204,7 @@ function populateConceptsDiv(concepts) {
   if (concepts.length > max_num_concepts_to_show) {
     var seeMoreBtn = document.createElement('button');
     seeMoreBtn.textContent = LANGUAGES[state.curr.lang].seeMoreConcepts || 'See more concepts';
+    seeMoreBtn.classList.add('see-more-btn');
     seeMoreBtn.style.margin = '10px auto';
     seeMoreBtn.style.display = 'block';
     seeMoreBtn.onclick = function () {
@@ -8155,6 +8218,16 @@ function populateConceptsDiv(concepts) {
         }
       });
       seeMoreBtn.style.display = 'none';
+
+      // Log the action: see more concepts when editing the student model
+      log(
+        "action" + CONST.log.sep02 + "see-more-kcs-edit-SM" + CONST.log.sep01 +
+        "activity-topic-id" + CONST.log.sep02 + getTopic().id + CONST.log.sep01 +
+        "activity-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+        "activity-id" + CONST.log.sep02 + getAct().id,
+        false
+      );
+
     };
     divEditSm.appendChild(seeMoreBtn);
   }
@@ -8462,22 +8535,25 @@ function generateLearningRecommendations() {
         }
         console.log("Recommendations to be sent to the server:")
         console.log(recommended_activities);
-        var millisecondsDate = (new Date).getTime();
-        $.ajax({
-          type: "POST",
-          data: JSON.stringify({
-            "usr": state.curr.usr,
-            "grp": state.curr.grp,
-            "sid": state.curr.sid,
-            "cid": state.curr.cid,
-            "sid": state.curr.sid,
-            "logRecId": millisecondsDate.toString(),
-            "recMethod": state.args.learningGoalForRec,
-            "recommendations": recommended_activities
-          }),
-          url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
-          contentType: "application/json"
-        });
+
+        
+
+        // var millisecondsDate = (new Date).getTime();
+        // $.ajax({
+        //   type: "POST",
+        //   data: JSON.stringify({
+        //     "usr": state.curr.usr,
+        //     "grp": state.curr.grp,
+        //     "sid": state.curr.sid,
+        //     "cid": state.curr.cid,
+        //     "sid": state.curr.sid,
+        //     "logRecId": millisecondsDate.toString(),
+        //     "recMethod": state.args.learningGoalForRec,
+        //     "recommendations": recommended_activities
+        //   }),
+        //   url: "http://" + CONST.hostName + "/recommendation/LogRecommendations",
+        //   contentType: "application/json"
+        // });
       }
       //Add recommendations to the UI
       addRecommendationsToUI()
@@ -8658,6 +8734,22 @@ function openConceptsModal() {
   const panel = document.getElementById('div-kcs-inspection');
   panel.style.display = 'flex';
   createConceptsBarChart();
+  //log that side panel was opened
+  log(
+    "action" + CONST.log.sep02 + "open-side-kcs-section" + CONST.log.sep01 +
+    "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01 +
+    "kc-selection-on" + CONST.log.sep02 + state.args.kcSelectionForRec + CONST.log.sep01,//lg-name represents the learning goal selected and kc-selection represents if student had access to select the concepts for generating the recommendations
+    /*"activity-original-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+    "activity-original-id" + CONST.log.sep02 + getAct().id + CONST.log.sep01 +
+    "activity-recommended-topic-id" + CONST.log.sep02 + rec.topicId + CONST.log.sep01 +
+    "activity-recommended-resource-id" + CONST.log.sep02 + rec.resourceId + CONST.log.sep01 +
+    "activity-recommended-id" + CONST.log.sep02 + rec.activityId + CONST.log.sep01 +
+    "recommendation-id" + CONST.log.sep02 + rec.recommendationId + CONST.log.sep01 +
+    "recommendation-rank" + CONST.log.sep02 + rec.rank + CONST.log.sep01 +
+    "recommendation-score" + CONST.log.sep02 + rec.score,*/
+    true
+  );
+
 }
 
 function closeConceptsInspection() {
@@ -8712,7 +8804,7 @@ function createConceptsBarChart() {
   chartContainer.appendChild(chart);
 }
 
-function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_info = false) {
+function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_info = false, editable = false) {
   d.finalValue = d.uk + (editImpactValues.get(d.edition) || 0);
 
   if (d.finalValue > 1) d.finalValue = 1;
@@ -8821,31 +8913,31 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   barContainer.style.flex = '1';
 
 // --- PATCH: DisabledForRec styling and tooltip ---
-  if (d.disabledForRec === true) {
-    row.style.opacity = '0.45';
+  if (d.disabledForRec === true && editable == false) {
+    row.style.opacity = '0.75';
     row.style.pointerEvents = 'auto';
-    row.title = "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying";
-    row.onmouseenter = function () {
-      // Show custom tooltip
-      let tooltip = document.createElement('div');
-      tooltip.className = 'disabled-kcs-tooltip';
-      tooltip.innerText = "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying";
-      tooltip.style.position = 'absolute';
-      tooltip.style.background = '#333';
-      tooltip.style.color = '#fff';
-      tooltip.style.padding = '7px 12px';
-      tooltip.style.borderRadius = '6px';
-      tooltip.style.fontSize = '13px';
-      tooltip.style.zIndex = '9999';
-      tooltip.style.top = (row.getBoundingClientRect().top + window.scrollY - 38) + 'px';
-      tooltip.style.left = (row.getBoundingClientRect().left + window.scrollX + 10) + 'px';
-      tooltip.id = 'disabled-kcs-tooltip';
-      document.body.appendChild(tooltip);
-    };
-    row.onmouseleave = function () {
-      let tooltip = document.getElementById('disabled-kcs-tooltip');
-      if (tooltip) tooltip.remove();
-    };
+    row.title = LANGUAGES[state.curr.lang].disabledKcsTooltip || "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying";
+    // row.onmouseenter = function () {
+    //   // Show custom tooltip
+    //   let tooltip = document.createElement('div');
+    //   tooltip.className = 'disabled-kcs-tooltip';
+    //   tooltip.innerText = "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying";
+    //   tooltip.style.position = 'absolute';
+    //   tooltip.style.background = '#333';
+    //   tooltip.style.color = '#fff';
+    //   tooltip.style.padding = '7px 12px';
+    //   tooltip.style.borderRadius = '6px';
+    //   tooltip.style.fontSize = '13px';
+    //   tooltip.style.zIndex = '9999';
+    //   tooltip.style.top = (row.getBoundingClientRect().top + window.scrollY - 38) + 'px';
+    //   tooltip.style.left = (row.getBoundingClientRect().left + window.scrollX + 10) + 'px';
+    //   tooltip.id = 'disabled-kcs-tooltip';
+    //   document.body.appendChild(tooltip);
+    // };
+    // row.onmouseleave = function () {
+    //   let tooltip = document.getElementById('disabled-kcs-tooltip');
+    //   if (tooltip) tooltip.remove();
+    // };
   }
   // --- END PATCH ---
 
@@ -9025,7 +9117,7 @@ function showCustomModal(message) {
   title.style.fontWeight = 'bold';
   title.style.fontSize = '18px';
   title.style.marginBottom = '12px';
-  title.innerText = 'Notice';
+  title.innerText = LANGUAGES[state.curr.lang].attention;
 
   const msg = document.createElement('div');
   msg.style.fontSize = '15px';
@@ -9313,7 +9405,8 @@ function convertKCNamesToCurrentLanguage(list_kcs){
   //let list_kcs = str_list_kcs.split(",");
   let translated_lst_kcs = "";
   for(let i=0; i<list_kcs.length; i++){
-    let kc_name=list_kcs[i].trim();
+    let kc_name= typeof list_kcs[i] === "string" ? list_kcs[i].trim() : list_kcs[i].name.trim();
+    console.log("Translated kc: "+kc_name)
     if (Object.prototype.hasOwnProperty.call(LANGUAGES[state.curr.lang], kc_name+"_name")) {
       let translated_kc_name = LANGUAGES[state.curr.lang][kc_name+"_name"];
       translated_kc_name = camelCaseToWords(translated_kc_name);
@@ -9325,5 +9418,6 @@ function convertKCNamesToCurrentLanguage(list_kcs){
       translated_lst_kcs += ", ";
     }
   }
+  
   return translated_lst_kcs;
 }

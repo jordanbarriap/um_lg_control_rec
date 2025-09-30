@@ -467,7 +467,7 @@ img.info-icon{position:relative;display:block;float:right;}
 .learning-goals-label {
   font-size: 12px;
   color: #333;
-  width: 120px;
+  width: 150px;
 } 
 
 .learning-goals-options {
@@ -504,14 +504,14 @@ img.info-icon{position:relative;display:block;float:right;}
   gap: 15px;
   flex-wrap: wrap;
   flex: 1;
-  filter: blur(5px);
+  filter: blur(3px);
 }
 
 .concept-checkbox-item {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   min-width: 120px;
 }
 
@@ -529,7 +529,7 @@ img.info-icon{position:relative;display:block;float:right;}
 
 .concept-mastery-bar {
   width: 100px;
-  height: 20px;
+  height: 10px;
   background-color: #e9ecef;
   border-radius: 10px;
   overflow: hidden;
@@ -541,7 +541,7 @@ img.info-icon{position:relative;display:block;float:right;}
   height: 100%;
   background: linear-gradient(90deg, #28a745, #20c997);
   transition: width 0.3s ease;
-  border-radius: 10px;
+  border-radius: 2px;
 }
 
 .concept-mastery-value {
@@ -557,7 +557,7 @@ img.info-icon{position:relative;display:block;float:right;}
 
 /* Inspect Concepts Button */
 .inspect-concepts-btn {
-  background-color: #17a2b8;
+  background-color: #a1a1a1;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -565,11 +565,13 @@ img.info-icon{position:relative;display:block;float:right;}
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
+  height: 55px;
+  max-width: 150px;
   transition: background-color 0.2s ease;
 }
 
 .inspect-concepts-btn:hover {
-  background-color: #138496;
+  background-color: #707070;
 }
 
 /* KCS Inspection Panel Styles */
@@ -590,16 +592,20 @@ img.info-icon{position:relative;display:block;float:right;}
 
 .kcs-inspection-header {
   
-  padding: 15px 20px;
+  padding: 15x 20px;
   border-bottom: 1px solid #dee2e6;
   background-color: #f8f9fa;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
 }
 
 .kcs-inspection-header h3 {
-  margin: 0;
+  margin-top: 10px;
+  margin-left: 2px;
   color: #333;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
 }
 
@@ -645,11 +651,11 @@ img.info-icon{position:relative;display:block;float:right;}
 
 .bar-container-html {
     position: relative;
-    height: 9px;
+    height: 10px;
     background: #f5f7fa;
     border-radius: 2px;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-    width: 80px;
+    min-width:120px;
     overflow: hidden;
     display: flex;  /* Add this */
     align-items: center;  /* Add this */
@@ -658,7 +664,8 @@ img.info-icon{position:relative;display:block;float:right;}
 .bar-main-html {
     display: inline-block;
     height: 100%;
-    background: linear-gradient(to right, #41ba15, #58b651);
+    background: linear-gradient(90deg, #28a745, #20c997);
+    /* background: linear-gradient(to right, #41ba15, #58b651); */
     border-radius: 3px;
     transition: width 0.3s ease, left 0.3s ease;
     float: left;  /* Add this */
@@ -703,7 +710,7 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 
 .concept-selection-label{
-  width: 110px;
+  width: 180px;
 }
 
 /*learning goals selection section!*/
@@ -711,7 +718,7 @@ img.info-icon{position:relative;display:block;float:right;}
   font-size: 13px;
   font-weight: bold;
   color: #fff;
-  background: #adadad;
+  background: #ffae2c;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -724,7 +731,7 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 
 .learning-path-btn:hover {
-  background: #848484;
+  background: #f08400;
 }
 
 .learning-goal-tooltip {
@@ -864,4 +871,9 @@ polygon.KeepMeUpWithTheClassRecommendations
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   max-width: 300px;
   word-break: break-word;
+}
+
+.smaller-message{
+  font-size: 10px;
+  font-style: italic;
 }
