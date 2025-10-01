@@ -1815,9 +1815,17 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 	console.log(kc_levels[kc_id])
   	if(lastk_sr>0){
   		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
+		if(kc_edition<0){
+			kc_difficulty_score = Math.min(kc_difficulty_score+0.1,1);
+			kc_levels[kc_id]["studentSpecifiedProblem"] = true;
+		}
   	}else{
   		if(attempts>0){
   			kc_difficulty_score = 1 - (overall_sr*weight_sr + kc_level*weight_kcs);
+			if(kc_edition<0){
+				kc_difficulty_score = Math.min(kc_difficulty_score+0.1,1);
+				kc_levels[kc_id]["studentSpecifiedProblem"] = true;
+			}
   		}else{
 			if(attempts==0 && kc_level==0 && kc_has_edits && kc_edition<0){
 				//if the user edited negatively till a point that it reaches zero, it could be inferred that the 
@@ -1827,7 +1835,6 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 			}
 		}
   	}
-	console.log(kc_difficulty_score)
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
   console.log("kc diff scores:");

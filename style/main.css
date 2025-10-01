@@ -591,14 +591,12 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 
 .kcs-inspection-header {
-  
-  padding: 15x 20px;
   border-bottom: 1px solid #dee2e6;
   background-color: #f8f9fa;
   flex-shrink: 0;
   display: flex;
-  flex-direction: row;
-  gap: 4px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .kcs-inspection-header h3 {
@@ -874,6 +872,24 @@ polygon.KeepMeUpWithTheClassRecommendations
 {
   fill: #83139D !important;
 }
+
+span.RemedialRecommendations
+{
+  background-color: #f4b700 !important;
+  color:white;
+}
+
+span.FillKnowledgeGapsRecommendations
+{
+  background-color: #13539d !important;
+  color: white;
+}
+
+span.KeepMeUpWithTheClassRecommendations
+{
+  background-color: #83139D !important;
+  color: white;
+}
 /* Add to your CSS file */
 .concept-tooltip {
   font-size: 11px;
@@ -910,4 +926,32 @@ polygon.KeepMeUpWithTheClassRecommendations
 .kcs-inspection-close-btn:hover {
   background: #e89300;
   transform: scale(1.1);
+}
+
+#div-title-kcs-selection {
+  height: 30px;
+  display: flex;
+  padding-left: 5px;
+  padding-right: 5px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+#div-title-kcs-selection h3 {
+  margin-left: 10px;
+}
+
+.additional-info-kcs-inspection {
+  font-size: 11px;
+  color: #555;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+p.side-kcs-concepts-description{
+  margin-top:0px;
+  margin-left: 10px;
+  margin-right: 5px;
+  margin-bottom: 2px;
 }

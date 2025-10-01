@@ -85,9 +85,9 @@ const LANGUAGES = {
     optionToSelectKCsMsg:"Please, select which concepts you want to focus on for generating learning content recommendations.",
     noOptionToSelectKCsMsg: "Based on the learning goal selected, these priority concepts will be consider the focus for generating learning content recommendations.",
     thisActIsRecLabel: "This activity is recommended because:<ul>",
-    expOrderRemedialRecommendations: "Based on the learning goal selected, concepts shown here are descendingly ordered based on how much you struggled with them in the past.",
-    expOrderFillKnowledgeGapsRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet.",
-    expOrderKeepMeUpWithTheClassRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how relevant they are for the current unit.",
+    expOrderRemedialRecommendations: "Based on the <span class='RemedialRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you have struggled with them in the past, based on failure rate",
+    expOrderFillKnowledgeGapsRecommendations: "Based on the <span class='FillKnowledgeGapsRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet",
+    expOrderKeepMeUpWithTheClassRecommendations: "Based on the <span class='KeepMeUpWithTheClassRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on the unit in which they were introduced in the course (concept from the current topic being shown first and the ones from previous units being shown later). The future concepts are all grouped at the end of the list",
     failureRate: "Failure rate: ",
     attempts: "Attempts: "
   },
@@ -178,6 +178,9 @@ const LANGUAGES = {
     thisActIsRecLabel: "Esta actividad se te recomendó porque:<ul>",
     failureRate: "Tasa de error: ",
     attempts: "Intentos: ",
+    expOrderRemedialRecommendations: "Basándonos en el <span class='RemedialRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto has tenido dificultades con ellos en el pasado, basado en la tasa de error.",
+    expOrderFillKnowledgeGapsRecommendations: "Basándonos en el <span class='FillKnowledgeGapsRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto menos los hayas practicado.",
+    expOrderKeepMeUpWithTheClassRecommendations: "Basándonos en el <span class='KeepMeUpWithTheClassRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuán relevantes son para la unidad actual."
   } 
 };
 
@@ -8747,7 +8750,24 @@ function loadEditionsSM(objEditionsSM) {
 function openConceptsModal() {
   const panel = document.getElementById('div-kcs-inspection');
   panel.style.display = 'flex';
+
   createConceptsBarChart();
+
+  const desc_msg = panel.querySelector('.side-kcs-concepts-description');
+  let add_info = document.createElement('p');
+  add_info.className = "side-kcs-concepts-description";
+  if(state.args.learningGoal == "RemedialRecommendations"){
+    add_info.innerHTML = LANGUAGES[state.curr.lang].expOrderRemedialRecommendations;
+  }else if(state.args.learningGoal == "FillKnowledgeGapsRecommendations"){
+    add_info.innerHTML = LANGUAGES[state.curr.lang].expOrderFillKnowledgeGapsRecommendations;
+  }else if(state.args.learningGoal == "KeepMeUpWithTheClassRecommendations"){
+    add_info.innerHTML = LANGUAGES[state.curr.lang].expOrderKeepMeUpWithTheClassRecommendations;
+  }
+  // Remove all following element siblings
+  while(desc_msg.nextElementSibling) {
+      desc_msg.nextElementSibling.remove();
+  }
+  desc_msg.after(add_info);
   //log that side panel was opened
   log(
     "action" + CONST.log.sep02 + "open-side-kcs-section" + CONST.log.sep01 +
@@ -9332,7 +9352,7 @@ function loadLearningGoals() {
       const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
 
       if(state.args.controlModeLG.startsWith("random")){
-        sortKCSByLearningGoal(0)
+        pageXOffsetByLearningGoal(0)
         var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
         if(target_difficult_concepts.length==0){
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
