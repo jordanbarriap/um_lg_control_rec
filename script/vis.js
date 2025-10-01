@@ -7973,7 +7973,7 @@ function populateConceptsDiv(concepts) {
     conceptItem.style.marginBottom = '10px';
 
     var row = createConceptBarRow(concept, label_top = true, extra_info = false, editable = true);
-
+    row.style.width='100%';
     // // Thumbs down button
     var thumbsDownBtn = document.createElement('button');
     thumbsDownBtn.className = 'thumbs-btn thumbs-down';
@@ -8811,7 +8811,7 @@ const handleScroll = debounce(() => {
 }, 150); // Adjust the delay (in milliseconds) as needed
 
 // Add the scroll event listener
-scrollableDiv.addEventListener('scroll', handleScroll);v
+scrollableDiv.addEventListener('scroll', handleScroll);
 
 }
 
@@ -8893,11 +8893,17 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
 
   // Label container with fixed width
   const labelContainer = document.createElement('div');
-  labelContainer.style.width = '120px';
+  labelContainer.style.width = '140px';
   labelContainer.style.flexShrink = '0';
   labelContainer.style.overflow = 'hidden';
   labelContainer.style.textOverflow = 'ellipsis';
   labelContainer.style.whiteSpace = 'nowrap';
+
+  //check if the concept is being displayed in the SM edition section, if so we should expand it to be 100%
+  const isSMEdition = (document.getElementById('div-edit-sm').style.display == 'block');
+  if (isSMEdition) {
+    labelContainer.style.width = '100%';
+  }
 
   // Checkbox
   if (add_checkbox) {
