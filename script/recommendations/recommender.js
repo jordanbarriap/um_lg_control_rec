@@ -349,12 +349,12 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		activity.explanation = explanation_other_kcs_part;
 
 		// Calculate weighted rank score
-		activity.rank_score = weight_kcs * activity.ratio_covered_selected_kcs + weight_proficiency * avg_uk_non_target;
+		activity.rec_score = weight_kcs * activity.ratio_covered_selected_kcs + weight_proficiency * avg_uk_non_target;
 	});
 
-	// Now sort by rank_score descending
+	// Now sort by rec_score descending
 	unique_list_rec_activities.sort(function(a, b) {
-		return (b.rank_score || 0) - (a.rank_score || 0);
+		return (b.rec_score || 0) - (a.rec_score || 0);
 	});
 
 

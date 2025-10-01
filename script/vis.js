@@ -711,7 +711,7 @@ function actDone_cb(rsp) {
         var topic_act = splitted_recs[0];
         var id_act = splitted_recs[1];
         var rank_score = splitted_recs[2];
-        var rec_act = { id: id_act, isRecommended: 1, topic: topic_act, url: "", rec_score: rank_score, name: id_act, explanation: "", kcs: [] };
+        var rec_act = { id: id_act, isRecommended: 1, topic: topic_act, url: "", rec_score: rec_score, name: id_act, explanation: "", kcs: [] };
         if (rank_score == "1") {
           rank_recommended_activities[id_act] = 0;
         } else if (rank_score == "0.7") {
@@ -2782,7 +2782,7 @@ function processData() {
               var topic_act = splitted_recs[0];
               var id_act = splitted_recs[1];
               var rank_score = splitted_recs[2];
-              var rec_act = { id: id_act, isRecommended: "1", topic: topic_act, url: "", rec_score: rank_score, name: id_act, explanation: "", kcs: [] };
+              var rec_act = { id: id_act, isRecommended: "1", topic: topic_act, url: "", rec_score: rec_score, name: id_act, explanation: "", kcs: [] };
               if (rank_score == "1") {
                 rank_recommended_activities[id_act] = 0;
               } else if (rank_score == "0.7") {
@@ -8762,6 +8762,35 @@ function openConceptsModal() {
     "recommendation-score" + CONST.log.sep02 + rec.score,*/
     true
   );
+
+  // First, import or define a debounce function if you haven't already
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Get the div element
+const scrollableDiv = document.querySelector('.kcs-inspection-body');
+
+// Create a debounced scroll handler
+const handleScroll = debounce(() => {
+  // Your scroll handling logic here
+  console.log('Scroll event debounced');
+  // You can access scroll position using:
+  // scrollableDiv.scrollTop
+  // scrollableDiv.scrollHeight
+  // scrollableDiv.clientHeight
+}, 150); // Adjust the delay (in milliseconds) as needed
+
+// Add the scroll event listener
+scrollableDiv.addEventListener('scroll', handleScroll);v
 
 }
 
