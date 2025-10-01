@@ -8900,7 +8900,7 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   labelContainer.style.whiteSpace = 'nowrap';
 
   //check if the concept is being displayed in the SM edition section, if so we should expand it to be 100%
-  const isSMEdition = (document.getElementById('div-edit-sm').style.display == 'block');
+  const isSMEdition = (state.args.editModeSM!=undefined && state.args.editModeSM!="" && document.getElementById('div-edit-sm').style.display == 'block');
   if (isSMEdition) {
     labelContainer.style.width = '100%';
   }
