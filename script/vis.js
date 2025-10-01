@@ -7599,12 +7599,13 @@ function generateHelp(origin) {
     /*helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
                   "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. This estimations are based on previous attempts on activities.</p>"; 
     ui.vis.helpDlg.style.height = "150px";*/
-    if (data.configprops.agg_kc_student_modeling == "cumulate" || data.configprops.agg_proactiverec_method == "km" && state.curr.learningGoal==undefined) {
+    if (data.configprops.agg_kc_student_modeling == "cumulate" && data.configprops.agg_proactiverec_method == "km" && state.args.learningGoal==undefined) {
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Appropriateness for expanding your knowledge</h3>" +
         "<p>This gauge estimates the appropriateness of a learning activity to help you to increase your knowledge about the current topic. This calculation is based on the balance between the level of knowledge in the concepts required to attempt the activity (pre-requisites) and how much knowledge can be acquired in the current topic's concepts by attempting it. These knowledge estimations are based on previous attempts on activities.</p>";
       ui.vis.helpDlg.style.height = "175px";
     } else if(state.args.learningGoal!=undefined){
       helpText = LANGUAGES[state.curr.lang].descriptionDifficultyGauge;
+      ui.vis.helpDlg.style.height = "100px"
     } else {
       helpText = "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Probability of succesfully attempting an activity</h3>" +
         "<p>This gauge estimates the probability of solving a challenge/problem correctly or understanding an example thoroughly. This calculation is based on the mastery estimation for each of the concepts covered in the activity. These estimations are based on previous attempts on activities.</p>";
