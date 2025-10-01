@@ -88,7 +88,8 @@ const LANGUAGES = {
     expOrderRemedialRecommendations: "Based on the learning goal selected, concepts shown here are descendingly ordered based on how much you struggled with them in the past.",
     expOrderFillKnowledgeGapsRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet.",
     expOrderKeepMeUpWithTheClassRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how relevant they are for the current unit.",
-								
+    failureRate: "Failure rate: ",
+    attempts: "Attempts: "
   },
   es: {
     appName: "MasteryGrids",
@@ -174,7 +175,9 @@ const LANGUAGES = {
     attention: "Información importante",
     optionToSelectKCsMsg:"Por favor, selecciona los conceptos en los que deseas enfocarte para generar recomendaciones de contenido de aprendizaje.",
     noOptionToSelectKCsMsg: "Basándonos en el objetivo de aprendizaje seleccionado, estos conceptos prioritarios se considerarán como tu foco para generar recomendaciones de aprendizaje.",
-    thisActIsRecLabel: "Esta actividad se te recomendó porque:<ul>"
+    thisActIsRecLabel: "Esta actividad se te recomendó porque:<ul>",
+    failureRate: "Tasa de error: ",
+    attempts: "Intentos: ",
   } 
 };
 
@@ -5958,6 +5961,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
             } else {
 
               explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
+              
               $('#kcs_act_info').prepend(explanationTxt)
             }
 
@@ -5969,6 +5973,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
               .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-45)+"px")  */
             //.style("z-index","150");
             //recTooltip.moveToFront();
+
+            document.querySelector('#rec-tooltip-content').classList.add(state.args.learningGoalForRec)
 
           }
         }
@@ -8762,6 +8768,11 @@ function openConceptsModal() {
 function closeConceptsInspection() {
   const panel = document.getElementById('div-kcs-inspection');
   panel.style.display = 'none';
+  log("action" + CONST.log.sep02 + "close-side-kcs-section" + CONST.log.sep01 +
+    "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01 +
+    "kc-selection-on" + CONST.log.sep02 + state.args.kcSelectionForRec + CONST.log.sep01,
+    false
+  );
 }
 
 function createConceptsBarChart() {
@@ -9017,10 +9028,10 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
     const infoLabel = document.createElement('span');
     infoLabel.className = 'concept-info-html';
     if (state.args.learningGoal == "RemedialRecommendations") {
-      infoLabel.innerText = 'Failure rate: ' + ((1 - d.sr) * 100) + '%';
+      infoLabel.innerText = LANGUAGES[state.curr.lang].failureRate + ((1 - d.sr) * 100) + '%';
     } else {
       if (state.args.learningGoal == "FillKnowledgeGapsRecommendations") {
-        infoLabel.innerText = 'Attempts: ' + (d.a);;
+        infoLabel.innerText = LANGUAGES[state.curr.lang].attempts + (d.a);
       }
     }
     infoLabelWrapper.appendChild(infoLabel);
@@ -9302,10 +9313,7 @@ function loadLearningGoals() {
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
         }
       }
-      var div_kcs = document.querySelector("#concept-selection-options")
-      div_kcs.style.disabled = true;
-      div_kcs.style.filter = 'blur(3px)';
-      div_kcs.style.pointerEvents = 'none';
+      
 
       // Iterate with forEach
       lg_checkboxes.forEach((cb,idx) => {
