@@ -210,7 +210,17 @@ function prepareRemedialRecommendations(){
               "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
               false
           );
+		
+		var div_kcs = document.querySelector("#concept-selection-options")
+		div_kcs.style.disabled = true;
+		div_kcs.style.filter = 'blur(3px)';
+		div_kcs.style.pointerEvents = 'none';
+		
+		const lg_div = document.querySelector('div.learning-goal-option.'+ state.args.learningGoal);
+    	lg_div.setAttribute('aria-pressed', 'false');
+
 		state.args.learningGoal = "";
+
 	}
 	
 }
@@ -2627,6 +2637,11 @@ function setTopConceptsForRecommendations(num_concepts){
 	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">'+spanButton+'</button>'
 	container.appendChild(moreKCsButtonDiv)
 	updateAllText();
+
+	var div_kcs = document.querySelector("#concept-selection-options")
+    div_kcs.style.disabled = false;
+    div_kcs.style.filter = 'none';
+	div_kcs.style.pointerEvents = 'auto';
 	
 }
 

@@ -84,7 +84,10 @@ const LANGUAGES = {
     attention: "Important information",
     optionToSelectKCsMsg:"Please, select which concepts you want to focus on for generating learning content recommendations.",
     noOptionToSelectKCsMsg: "Based on the learning goal selected, these priority concepts will be consider the focus for generating learning content recommendations.",
-    thisActIsRecLabel: "This activity is recommended because:<ul>"
+    thisActIsRecLabel: "This activity is recommended because:<ul>",
+    expOrderRemedialRecommendations: "Based on the learning goal selected, concepts shown here are descendingly ordered based on how much you struggled with them in the past.",
+    expOrderFillKnowledgeGapsRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet.",
+    expOrderKeepMeUpWithTheClassRecommendations: "Based on the learning goal selected, the concepts shown here are descendingly ordered based on how relevant they are for the current unit.",
 								
   },
   es: {
@@ -9299,6 +9302,11 @@ function loadLearningGoals() {
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
         }
       }
+      var div_kcs = document.querySelector("#concept-selection-options")
+      div_kcs.style.disabled = true;
+      div_kcs.style.filter = 'blur(3px)';
+      div_kcs.style.pointerEvents = 'none';
+
       // Iterate with forEach
       lg_checkboxes.forEach((cb,idx) => {
         if (idx == preselectedLG) {
