@@ -810,7 +810,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								}
 							}*/
 
-							rec_explanation = rec_explanation + "(e.g. " + helpful_kcs[0].name + ")</li>"
+							rec_explanation = rec_explanation + convertKCNamesToCurrentLanguage(helpful_kcs.slice(0,3)) + ")</li>"
 
 						}
 					
@@ -833,6 +833,20 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 }
 
 function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, topics_activities, kc_levels, kc_topic_weights, weight_kcs){
+	
+	// Add this after the kc_levels = filtered_kc_levels; line in generateKeepMeUpWithTheClassRecommendations
+	// Enrich kc_levels with additional data from data.kcs
+	for (let kcId in kc_levels) {
+		const matchingKC = data.kcs.find(kc => kc.id == kcId);
+		if (matchingKC) {
+			kc_levels[kcId].a = matchingKC.a || 0;
+			kc_levels[kcId].edition = matchingKC.edition || 0;
+			kc_levels[kcId].uk_total = matchingKC.uk_total || 0;
+		}
+	}
+	console.log("kc_levels")
+	console.log(kc_levels)
+
 	//Define the outcome and prerequisites for the current topic
 	var topicOrder = -1;
 	var topic_name = topic.name;
@@ -853,7 +867,6 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 
 	for(var i=0; i<prerequisites.length;i++){
 		var prerequisite_concept = prerequisites[i];
-		console.log(prerequisite_concept)
 		kc_levels[prerequisite_concept.conceptId].type = "prerequisite";
 	}
 	set_prerequisites = new Set(prerequisites.map(function(d){ return d.conceptId}));
@@ -918,6 +931,8 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 	console.log(prerequisite_idfs);
 	console.log("Outcome idf values:");
 	console.log(outcome_idfs)
+	console.log("outcomes")
+	console.log(outcomes)
 
 	var recommendations = [];
 	//var topics = data_topics_acts_kcs;
@@ -938,8 +953,8 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 		
 		var outcome_concept_k = -1
 		var outcome_concept_a=-1
-		if('total_uk' in outcomes[i]){
-			outcome_concept_k = outcomes[i].total_uk;
+		if('uk_total' in outcomes[i]){
+			outcome_concept_k = outcomes[i].uk_total;
 			outcome_concept_a = outcomes[i].a;
 		}
 
@@ -1007,7 +1022,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 								//if a concept is a prerequisite for the topic, it adds its knowledge value to the amount of mastered prereq knowledge
 								if (set_prerequisites.has(kc_id)){
 									var prerequisite_weight = Math.log(1*idf_values[kc_id]);
-									prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
+									prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].uk_total;
 									total_kcs = total_kcs + 1
 									weight_prerequisites = prerequisite_weight + weight_prerequisites
 									total_prerequisites = total_prerequisites + 1;
@@ -1015,7 +1030,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 									//if a concept is an outcome for the topic, it adds the amount of knowledge yet to be known for that concept
 									if(set_outcomes.has(kc_id)){
 										var outcome_weight = Math.log(1*idf_values[kc_id]);
-										outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
+										outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].uk_total);
 										total_kcs = total_kcs + 1
 										weight_outcomes = outcome_weight + weight_outcomes
 										total_outcomes = total_outcomes + 1;
@@ -1028,8 +1043,13 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						}
 						if(weight_outcomes>0){
 							rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
+							rec_score=rec_score/2;
+							//rec_score=rec_score/total_kcs;
+							console.log("Rec score with outcomes: "+rec_score)
+						}else{
+							rec_score=rec_score/2;
 						}
-						rec_score=rec_score/total_kcs;
+						
 						
 						//console.log(activity.id)
 						//console.log("Rec score: "+rec_score);
@@ -1061,7 +1081,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 	var n_resources = resources.length;
 	for (var j=0; j<n_resources;j++){
 		var resource_id = resources[j];
-		if (resource_id != "Examples" || (resource_id=="Examples" && example_recommendations.length==0)){
+		if (!resource_id.startsWith("Examples") || !resource_id.startsWith("Ejemplos") || (resource_id=="Examples" && example_recommendations.length==0)){
 			var activities = topic.activities[resource_id];
 			var n_activities = activities.length;
 			for (var k=0;k<n_activities;k++){
@@ -1098,7 +1118,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 							if (set_prerequisites.has(kc_id)){
 								var prerequisite_weight = Math.log(1*idf_values[kc_id]);
 								ids_act_prerequisites.add(kc_id);
-								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].k;
+								prerequisites_mastery = prerequisites_mastery + prerequisite_weight*kc_levels[kc_id].uk_total;
 								total_kcs = total_kcs + 1
 								weight_prerequisites = prerequisite_weight + weight_prerequisites
 								total_prerequisites = total_prerequisites + 1;
@@ -1107,7 +1127,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 								if(set_outcomes.has(kc_id)){
 									var outcome_weight = Math.log(1*idf_values[kc_id]);
 									ids_act_outcomes.add(kc_id);
-									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].k);
+									outcomes_lack_mastery = outcomes_lack_mastery + outcome_weight*(1-kc_levels[kc_id].uk_total);
 									total_kcs = total_kcs + 1
 									weight_outcomes = outcome_weight + weight_outcomes
 									total_outcomes = total_outcomes + 1;
@@ -1116,14 +1136,18 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						}
 					}
 					if(total_prerequisites>0){
-						rec_score = rec_score + total_prerequisites * prerequisites_mastery/weight_prerequisites;
+						rec_score = rec_score + prerequisites_mastery/weight_prerequisites;//total_prerequisites * prerequisites_mastery/weight_prerequisites;
 					}
-					if(total_outcomes>0){
-						rec_score = rec_score + total_outcomes * outcomes_lack_mastery/weight_outcomes;
-					}
-					rec_score=rec_score/(total_prerequisites + total_outcomes);
 
-					var rec_explanation = "This activity is recommended because:<ul>";
+					//NEW if there is no outcome that matches then it should have low priority, so we divide the rec score by 2 (only prereqs are important, no outcomes)
+					if(total_outcomes>0){
+						rec_score = rec_score + outcomes_lack_mastery/weight_outcomes//total_outcomes * outcomes_lack_mastery/weight_outcomes;
+						rec_score=rec_score/2;
+					}else{
+						rec_score=rec_score/2;
+					}
+
+					var rec_explanation = LANGUAGES[state.curr.lang].thisActIsRecLabel;
 					
 					//console.log(activity.id);
 					//console.log("Rec score: "+rec_score);
@@ -1144,7 +1168,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 					var avg_k_prerequisite_concepts = 0;
 					var total_weight_prerequisites = 0;
 					for(var i=0;i<top_prerequisite_concepts.length;i++){
-						var k_concept = kc_levels[top_prerequisite_concepts[i].conceptId].k;
+						var k_concept = kc_levels[top_prerequisite_concepts[i].conceptId].uk_total;
 						var weight_concept = Math.log(1*idf_values[top_prerequisite_concepts[i].conceptId]);
 						if(k_concept>=mastery_threshold){
 							mastery_concepts++;
@@ -1162,9 +1186,13 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						avg_k_prerequisite_concepts = avg_k_prerequisite_concepts + weight_concept*k_concept;
 						total_weight_prerequisites = total_weight_prerequisites + weight_concept;
 					}
+					
 
 					avg_k_prerequisite_concepts = avg_k_prerequisite_concepts/total_weight_prerequisites;
 					if(top_prerequisite_concepts.length<top_num_concepts) top_num_concepts=top_prerequisite_concepts.length;
+
+					console.log("avg prerequisites")
+					console.log(avg_k_prerequisite_concepts)
 
 					var prerequisite_explanation = "";
 
@@ -1185,6 +1213,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 							}
 						}
 					}
+					console.log(prerequisite_explanation)
 					var excellent_opportunity_threshold =.8;
 					var good_opportunity_threshold =.6;
 					var fair_opportunity_threshold = .4; 
@@ -1192,17 +1221,22 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 					var avg_k_outcome_concepts = 0;
 					var total_weight_outcomes = 0;
 					for(var i=0;i<top_outcome_concepts.length;i++){
-						var k_concept = 1- kc_levels[top_outcome_concepts[i].conceptId].k;
+						var k_concept = 1- kc_levels[top_outcome_concepts[i].conceptId].uk_total;
 						var weight_concept = Math.log(1*idf_values[top_outcome_concepts[i].conceptId]);
 						avg_k_outcome_concepts = avg_k_outcome_concepts + weight_concept*k_concept;
 						total_weight_outcomes = total_weight_outcomes + weight_concept;
 					}
+					
 
 					avg_k_outcome_concepts = avg_k_outcome_concepts/total_weight_outcomes;
+
+					console.log("avg outcomes")
+					console.log(avg_k_outcome_concepts)
+
 					if(top_outcome_concepts.length<top_num_concepts) top_num_concepts=top_outcome_concepts.length;
 
 					var outcome_explanation = "";
-					
+
 					if(top_outcome_concepts && top_outcome_concepts.length>0){
 						//console.log("Average learning opportunity of most important outcomes:");
 						//console.log(avg_k_outcome_concepts);
@@ -1220,6 +1254,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 							}
 						}
 					}
+					console.log(outcome_explanation)
 	
 					rec_explanation = rec_explanation + prerequisite_explanation;
 					rec_explanation = rec_explanation + outcome_explanation;
@@ -2592,6 +2627,7 @@ function setTopConceptsForRecommendations(num_concepts){
 	moreKCsButtonDiv.innerHTML = '<button id="inspect-concepts-btn" class="inspect-concepts-btn" onclick="openConceptsModal()">'+spanButton+'</button>'
 	container.appendChild(moreKCsButtonDiv)
 	updateAllText();
+	
 }
 
 // Helper function to update data.kcs when a checkbox is toggled

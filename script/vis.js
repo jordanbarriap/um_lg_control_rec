@@ -50,7 +50,7 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel1:"This is recommended because it allows you to practice <b>",
     RemedialRecommendationsExpLabel2:"</b> concept(s) which <span style='color:red; font-weight: bold;'>might have caused problems</span> in the past (",
     RemedialRecommendationsExpLabel3: ", and you have <span style='color:green; font-weight: bold;' >good knowledge</span> of <b>",
-    RemedialRecommendationsExpLabel4: " that are needed to adress this activity.",
+    RemedialRecommendationsExpLabel4: " that are needed to adress this activity (e.g.,",
     allActivities: "All Activities",
     SideSectionConceptsTitle: "Course concepts",
     SideSectionConceptsDescription: "Each bar represents the mastery estimation the system has about you based on your attempts on learning activities within the platform.",
@@ -62,6 +62,7 @@ const LANGUAGES = {
     descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Activity's difficulty</h3>p>This gauge estimates the difficulty of a learning activity based on the level of knowledge required to attempt it and you current level of knowledge.</p>",
     helpTextExtraPoints: "<h3>Points per Topic</h3><img src='./img/credit.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 2 points for completing at least 2 problems.</p><br><img src='./img/half_credit.png' alt='Half credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you got 1 point for completing at least 1 problem.</p><br><img src='./img/no_credit.png' alt='No credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that you have not completed any problem in this topic.</p>",
     randomGoalSelected: "The system selected a learning goal to guide your study session. You can change it at any time by selecting a different learning goal.",
+    randomGoalSelectedNoChange: "The system selected a learning goal to guide your study session.",
     selfReflectionTitle: "Let's reflect about your knowledge!",
     selfReflectionDescription: 'You just practiced the following concepts.  Let us know if you feel more or less confident than the system estimation about your knowledge. Changing these system\'s beliefs will keep a more accurate model of you, which could help generating more accurate recommendations.',
     lessConfidentLabel: "Less confident",
@@ -83,6 +84,7 @@ const LANGUAGES = {
     attention: "Important information",
     optionToSelectKCsMsg:"Please, select which concepts you want to focus on for generating learning content recommendations.",
     noOptionToSelectKCsMsg: "Based on the learning goal selected, these priority concepts will be consider the focus for generating learning content recommendations.",
+    thisActIsRecLabel: "This activity is recommended because:<ul>"
 								
   },
   es: {
@@ -134,7 +136,7 @@ const LANGUAGES = {
     RemedialRecommendationsExpLabel1: "Te la recomendamos porque te permite practicar <b>",
     RemedialRecommendationsExpLabel2: "</b> concepto(s) que <span style='color:red; font-weight: bold;'>podrían haberte causado problemas</span> en el pasado (",
     RemedialRecommendationsExpLabel3: ", y tienes <span style='color:green; font-weight: bold;' >buen conocimiento</span> de <b>",
-    RemedialRecommendationsExpLabel4: "</b> concepto(s) que son necesarios para abordar esta actividad.",
+    RemedialRecommendationsExpLabel4: "</b> concepto(s) que son necesarios para abordar esta actividad (por ej. ",
     MyProgress: "Mi progreso",
     allActivities: "Todas las actividades de aprendizaje",
     SideSectionConceptsTitle: "Conceptos del curso",
@@ -147,6 +149,7 @@ const LANGUAGES = {
     descriptionDifficultyGauge: "<h3 style='margin: 0px; padding: 0px 10px 0px 0px;'>Dificultad de la actividad</h3><p>Esta medidor estima la dificultad de una actividad de aprendizaje basada en el nivel de conocimiento requerido para resolver la actividad y tu nivel actual de conocimiento.</p>",
     helpTextExtraPoints: "<h3>Puntos por unidad</h3><img src='./img/credit.png' alt='Crédito completo' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que obtuviste 2 puntos por completar al menos 2 problemas.</p><br><img src='./img/half_credit.png' alt='Medio crédito' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que obtuviste 1 punto por completar al menos 1 problema.</p><br><img src='./img/no_credit.png' alt='Sin crédito' width='15' height='15' style='display:inline;'><p style='display:inline;'>significa que no has completado ningún problema en este tema.</p>",
     randomGoalSelected: "El sistema seleccionó un objetivo de aprendizaje para guiar tu sesión de estudio. Puedes cambiarlo en cualquier momento seleccionando un objetivo de aprendizaje diferente.",
+    randomGoalSelectedNoChange: "El sistema seleccionó un objetivo de aprendizaje para guiar tu sesión de estudio.",
     selfReflectionTitle: "¡Reflexionemos sobre tu conocimiento!",
     selfReflectionDescription: 'Acabas de practicar los siguientes conceptos.  Dinos si te sientes más o menos confiado sobre la estimación del sistema sobre tu conocimiento. Cambiar lo que el sistema cree mantendrá un modelo más preciso de tus competencias, lo que podría ayudar a generar recomendaciones más precisas.',
     lessConfidentLabel: "Menos confiado",
@@ -159,7 +162,7 @@ const LANGUAGES = {
     prereqExpLabel1:"<li>En promedio, parece que <span class='level1-exp-text'>dominas</span> los principales <span class='important-text'>conceptos previos</span>.</li>",
     prereqExpLabel2: "<li>En promedio, parece que eres <span class='level2-exp-text'>competente</span> en los principales <span class='important-text'>conceptos previos</span>.</li>",
     prereqExpLabel3: "<li>En promedio, parece que tienes un <span class='level3-exp-text'>buen</span> entendimiento en los principales <span class='important-text'>conceptos previos</span>.</li>",
-    prereqExpLabel14: "<li>Aunque es bajo, tu nivel de conocimiento sobre los principales <span class='important-text'>conceptos previos</span> es uno de los más altos dentro de esta unidad.</li>",
+    prereqExpLabel4: "<li>Aunque es bajo, tu nivel de conocimiento sobre los principales <span class='important-text'>conceptos previos</span> es uno de los más altos dentro de esta unidad.</li>",
     outcomeExpLabel1:"<li>Tienes una <span class='level1-exp-text'>excelente</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
     outcomeExpLabel2:"<li>Tienes una <span class='level2-exp-text'>buena</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
     outcomeExpLabel3:"<li>Tienes una <span class='level3-exp-text'>razonable</span> oportunidad para <span class='important-text'>aumentar tu conocimiento</span> sobre los conceptos clave introducidos en esta unidad.</li>",
@@ -168,7 +171,8 @@ const LANGUAGES = {
     attention: "Información importante",
     optionToSelectKCsMsg:"Por favor, selecciona los conceptos en los que deseas enfocarte para generar recomendaciones de contenido de aprendizaje.",
     noOptionToSelectKCsMsg: "Basándonos en el objetivo de aprendizaje seleccionado, estos conceptos prioritarios se considerarán como tu foco para generar recomendaciones de aprendizaje.",
-  }
+    thisActIsRecLabel: "Esta actividad se te recomendó porque:<ul>"
+  } 
 };
 
 async function loadGlossaryConcepts() {
@@ -486,7 +490,7 @@ var vis = {
 function actClose() {
   log(
     "action" + CONST.log.sep02 + "activity-close" + CONST.log.sep01 +
-    "activity-topic-id" + CONST.log.sep02 + getTopic().id + CONST.log.sep01 +
+    "activity-topic-id" + CONST.log.sep02 + state.vis.act.act.topicIdx + CONST.log.sep01 +
     "activity-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
     "activity-id" + CONST.log.sep02 + getAct().id,
     true
@@ -9043,6 +9047,13 @@ row.addEventListener('mouseenter', function(e) {
 
     document.body.appendChild(tooltip);
 
+    log(
+        "action" + CONST.log.sep02 + "kc-mouseover" + CONST.log.sep01 +
+        "kc-name" + CONST.log.sep02 + kc_name + CONST.log.sep01 +
+        "kc_level"  + CONST.log.sep02 + d.uk + CONST.log.sep01 +
+        "checked" + CONST.log.sep02 + d.selectedForRec + CONST.log.sep01 +
+        "edition" + CONST.log.sep02 + d.edition + CONST.log.sep01,false)
+
     // Position above the row
     const rect = row.getBoundingClientRect();
     tooltip.style.position = 'absolute';
@@ -9063,6 +9074,12 @@ row.addEventListener('mouseenter', function(e) {
           row._tooltip.remove();
           row._tooltip = null;
       }
+      log(
+        "action" + CONST.log.sep02 + "kc-mouseout" + CONST.log.sep01 +
+        "kc-name" + CONST.log.sep02 + kc_name + CONST.log.sep01 +
+        "kc_level"  + CONST.log.sep02 + d.uk + CONST.log.sep01 +
+        "checked" + CONST.log.sep02 + d.selectedForRec + CONST.log.sep01 +
+        "edition" + CONST.log.sep02 + d.edition + CONST.log.sep01,false)
   });
     // --- Tooltip logic end ---
   
@@ -9270,12 +9287,12 @@ function loadLearningGoals() {
 
       const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
 
-      if(state.args.controlModeLG == "random"){
+      if(state.args.controlModeLG.startsWith("random")){
         sortKCSByLearningGoal(0)
         var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
         if(target_difficult_concepts.length==0){
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
-          while(preselectedLG!=0){
+          while(preselectedLG==0){
             preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
           }
         }else{
@@ -9336,7 +9353,12 @@ function loadLearningGoals() {
             closeButton.onclick = () => tooltip.remove();
 
             // Add message and elements to tooltip
-            tooltip.textContent = LANGUAGES[state.curr.lang].randomGoalSelected;
+            if(state.args.controlModeLG=="random"){
+              tooltip.textContent = LANGUAGES[state.curr.lang].randomGoalSelected;
+            }  
+            if(state.args.controlModeLG=="randomNoChange"){
+              tooltip.textContent = LANGUAGES[state.curr.lang].randomGoalSelectedNoChange;
+            }
             tooltip.appendChild(arrow);
             tooltip.appendChild(closeButton);
 
@@ -9346,13 +9368,32 @@ function loadLearningGoals() {
             tooltip.style.top = rect.top + 'px';
 
             document.body.appendChild(tooltip);
-            
+            //log the random choice of goal
             log(
                 "action" + CONST.log.sep02 + "lg-selected" + CONST.log.sep01 +
                 "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
                 "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
                 false
             );
+
+            //triggers automatic generation of recommendations
+            generateLearningRecommendations();
+            log(
+                "action" + CONST.log.sep02 + "sys-gen-recs" + CONST.log.sep01 +
+                "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01+
+                "trigger" + CONST.log.sep02 + state.args.controlModeLG + CONST.log.sep01,
+                false
+            );
+
+          }else{
+            if(state.args.controlModeLG=="randomNoChange"){
+              var learning_goal = cb.value;
+              const lg_div = document.querySelector('div.learning-goal-option.'+ learning_goal);
+              lg_div.disabled = true;
+              lg_div.style.pointerEvents = 'none';
+              lg_div.style.opacity = '0.6';
+              lg_div.style.backgroundColor = '#e0e0e0';
+            }
           }
         });
     })

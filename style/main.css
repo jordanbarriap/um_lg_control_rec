@@ -467,7 +467,7 @@ img.info-icon{position:relative;display:block;float:right;}
 .learning-goals-label {
   font-size: 12px;
   color: #333;
-  width: 150px;
+  width: 120px;
 } 
 
 .learning-goals-options {
@@ -718,7 +718,7 @@ img.info-icon{position:relative;display:block;float:right;}
   font-size: 13px;
   font-weight: bold;
   color: #fff;
-  background: #ffae2c;
+  background: #aaaaaa;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -731,7 +731,7 @@ img.info-icon{position:relative;display:block;float:right;}
 }
 
 .learning-path-btn:hover {
-  background: #f08400;
+  background: #6e6e6e;
 }
 
 .learning-goal-tooltip {
@@ -810,15 +810,15 @@ input[type="checkbox"] {
 }
 
 .learning-goal-option[aria-pressed="false"].RemedialRecommendations{
-  background-color: #fde18c;
+  background-color: #fff6da;
 }
 
 .learning-goal-option[aria-pressed="false"].FillKnowledgeGapsRecommendations{
-  background-color: #82b4e3;
+  background-color: #c3d5e6;
 }
 
 .learning-goal-option[aria-pressed="false"].KeepMeUpWithTheClassRecommendations{
-  background-color: #ce9ed9;
+  background-color: #c9b4ce;
 }
 
 .learning-goal-option[aria-pressed="true"].RemedialRecommendations/*,
@@ -829,6 +829,9 @@ input[type="checkbox"] {
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,123,255,0.15);
   font-weight: bold;
+  box-shadow: 0 0 5px #fff,
+              0 0 10px #fff,
+              0 0 15px #0ff;
 }
 
 .learning-goal-option[aria-pressed="true"].FillKnowledgeGapsRecommendations/*,
@@ -839,6 +842,9 @@ input[type="checkbox"] {
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,123,255,0.15);
   font-weight: bold;
+  box-shadow: 0 0 5px #fff,
+              0 0 10px #fff,
+              0 0 10px #0ff;
 }
 
 .learning-goal-option[aria-pressed="true"].KeepMeUpWithTheClassRecommendations/*,
@@ -849,6 +855,9 @@ input[type="checkbox"] {
   color: #fff;
   box-shadow: 0 4px 12px rgba(0,123,255,0.15);
   font-weight: bold;
+  box-shadow: 0 0 5px #fff,
+              0 0 10px #fff,
+              0 0 10px #0ff;
 }
 
 polygon.RemedialRecommendations
