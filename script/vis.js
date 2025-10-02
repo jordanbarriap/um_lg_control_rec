@@ -8135,8 +8135,7 @@ function populateConceptsDiv(concepts) {
       if (Object.hasOwn(state.args.editSM, concept.id)) {
         current_max_level = state.args.editSM[concept.id];
       }
-      console.log("down clicked -> current max level")
-      console.log(current_max_level)
+
 
       if (current_max_level > -3) {
         var barMain = this.parentElement.querySelector('.concept-value-html')
@@ -8239,7 +8238,7 @@ function populateConceptsDiv(concepts) {
       // Log the action: see more concepts when editing the student model
       log(
         "action" + CONST.log.sep02 + "see-more-kcs-edit-SM" + CONST.log.sep01 +
-        "activity-topic-id" + CONST.log.sep02 + getTopic().id + CONST.log.sep01 +
+        "activity-topic-id" + CONST.log.sep02 + (state.vis.act.act.topicIdx!=undefined ? state.vis.act.act.topicIdx : getTopic().id) + CONST.log.sep01 +
         "activity-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
         "activity-id" + CONST.log.sep02 + getAct().id,
         false
@@ -8248,6 +8247,14 @@ function populateConceptsDiv(concepts) {
     };
     divEditSm.appendChild(seeMoreBtn);
   }
+  //log that the system generated the concepts for self reflection
+  log(
+        "action" + CONST.log.sep02 + "show-self-reflection-kcs-panel" + CONST.log.sep01 +
+        "activity-topic-id" + CONST.log.sep02 + (state.vis.act.act.topicIdx!=undefined ? state.vis.act.act.topicIdx : getTopic().id)+ CONST.log.sep01 +
+        "activity-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+        "activity-id" + CONST.log.sep02 + getAct().id,
+        false
+      );
   // --- SEE MORE CONCEPTS PATCH END ---
 }
 
@@ -8882,8 +8889,8 @@ function createConceptsBarChart() {
   chart.className = 'concepts-bar-chart-html';
 
   //chartData.forEach(d => {
-  data.kcs.forEach(d => {
-
+  data.kcs.forEach((d,idX) => {
+    d.rank=idX+1;
     // row.appendChild(barContainer);
     let row = createConceptBarRow(d, label_top = false, add_checkbox = state.args.kcSelectionForRec);
     chart.appendChild(row);
@@ -8936,6 +8943,8 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
         "action" + CONST.log.sep02 + "kc-select" + CONST.log.sep01 +
         "kc-name" + CONST.log.sep02 + d.n + CONST.log.sep01 +
         "checked" + CONST.log.sep02 + checkbox.checked + CONST.log.sep01 +
+        "kc-level" + CONST.log.sep02 + d.finalValue + CONST.log.sep01 +
+        "rank" + CONST.log.sep02 + d.rank + CONST.log.sep01 +
         "orig" + CONST.log.sep02 + "system" + CONST.log.sep01,
         /*"activity-original-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
         "activity-original-id" + CONST.log.sep02 + getAct().id + CONST.log.sep01 +
@@ -8963,8 +8972,10 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
         "action" + CONST.log.sep02 + "kc-select" + CONST.log.sep01 +
         "kc-name" + CONST.log.sep02 + d.n + CONST.log.sep01 +
         "checked" + CONST.log.sep02 + checkbox.checked + CONST.log.sep01 +
+        "kc-level" + CONST.log.sep02 + d.finalValue + CONST.log.sep01 +
+        "rank" + CONST.log.sep02 + d.rank + CONST.log.sep01 +
         "orig" + CONST.log.sep02 + "user" + CONST.log.sep01,
-        /*"activity-original-resource-id" + CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
+        /*"activity-original-resource-id" + "kc-level" + CONST.log.sep02 + d.finalValue + CONST.log.sep01 +CONST.log.sep02 + state.vis.act.resId + CONST.log.sep01 +
         "activity-original-id" + CONST.log.sep02 + getAct().id + CONST.log.sep01 +
         "activity-recommended-topic-id" + CONST.log.sep02 + rec.topicId + CONST.log.sep01 +
         "activity-recommended-resource-id" + CONST.log.sep02 + rec.resourceId + CONST.log.sep01 +
@@ -9140,9 +9151,10 @@ row.addEventListener('mouseenter', function(e) {
     log(
         "action" + CONST.log.sep02 + "kc-mouseover" + CONST.log.sep01 +
         "kc-name" + CONST.log.sep02 + kc_name + CONST.log.sep01 +
-        "kc_level"  + CONST.log.sep02 + d.uk + CONST.log.sep01 +
+        "kc_level"  + CONST.log.sep02 + d.finalValue+ CONST.log.sep01 +
         "checked" + CONST.log.sep02 + d.selectedForRec + CONST.log.sep01 +
-        "edition" + CONST.log.sep02 + d.edition + CONST.log.sep01,false)
+        "rank" + CONST.log.sep02 + d.rank + CONST.log.sep01 +
+        "edition" + CONST.log.sep02 + (d.edition?d.edition:0) + CONST.log.sep01,false)
 
     // Position above the row
     const rect = row.getBoundingClientRect();
@@ -9167,9 +9179,10 @@ row.addEventListener('mouseenter', function(e) {
       log(
         "action" + CONST.log.sep02 + "kc-mouseout" + CONST.log.sep01 +
         "kc-name" + CONST.log.sep02 + kc_name + CONST.log.sep01 +
-        "kc_level"  + CONST.log.sep02 + d.uk + CONST.log.sep01 +
+        "kc_level"  + CONST.log.sep02 + d.finalValue + CONST.log.sep01 +
+        "rank" + CONST.log.sep02 + d.rank + CONST.log.sep01 +
         "checked" + CONST.log.sep02 + d.selectedForRec + CONST.log.sep01 +
-        "edition" + CONST.log.sep02 + d.edition + CONST.log.sep01,false)
+        "edition" + CONST.log.sep02 + (d.edition?d.edition:0) + CONST.log.sep01,false)
   });
     // --- Tooltip logic end ---
   
