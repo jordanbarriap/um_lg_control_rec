@@ -2139,25 +2139,6 @@ function addRecommendationsToUI(){
 	console.log("Add top recommended activities to the interface")
 	console.log(top_recommended_activities)
 
-	//Recommendation logging
-	var str_top_recommended_activities = "";
-	for (var k = 0; k < top_recommended_activities.length; k++) {
-		var rec_score = top_recommended_activities[k]["rec_score"] ? top_recommended_activities[k]["rec_score"] : "N/A";
-		var rec_rank = k;
-		var rec_id = top_recommended_activities[k]["id"] ? top_recommended_activities[k]["id"] : "N/A";
-		var rec_topic = top_recommended_activities[k]["topic_name"] ? top_recommended_activities[k]["topic_name"] : "N/A";
-		var rec_explanation = top_recommended_activities[k]["explanation"] ? top_recommended_activities[k]["explanation"] : "N/A";
-		//var rec_diff = top_recommended_activities[k]["diff"] ? top_recommended_activities[k]["diff"] : "N/A";
-		var rec_kcs = top_recommended_activities[k]["kcs"] ? top_recommended_activities[k]["kcs"] : [];
-		str_top_recommended_activities = str_top_recommended_activities + "{id:" + rec_id + ",topic:" + rec_topic + ",rec-score:" + rec_score + ",rank:" + rec_rank + ",kcs:" + JSON.stringify(rec_kcs) + "};"
-	}
-	console.log("Top recommended activities to show in the UI:")
-	console.log(str_top_recommended_activities)
-	//To-do filtering: get name of the activity, recscore, topic name, topic id, activity id
-	log("action" + CONST.log.sep02 + "generate-recs" + CONST.log.sep01 + 
-		"lg-name" + CONST.log.sep02 + state.args.learningGoalForRec + CONST.log.sep01 +
-		"recs" + CONST.log.sep02 + str_top_recommended_activities+ CONST.log.sep01, true);
-
 	// console.log("Rank recommended activities:");
 	// console.log(rank_recommended_activities);
 
