@@ -1811,8 +1811,8 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 	kc_levels[kc_id]["uk_total"] = kc_level
 	var attempts = kc_levels[kc_id]["a"];
   	var kc_difficulty_score = NaN;
-	console.log("KC: "+kc_id+" -> calculating diff score...");
-	console.log(kc_levels[kc_id])
+	//console.log("KC: "+kc_id+" -> calculating diff score...");
+	//console.log(kc_levels[kc_id])
   	if(lastk_sr>0){
   		kc_difficulty_score = 1 - (lastk_sr*weight_sr + kc_level*weight_kcs);
 		if(kc_edition<0){
@@ -2703,8 +2703,8 @@ function addRecencyDataToKCs(){
 		const topic = data.topics.find(t => t.name == kc.t);
 		var recencyPriority = 0
 		if(Object.hasOwn(topic,'timeline')){
-			console.log("Topic timeline found for concept: ");
-			console.log(topic)
+			//console.log("Topic timeline found for concept: ");
+			//console.log(topic)
 			if(topic.timeline.current){
 				recencyPriority = 2 //2 ->current topic
 			}else{

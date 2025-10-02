@@ -89,7 +89,8 @@ const LANGUAGES = {
     expOrderFillKnowledgeGapsRecommendations: "Based on the <span class='FillKnowledgeGapsRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet",
     expOrderKeepMeUpWithTheClassRecommendations: "Based on the <span class='KeepMeUpWithTheClassRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on the unit in which they were introduced in the course (concept from the current topic being shown first and the ones from previous units being shown later). The future concepts are all grouped at the end of the list",
     failureRate: "Failure rate: ",
-    attempts: "Attempts: "
+    attempts: "Attempts: ",
+    noAttempts: "No attempts yet"
   },
   es: {
     appName: "MasteryGrids",
@@ -180,7 +181,8 @@ const LANGUAGES = {
     attempts: "Intentos: ",
     expOrderRemedialRecommendations: "Basándonos en el <span class='RemedialRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto has tenido dificultades con ellos en el pasado, basado en la tasa de error.",
     expOrderFillKnowledgeGapsRecommendations: "Basándonos en el <span class='FillKnowledgeGapsRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto menos los hayas practicado.",
-    expOrderKeepMeUpWithTheClassRecommendations: "Basándonos en el <span class='KeepMeUpWithTheClassRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuán relevantes son para la unidad actual."
+    expOrderKeepMeUpWithTheClassRecommendations: "Basándonos en el <span class='KeepMeUpWithTheClassRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuán relevantes son para la unidad actual.",
+    noAttempts: "Aún no hay intentos"
   } 
 };
 
@@ -675,7 +677,10 @@ function actDone_cb(rsp) {
     $hide(ui.vis.act.fbDiffCont);
   }
 
-  // (3.2) Ask the student if they want to update their student model @Jordan
+  // (3.2) Update the kcs data with new estimates
+  updateDataKCS()
+  
+  // (3.3) Ask the student if they want to update their student model @Jordan
   var current_act = getAct()
   console.log(getAct())
   console.log(data.kcs)
@@ -1880,6 +1885,9 @@ function updateLearnerData(rsp) {
 
     console.log("Redrawing the OLM (CUMULATE)...");
     redrawBipartite();
+
+    updateDataKCS();
+    console.log("updating data.kcs for Jordan's study platform")
   }
 
   actUpdGrids_cb(function () { vis.loadingHide(); });
@@ -2541,7 +2549,7 @@ function processData() {
   var all_resource_kcs = new Set()
 
   state.args.kcResouceIds.forEach(function (resource) {
-
+    console.log("Processing resources for filtering kcs")
     console.log(resource);
     console.log(data.topics.filter(topic => topic.id != 'AVG').map(function (a) { return a.activities[resource] }).flat());
 
@@ -2550,8 +2558,10 @@ function processData() {
   });
   console.log("all_resource_kcs")
   console.log(all_resource_kcs)
-
+  console.log("data.kcs before filtering")
+  console.log(data.kcs.slice())
   data.kcs = data.kcs.filter(function (kc) { return all_resource_kcs.has(kc.id) })
+  
   //end @Kamil
 
   //@Jordan Update the current estimates in data.kcs with the SM editions coming from state.args.editSM
@@ -3076,6 +3086,8 @@ function loadDataOthers_cb(res) {
         map_kcs_id_info[kc_obj.id] = kc_obj;
       }
     }
+
+    
   }
 
   visDo(false, false, true);
@@ -9115,7 +9127,12 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
     const infoLabel = document.createElement('span');
     infoLabel.className = 'concept-info-html';
     if (state.args.learningGoal == "RemedialRecommendations") {
-      infoLabel.innerText = LANGUAGES[state.curr.lang].failureRate + ((1 - d.sr) * 100) + '%';
+      if(d.a>0){
+        infoLabel.innerText = LANGUAGES[state.curr.lang].failureRate + ((1 - d.sr) * 100) + '%';
+      }else{
+        infoLabel.innerText = LANGUAGES[state.curr.lang].noAttempts;
+      }
+      
     } else {
       if (state.args.learningGoal == "FillKnowledgeGapsRecommendations") {
         infoLabel.innerText = LANGUAGES[state.curr.lang].attempts + (d.a);
@@ -9566,4 +9583,42 @@ function convertKCNamesToCurrentLanguage(list_kcs){
   }
   
   return translated_lst_kcs;
+}
+
+function updateDataKCS(){
+  var updated_kc_values = {}
+  for (var i=0;i<data.learners.length;i++){
+      if(data.learners[i].id==data.context.learnerId){
+          updated_kc_values = data.learners[i].state.kcs;
+      }
+  }
+  console.log("this is the new data updated")
+  console.log(updated_kc_values)
+  // Example: updated_kc_values = [1, 2, 3, 4];
+  Object.entries(updated_kc_values).forEach(([key, value]) => {
+    const index = data.kcs.findIndex(kc => kc.id == key);  
+    if (index !== -1) {
+      console.log("updating kc at index: "+index)
+      console.log("old value")
+      console.log(data.kcs[index])
+      data.kcs[index].uk = value.k;
+      data.kcs[index].a = value.a;
+      data.kcs[index].sr = value.sr;
+      data.kcs[index].p = value.p;
+      data.kcs[index]["lastk-sr"]=value["lastk-sr"];
+      data.kcs[index]["lastk-att"]=value["lastk-att"];
+      data.kcs[index].diff = value.diff;
+      console.log("new value")
+      console.log(data.kcs[index])
+
+    }
+  });
+  console.log("updated data kcs from learner state")
+  console.log(data.kcs)
+  addRecencyDataToKCs()
+  calculateKcDifficultyScores(data.kcs,0.7,0.3)
+  if(state.args.learningGoal!= undefined && state.args.learningGoal!=""){
+    window["prepare"+state.args.learningGoal]()
+  }
+    
 }
