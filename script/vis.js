@@ -4888,8 +4888,11 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) { //TODO: make this parameterized !!!
       full_points = 1;
     }
-
-    if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) {//TODO: Change this for a parameter with the id of the resource
+    if(state.curr.grp.startsWith("UTFSM2025Sem2")){
+      assessment_res_ids = ["Codificacion"]
+      full_points = 2;
+    }
+    else if (state.curr.grp.startsWith("IS0017Fall2019") || state.curr.grp.startsWith("IS0017Spring2020")) {//TODO: Change this for a parameter with the id of the resource
       assessment_res_ids = ["qz"];
     } else if (state.curr.grp.startsWith("AALTOSQL20")) {
       assessment_res_ids = ["Query Practice", "Query Writing"];
@@ -4921,7 +4924,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 
         if (topic_data[res_id] !== undefined) {
           var available_assessments = Object.keys(topic_data[res_id]);
-
+          //console.log("Topic: " + topic_name + ", Resource: " + res_id + ", Available assessments: " + available_assessments.length);
           if (available_assessments.length > 0) {
             var n_acts_available = 0;
             for (var k = 0; k < available_assessments.length; k++) {
@@ -4934,6 +4937,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
                 }
               } else {
                 var act_progress = topic_data[res_id][act_name]["values"]["p"];
+                console.log("Activity: " + act_name + ", Progress: " + act_progress);
                 if (act_progress == 1) {
                   completed_assessments[j] = completed_assessments[j] + 1;
                 }
@@ -4978,7 +4982,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
           full_points = n_acts_available;
         }
       }
-
+      console.log("Topic: " + topic_name + ", Points: " + points + ", Full points: " + full_points);
       if (points >= full_points) {
         credit_achievement[i] = 1;
       } else if (points == full_points / 2) {
