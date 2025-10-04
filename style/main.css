@@ -455,7 +455,7 @@ img.info-icon{position:relative;display:block;float:right;}
   border: 1px solid #dee2e6;
   border-radius: 6px;*/
   margin: 5px;
-  padding: 15px;
+  padding: 10px;
 }
 
 .learning-goals-container {
@@ -901,6 +901,24 @@ span.KeepMeUpWithTheClassRecommendations
 .smaller-message{
   font-size: 10px;
   font-style: italic;
+}
+
+.see-more-btn {
+  background-color: #faa200;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 18px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(250,162,0,0.12);
+}
+
+.see-more-btn:hover {
+  background-color: #e89300;
+  transform: scale(1.05);
 }
 
 .kcs-inspection-close-btn {

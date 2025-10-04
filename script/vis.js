@@ -36,7 +36,7 @@ const LANGUAGES = {
     KeepMeUpWithTheClassRecommendations: "Keep me up with the class",
     RemedialRecommendations_description: "Focus on reviewing concepts you struggled with in previous activities.",
     FillKnowledgeGapsRecommendations_description: "Work on concepts I haven't learned yet.",
-    KeepMeUpWithTheClassRecommendations_description: "Stay updated with the class content.",
+    KeepMeUpWithTheClassRecommendations_description: "Stay updated with the most recent class content, focusing on the concepts you have not mastered yet.",
     noConceptsSelectedForRec: "Learning content recommendations cannot be generated if no concept to focus on have been selected by you.",
     conceptSelectionLabel: "2. Which concepts would you like to focus on?",
     FillKnowledgeGapsRecommendationsExpLabel1: "This is recommended because it covers <span class='level1-exp-text-chosen-kcs'>all/span> the concepts that you haven't attempted much yet and you chose to focus on (",
@@ -85,12 +85,17 @@ const LANGUAGES = {
     optionToSelectKCsMsg:"Please, select which concepts you want to focus on for generating learning content recommendations.",
     noOptionToSelectKCsMsg: "Based on the learning goal selected, these priority concepts will be consider the focus for generating learning content recommendations.",
     thisActIsRecLabel: "This activity is recommended because:<ul>",
-    expOrderRemedialRecommendations: "Based on the <span class='RemedialRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you have struggled with them in the past, based on failure rate",
+    expOrderRemedialRecommendations: "Based on the <span class='RemedialRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you have struggled with them in the past, based on failure rate and your current knowledge.",
     expOrderFillKnowledgeGapsRecommendations: "Based on the <span class='FillKnowledgeGapsRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on how much you haven't practiced them yet",
     expOrderKeepMeUpWithTheClassRecommendations: "Based on the <span class='KeepMeUpWithTheClassRecommendations smaller-message'>active learning goal</span>, the concepts shown here are descendingly ordered based on the unit in which they were introduced in the course (concept from the current topic being shown first and the ones from previous units being shown later). The future concepts are all grouped at the end of the list",
-    failureRate: "Failure rate: ",
+    failureRate: "Error rate: ",
     attempts: "Attempts: ",
-    noAttempts: "No attempts yet"
+    noAttempts: "No attempts yet",
+    noRecTitle: "No suiting recommendations",
+    noRecMessage: "Currently, there are no activities that fit your selected learning goal and the concepts you want to focus on. If possible, try selecting a different learning goal and/or different concepts to focus on, and try to generate recommendations again.",
+    helpTopicOpeningTitle: "Topic Opening",
+    helpTopicOpening: " means that the topic is not available for now but will be opened by your instructor at a later time. "
+    
   },
   es: {
     appName: "MasteryGrids",
@@ -127,7 +132,7 @@ const LANGUAGES = {
     KeepMeUpWithTheClassRecommendations: "Ponerme al día con la clase",
     RemedialRecommendations_description: "Enfócate en revisar los conceptos con los que has tenido dificultades en actividades previas.",
     FillKnowledgeGapsRecommendations_description: "Trabaja en conceptos en los cuales no existe evidencia de que sean dominados.",
-    KeepMeUpWithTheClassRecommendations_description: "Mantente actualizado con los conceptos de la unidad actual.",
+    KeepMeUpWithTheClassRecommendations_description: "Mantente actualizado con los conceptos de la unidad actual, enfocándote en los aquellos que aún no has dominado.",
     noConceptsSelectedForRec: "No se pueden generar recomendaciones de contenido de aprendizaje si no ha seleccionado ningún concepto en el que enfocarse.",
     conceptSelectionLabel: "2. ¿En qué conceptos te gustaría enfocarte?",
     FillKnowledgeGapsRecommendationsExpLabel1: "Esta recomendación se sugiere porque cubre <span class='level1-exp-text-chosen-kcs'>todos</span> los conceptos en los que no has tenido muchas oportunidades de practicar y que has decidido enfocarte en practicar (",
@@ -179,10 +184,14 @@ const LANGUAGES = {
     thisActIsRecLabel: "Esta actividad se te recomendó porque:<ul>",
     failureRate: "Tasa de error: ",
     attempts: "Intentos: ",
-    expOrderRemedialRecommendations: "Basándonos en el <span class='RemedialRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto has tenido dificultades con ellos en el pasado, basado en la tasa de error.",
+    expOrderRemedialRecommendations: "Basándonos en el <span class='RemedialRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto has tenido dificultades con ellos en el pasado, basado en la tasa de error y tu conocimiento actual.",
     expOrderFillKnowledgeGapsRecommendations: "Basándonos en el <span class='FillKnowledgeGapsRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuánto menos los hayas practicado.",
     expOrderKeepMeUpWithTheClassRecommendations: "Basándonos en el <span class='KeepMeUpWithTheClassRecommendations smaller-message'>objetivo de aprendizaje activo</span>, los conceptos que se muestran aquí están ordenados de manera descendente según cuán relevantes son para la unidad actual.",
-    noAttempts: "Aún no hay intentos"
+    noAttempts: "Aún no hay intentos",
+    noRecTitle: "No hay recomendaciones adecuadas",
+    noRecMessage: "Actualmente, no hay actividades que se ajusten a tu objetivo de aprendizaje seleccionado y a los conceptos en los que deseas enfocarte. Si es posible, intenta seleccionar un objetivo de aprendizaje diferente y/o diferentes conceptos en los que enfocarte e intenta generar recommendaciones nuevamente.",
+    helpTopicOpeningTitle: "Apertura del unidades",
+    helpTopicOpening: " significa que la unidad no está disponible por ahora, pero tu profesor la habilitará más adelante. "
   } 
 };
 
@@ -2961,7 +2970,7 @@ function processData() {
   //add recency data to kcs
   addRecencyDataToKCs();
   //calculate difficulty scores
-  calculateKcDifficultyScores(data.kcs,0.7,0.3)
+  calculateKcDifficultyScores(data.kcs,0.3,0.7)
 
   
 
@@ -7456,7 +7465,7 @@ function generateHelp(origin) {
     }
 
     if (state.args.uiTopicTimeMapFile) {
-      helpText += "<h3>Topic Opening</h3><img src='./img/lock2.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>means that the topic is not available for now but will be opened by your instructor at a later time. </p>"
+      helpText += "<h3>"+LANGUAGES[state.curr.lang].helpTopicOpeningTitle+"</h3><img src='./img/lock2.png' alt='Full credit' width='15' height='15' style='display:inline;'><p style='display:inline;'>"+LANGUAGES[state.curr.lang].helpTopicOpening+" </p>"
       height += 70;
     }
 
@@ -7923,8 +7932,20 @@ count = function (ary, classifier) {
 // }
 
 function populateConceptsDiv(concepts) {
-  console.log("Concepts to be edited:");
-  console.log(concepts);
+  //console.log("Populating concepts div with concepts:");
+  //console.log(concepts.slice());
+  
+  //sort concepts by the current data.kcs order (matching with the learning goal related order)
+  const idOrder = data.kcs.map(kc => kc.id);
+
+  concepts = concepts.slice().sort(
+    (a, b) => idOrder.indexOf(a.id) - idOrder.indexOf(b.id)
+  );
+  //console.log("Sorted concepts:");
+  //console.log(concepts);
+
+  //console.log("Concepts to be edited:");
+  //console.log(concepts);
   var divEditSm = document.getElementById('div-edit-sm');
   divEditSm.style.display = 'block';
   divEditSm.innerHTML = '';
@@ -7979,11 +8000,12 @@ function populateConceptsDiv(concepts) {
     if (index < max_num_concepts_to_show) {
       conceptItem.style.display = 'flex';
     } else {
-      conceptItem.style.display = 'flex';
+      //conceptItem.style.display = 'flex';
       conceptItem.style.overflow = 'hidden';
       conceptItem.style.maxHeight = '0px';
-      conceptItem.style.opacity = '0';
-      conceptItem.style.transition = 'max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1)';
+      //conceptItem.style.opacity = '0';
+      conceptItem.style.display = 'none';
+      conceptItem.style.transition = 'max-height 0.4s cubic-bezier(0.4,0,0.2,1), display 0.4s cubic-bezier(0.4,0,0.2,1)';
     }
     conceptItem.style.alignItems = 'center';
     conceptItem.style.marginBottom = '10px';
@@ -8246,7 +8268,7 @@ function populateConceptsDiv(concepts) {
           // Force reflow for transition
           void item.offsetWidth;
           item.style.maxHeight = '100px';
-          item.style.opacity = '1';
+          //item.style.opacity = '1';
         }
       });
       seeMoreBtn.style.display = 'none';
@@ -8842,11 +8864,19 @@ function debounce(func, wait) {
 
 // Get the div element
 const scrollableDiv = document.querySelector('.kcs-inspection-body');
-
-// Create a debounced scroll handler
+let lastScrollTop = 0; // outside the function
+//Create a debounced scroll handler
 const handleScroll = debounce(() => {
   // Your scroll handling logic here
-  console.log('Scroll event debounced');
+  //console.log('Scroll event debounced');
+  const delta = scrollableDiv.scrollTop - lastScrollTop;
+  var scrollDirection = delta > 0 ? 'down' : 'up';
+  lastScrollTop = scrollableDiv.scrollTop;
+
+  log("action" + CONST.log.sep02 + "scroll-side-kcs-section" + CONST.log.sep01 +
+    "lg-name" + CONST.log.sep02 + state.args.learningGoal + CONST.log.sep01 +
+    "direction" + CONST.log.sep02 + scrollDirection + CONST.log.sep01, false);
+
   // You can access scroll position using:
   // scrollableDiv.scrollTop
   // scrollableDiv.scrollHeight
@@ -9034,7 +9064,7 @@ function createConceptBarRow(d, label_top = false, add_checkbox = false, extra_i
   barContainer.style.flex = '1';
 
 // --- PATCH: DisabledForRec styling and tooltip ---
-  if (d.disabledForRec === true && editable == false) {
+  if (d.disabledForRec === true && editable == false && (document.querySelector("#div-edit-sm").style.display == 'none'|| document.querySelector("#div-edit-sm").style.display == '')) {
     row.style.opacity = '0.75';
     row.style.pointerEvents = 'auto';
     row.title = LANGUAGES[state.curr.lang].disabledKcsTooltip || "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying";
@@ -9164,7 +9194,7 @@ row.addEventListener('mouseenter', function(e) {
     tooltip.innerHTML = `
       <div style="font-weight:bold; margin-bottom:4px;">${kc_name}</div>
       <div style="margin-bottom:6px;">${kc_description}</div>
-      ${kc_code ? `<pre style="background:#23272e;color:#fff;padding:8px;border-radius:4px;overflow-x:auto;font-size:13px;margin:0;"><code class="language-python">${kc_code}</code></pre>` : ''}
+      ${kc_code ? `<pre style="background:#23272e;color:#fff;padding:8px;border-radius:4px;overflow-x:auto;font-size:11px;margin:0;"><code class="language-python">${kc_code}</code></pre>` : ''}
     `;
 
     document.body.appendChild(tooltip);
@@ -9620,7 +9650,7 @@ function updateDataKCS(){
   console.log("updated data kcs from learner state")
   console.log(data.kcs)
   addRecencyDataToKCs()
-  calculateKcDifficultyScores(data.kcs,0.7,0.3)
+  calculateKcDifficultyScores(data.kcs,0.3,0.7)
   if(state.args.learningGoal!= undefined && state.args.learningGoal!=""){
     window["prepare"+state.args.learningGoal]()
   }

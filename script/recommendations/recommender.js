@@ -9,9 +9,9 @@ var max_num_recs = 9
 
 //Threshold and definitions for the explanations
 var mastery_concepts = 0;
-var mastery_threshold = .95;
+var mastery_threshold = .9;
 var proficiency_concepts = 0;
-var proficiency_threshold = .75;
+var proficiency_threshold = .7;
 var good_concepts = 0;
 var good_threshold = .5;
 var ok_concepts = 0;
@@ -293,8 +293,8 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 					unique_list_rec_activities.push(activity);
 				}
 			}
-			console.log("current type")
-			console.log(ranking_act_curr_type)
+			//console.log("current type")
+			//console.log(ranking_act_curr_type)
 
 			if (resource_id in ranking_acts_per_type){
 				ranking_acts_per_type[resource_id] = ranking_acts_per_type[resource_id].concat(ranking_act_curr_type);
@@ -317,19 +317,34 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		var non_target_kcs = activity.kcs.filter(function(kc_id) {
 			return !selected_kcs_ids.includes(kc_id);
 		});
+		var activity_topic = activity.topic_name;
 
 		// Calculate average uk for non-target KCs
+		var sum_tfidf_weights = 0;
 		var avg_uk_non_target = 0;
+		//console.log("Calculating avg_uk_non_target for activity " + activity.id);
 		if (non_target_kcs.length > 0) {
 			var sum_uk = 0;
 			for (var nt = 0; nt < non_target_kcs.length; nt++) {
 				var kc_obj = data.kcs.find(function(d) { return d.id == non_target_kcs[nt]; });
-				sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? kc_obj.uk : 0;
+				var tf_idf_kc_topic = 1
+				if (kc_obj.topics.hasOwnProperty(activity_topic)) {
+					//console.log("KC " + kc_obj.id + " has topic " + activity_topic);
+					tf_idf_kc_topic = kc_obj.topics[activity_topic].weight;
+				}
+				sum_tfidf_weights += tf_idf_kc_topic;
+				if(tf_idf_kc_topic!=undefined && tf_idf_kc_topic>0){
+					sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? tf_idf_kc_topic*kc_obj.uk : 0;
+				}else{
+					sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? kc_obj.uk : 0;
+				}
+				sum_tfidf_weights += tf_idf_kc_topic;
+				
 			}
-			avg_uk_non_target = sum_uk / non_target_kcs.length;
+			avg_uk_non_target = sum_uk /sum_tfidf_weights;
 		}
 		activity.avg_uk_non_target = avg_uk_non_target;
-		console.log("Activity " + activity.id + " avg_uk_non_target: " + avg_uk_non_target);
+		//console.log("Activity " + activity.id + " avg_uk_non_target: " + avg_uk_non_target);
 		
 		explanation_other_kcs_part=activity.explanation
 		if(avg_uk_non_target>=mastery_threshold){
@@ -705,7 +720,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						}
 						var kc_info = data.kcs.filter(function(d){return d.id == kc_id;})[0]
 						if(kc_info!=undefined){
-							var kc_level = kc_info["total_uk"];
+							var kc_level = kc_info["uk_total"];
 							var kc_lastksr= kc_info["lastk-sr"];
 							var kc_lastk_att = kc_info["lastk-att"];
 							var kc_sr = kc_info["sr"];
@@ -1170,9 +1185,9 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 					var mastery_concepts = 0;
 					var mastery_threshold = .95;
 					var proficiency_concepts = 0;
-					var proficiency_threshold = .75;
+					var proficiency_threshold = .7;
 					var good_concepts = 0;
-					var good_threshold = .6;
+					var good_threshold = .5;
 					var ok_concepts = 0;
 
 					var avg_k_prerequisite_concepts = 0;
@@ -1795,10 +1810,10 @@ function compareActivities(a,b) {
 function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   var user_index = data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
   var kcs_ids = Object.keys(kc_levels);
-  console.log("Calculate KC difficulty scores...");
+  //console.log("Calculate KC difficulty scores...");
   for(var i=0;i<kcs_ids.length;i++){
   	var kc_id = kcs_ids[i];
-	//here we have to use total_uk instead of uk because we want to consider the students input
+	//here we have to use uk_total instead of uk because we want to consider the students input
   	
 	var kc_level_original = kc_levels[kc_id]["uk"];
 	var kc_has_edits = kc_levels[kc_id]["hasEdition"];
@@ -1837,8 +1852,8 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
   	}
   	kc_levels[kc_id]["diff"]=kc_difficulty_score;
   }
-  console.log("kc diff scores:");
-  console.log(kc_levels);
+  //console.log("kc diff scores:");
+  //console.log(kc_levels);
   //update difficulty in data.learners.state.kcs
   var user_index = data.learners.indexOf(data.learners.filter(function(d){return d.id==state.curr.usr})[0]);
 
@@ -2127,7 +2142,15 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 function addRecommendationsToUI(){
 	//console.log("Add recommendation to UI...");
 	//console.log(top_recommended_activities);
-
+	if(state.args.learningGoal!="" && state.args.learningGoalForRec!="" && (top_recommended_activities==undefined || (top_recommended_activities && top_recommended_activities.length==0))){
+		console.log("No recommendations to add to UI");
+		showCustomModal("info", LANGUAGES[state.curr.lang].noRecTitle, LANGUAGES[state.curr.lang].noRecMessage);
+		state.args.learningGoal="";
+		state.args.learningGoalForRec="";
+		log("action" + CONST.log.sep02 + "generate-recs-empty" + CONST.log.sep01 + 
+        "lg-name" + CONST.log.sep02 + state.args.learningGoalForRec + CONST.log.sep01, true);
+		return;
+	}
 	//Remove existing stars
 	//from activities
 	d3.selectAll(".recommendationStar").remove();
@@ -2468,11 +2491,11 @@ function sortKCSByLearningGoal(learningGoal){
 			let sr = typeof kc.sr === 'number' ? kc.sr : 0;
 			let lastksr = typeof kc.lastksr === 'number' ? kc.lastksr : 0;
             let edition = typeof kc.edition === 'number' ? editImpactValues.get(kc.edition) : 0;
-            let total_uk = uk + edition;
-            if (isNaN(total_uk)) total_uk = 0;
-            if (total_uk < 0) total_uk = 0;
-            if (total_uk > 1) total_uk = 1;
-            kc.total_uk = total_uk;
+            let uk_total = uk + edition;
+            if (isNaN(uk_total)) uk_total = 0;
+            if (uk_total < 0) uk_total = 0;
+            if (uk_total > 1) uk_total = 1;
+            kc.uk_total = uk_total;
 
 			//disable concepts that have never been attempted and have an estimated knowledge level of zero
 			if(att<2 || (att==0 && uk==0 && edition>0)){
@@ -2491,9 +2514,9 @@ function sortKCSByLearningGoal(learningGoal){
 			const bothNaN = isNaN(a.diff) && isNaN(b.diff);
 
 			if (bothNaN) {
-				// Sort by ascending total_uk if both diffs are NaN
-				const totalUkA = typeof a.total_uk === 'number' ? a.total_uk : 0;
-				const totalUkB = typeof b.total_uk === 'number' ? b.total_uk : 0;
+				// Sort by ascending uk_total if both diffs are NaN
+				const totalUkA = typeof a.uk_total === 'number' ? a.uk_total : 0;
+				const totalUkB = typeof b.uk_total === 'number' ? b.uk_total : 0;
 				return totalUkA - totalUkB;
 			}
 			// If diffs are equal, sort by normalized attempts (a.a / a.cnt.length)
@@ -2515,23 +2538,23 @@ function sortKCSByLearningGoal(learningGoal){
 		//lower limit attempts to consider a concept as a knowledge gap
 		let lower_limit_attempts = 1;
 		//lower limit knowledge gap to consider a concept as a knowledge gap
-		let lower_limit_kc_knowledge_gap = 0.25
+		let lower_limit_kc_knowledge_gap = 0.35
 		//filling knowledge gaps
 		data.kcs.forEach(function(kc) {
 			kc.disabledForRec = false;
             let uk = typeof kc.uk === 'number' ? kc.uk : 0;
 			let att = typeof kc.a === 'number' ? kc.a : 0;
             let edition = typeof kc.edition === 'number' ? editImpactValues.get(kc.edition) : 0;
-            let total_uk = uk + edition;
-            if (isNaN(total_uk)) total_uk = 0;
-            if (total_uk < 0) total_uk = 0;
-            if (total_uk > 1) total_uk = 1;
-            kc.total_uk = total_uk;
-			if((kc.recencyPriority==2 || kc.recencyPriority==0) || total_uk>lower_limit_kc_knowledge_gap || (total_uk==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
+            let uk_total = uk + edition;
+            if (isNaN(uk_total)) uk_total = 0;
+            if (uk_total < 0) uk_total = 0;
+            if (uk_total > 1) uk_total = 1;
+            kc.uk_total = uk_total;
+			if((kc.recencyPriority==2 || kc.recencyPriority==0) || uk_total>lower_limit_kc_knowledge_gap || (uk_total==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
 				kc.disabledForRec = true;
 			}
         });
-		// Sort in place by total attempts, tie-breaker: lowest total_uk
+		// Sort in place by total attempts, tie-breaker: lowest uk_total
         data.kcs.sort((a, b) => {
 			// Disabled concepts should be considered smaller (sorted to the end)
     		if (a.disabledForRec === true && b.disabledForRec !== true) return 1;
@@ -2541,8 +2564,8 @@ function sortKCSByLearningGoal(learningGoal){
 			const attB = typeof b.a === 'number' ? b.a : 0;
 			if (attB != attA) return attA - attB; // Primary sort: ascending
 
-			const totalA = a.total_uk || 0;
-			const totalB = b.total_uk || 0;
+			const totalA = a.uk_total || 0;
+			const totalB = b.uk_total || 0;
 			if(totalA!==totalB) return totalA - totalB
 
 			const recencyA = typeof a.recencyPriority === 'number' ? a.recencyPriority : 0
@@ -2566,6 +2589,9 @@ function sortKCSByLearningGoal(learningGoal){
 			if(kc.recencyPriority==0){
 				kc.disabledForRec=true;
 			}
+			if(kc.uk_total>0.9){
+				kc.disabledForRec=true;
+			}
 		})
 		
 		data.kcs.sort((a, b) => {
@@ -2574,6 +2600,11 @@ function sortKCSByLearningGoal(learningGoal){
 			if (recA !== recB) return recB - recA;
 			const orderA = typeof a.topicOrder === 'number' ? a.topicOrder : 0;
 			const orderB = typeof b.topicOrder === 'number' ? b.topicOrder : 0;
+			if (orderA !== orderB) return orderB - orderA; //descending topic order
+			const totalA = a.uk_total || 0;
+			const totalB = b.uk_total || 0;
+			if(totalA!==totalB) return totalA - totalB //ascending total uk
+			// If all else is equal, maintain original order (stable sort)
 			return orderB - orderA;
 		});
 
@@ -2589,10 +2620,10 @@ function setTopConceptsForRecommendations(num_concepts){
 
 	// Only include kcs that do not have disabledForRec or have it set to false
 	const filteredKcs = data.kcs.filter(kc => kc.disabledForRec == false || typeof kc.disabledForRec === 'undefined');
-	//const sortedKcs = [...filteredKcs].sort((a, b) => (a.total_uk || 0) - (b.total_uk || 0));
+	//const sortedKcs = [...filteredKcs].sort((a, b) => (a.uk_total || 0) - (b.uk_total || 0));
 	const topKcs = filteredKcs.slice(0, num_concepts);
-	console.log("About to set the top kcs...")
-	console.log(topKcs.length)
+	//console.log("About to set the top kcs...")
+	//console.log(topKcs.length)
     topKcs.forEach((kc, idx) => {
         // Calculate values
         const uk = typeof kc.uk === 'number' ? kc.uk : 0;
@@ -2603,7 +2634,7 @@ function setTopConceptsForRecommendations(num_concepts){
         if (total > 1) total = 1;
 		kc.name = kc.dn
 		kc.selectedForRec = true; // Default to selected
-		console.log("this is a new row...")
+		//console.log("this is a new row...")
         var row = createConceptBarRow(kc, label_top=true, add_checkbox=state.args.kcSelectionForRec);
 		
 		container.appendChild(row);
@@ -2699,7 +2730,7 @@ function addRecencyDataToKCs(){
 	data.kcs.forEach(function(kc) {
 		//assign priority to the current concept based on its recency
 		//first check if the concept belongs to the current topic
-		console.log(kc);
+		//console.log(kc);
 		const topic = data.topics.find(t => t.name == kc.t);
 		var recencyPriority = 0
 		if(Object.hasOwn(topic,'timeline')){
