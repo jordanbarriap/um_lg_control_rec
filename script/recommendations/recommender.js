@@ -814,7 +814,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 						if ((problematic_kcs+slip_kcs)>0){
 							console.log(misconception_kcs)
 							//rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2+misconception_kcs[0].name+")"
-							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2 + convertKCNamesToCurrentLanguage(misconception_kcs)+")"
+							rec_explanation = rec_explanation + LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel1 +(problematic_kcs + slip_kcs)+LANGUAGES[state.curr.lang].RemedialRecommendationsExpLabel2 +"<span class='text-highlighted-kcs'>" + convertKCNamesToCurrentLanguage(misconception_kcs) + "</span>)"
 							//rec_explanation = rec_explanation + "<li>You have struggled in "+(problematic_kcs + slip_kcs)+" related concepts";
 							// Peter suggested to hide this part of the explanation
 							// if (slip_kcs){
@@ -835,7 +835,7 @@ function generateRemedialRecommendations(data_topics_acts_kcs, user_state, kc_to
 								}
 							}*/
 
-							rec_explanation = rec_explanation + convertKCNamesToCurrentLanguage(helpful_kcs.slice(0,3)) + ")</li>"
+							rec_explanation = rec_explanation + "<span class='text-highlighted-kcs'>" + convertKCNamesToCurrentLanguage(helpful_kcs.slice(0,3)) + ")</span></li>"
 
 						}
 					
@@ -1079,7 +1079,7 @@ function generateKeepMeUpWithTheClassRecommendations(topics_concepts, topic, top
 						//console.log(activity.id)
 						//console.log("Rec score: "+rec_score);
 						var new_kcs = convertKCNamesToCurrentLanguage(kc_topic_weights.filter(function(d){return d.id==overlap_non_attempted_outcomes_kcs[0];}))
-						var rec_explanation = LANGUAGES[state.curr.lang].exampleExpLabel+ " <i>"+new_kcs+"</i>.";
+						var rec_explanation = LANGUAGES[state.curr.lang].exampleExpLabel+ " <i><span class='text-highlighted-kcs'>"+new_kcs+"</span></i>.";
 
 						ranked_activity = Object.assign({}, activity);
 						ranked_activity["rec_score"] = rec_score;
@@ -2536,7 +2536,7 @@ function sortKCSByLearningGoal(learningGoal){
 	if(learningGoal==1){
 		
 		//lower limit attempts to consider a concept as a knowledge gap
-		let lower_limit_attempts = 1;
+		let lower_limit_attempts = 3;
 		//lower limit knowledge gap to consider a concept as a knowledge gap
 		let lower_limit_kc_knowledge_gap = 0.35
 		//filling knowledge gaps
@@ -2550,7 +2550,7 @@ function sortKCSByLearningGoal(learningGoal){
             if (uk_total < 0) uk_total = 0;
             if (uk_total > 1) uk_total = 1;
             kc.uk_total = uk_total;
-			if((kc.recencyPriority==2 || kc.recencyPriority==0) || uk_total>lower_limit_kc_knowledge_gap || (uk_total==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (1 maybe)
+			if((kc.recencyPriority==2 || kc.recencyPriority==0) || uk_total>lower_limit_kc_knowledge_gap || (uk_total==0.0 && att>lower_limit_attempts)){//knowledge gap should be concepts that have never been attempted or it has been attempted a very low number of times (2 maybe)
 				kc.disabledForRec = true;
 			}
         });
