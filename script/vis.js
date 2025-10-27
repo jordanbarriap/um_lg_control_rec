@@ -33,7 +33,7 @@ const LANGUAGES = {
     disabledForRec: "Based on the learning goal you chose to focus on, we think this concept is not relevant to focus on studying",
     RemedialRecommendations: "Improve on difficult concepts",
     FillKnowledgeGapsRecommendations: "Work on concepts I haven't learned yet",
-    KeepMeUpWithTheClassRecommendations: "Keep me up with the class",
+    KeepMeUpWithTheClassRecommendations: "Catch me up with the class",
     RemedialRecommendations_description: "Focus on reviewing concepts you struggled with in previous activities.",
     FillKnowledgeGapsRecommendations_description: "Work on concepts I haven't learned yet.",
     KeepMeUpWithTheClassRecommendations_description: "Stay updated with the most recent class content, focusing on the concepts you have not mastered yet.",
@@ -9442,7 +9442,7 @@ function loadLearningGoals() {
       const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
 
       if(state.args.controlModeLG.startsWith("random")){
-        pageXOffsetByLearningGoal(0)
+        sortKCSByLearningGoal(0)
         var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
         if(target_difficult_concepts.length==0){
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
