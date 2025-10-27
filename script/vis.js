@@ -9442,7 +9442,7 @@ function loadLearningGoals() {
       const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
 
       if(state.args.controlModeLG.startsWith("random")){
-        sortKCSByLearningGoal(0)
+        pageXOffsetByLearningGoal(0)
         var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
         if(target_difficult_concepts.length==0){
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
