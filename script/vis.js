@@ -9369,6 +9369,7 @@ function loadLearningGoals() {
             input.checked = true;
             input.dispatchEvent(new Event('change', { bubbles: true }));
           }
+          generateLearningRecommendations()
         }
         goalDiv.addEventListener('click', selectGoal);
         goalDiv.addEventListener('keydown', function(e) {
@@ -9442,7 +9443,7 @@ function loadLearningGoals() {
       const lg_checkboxes = document.querySelectorAll('input[name="learning-goals"]');
 
       if(state.args.controlModeLG.startsWith("random")){
-        pageXOffsetByLearningGoal(0)
+        sortKCSByLearningGoal(0)
         var target_difficult_concepts = data.kcs.filter(kc => !kc.disabledForRec);
         if(target_difficult_concepts.length==0){
           preselectedLG = Math.floor(Math.random() * lg_checkboxes.length);
