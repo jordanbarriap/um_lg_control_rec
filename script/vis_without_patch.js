@@ -5313,21 +5313,6 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         return tooltip;
       });
 
-    // Set initial transform on grid-cell-inner elements for proper rotation animation
-    g.each(function() {
-      var inner = d3.select(this);
-      var box = inner.select(".box");
-      if (!box.empty()) {
-        var cx = parseFloat(box.attr("width")) || 0;
-        var cy = parseFloat(box.attr("height")) || 0;
-        cx = cx / 2;
-        cy = cy / 2;
-        if (cx > 0 && cy > 0) {
-          inner.attr("transform", "rotate(0," + cx + "," + cy + ")");
-        }
-      }
-    });
-
     if (state.args.uiIncenCheck && isInteractive) {
       g.append("svg:image")
         .attr("class", "credit-img")
@@ -5584,18 +5569,12 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
       on("click", null).
       on("mouseover",
         function (miniSvg) {
-          return function (d, i) { 
-            var e = d3.event || window.event;
-            if (e) e.stopPropagation();
-            ehVisGridMouseOver(e, d3.select(this), miniSvg); 
-          };
+          return function (e) { ehVisGridMouseOver(e, d3.select(this), miniSvg); };
         }(mini.svg)
       ).
       on("mouseout",
         function (miniSvg) {
-          return function (d, i) {
-            var e = d3.event || window.event;
-            if (e) e.stopPropagation();
+          return function (e) {
             ehVisGridMouseOut(e, d3.select(this), miniSvg);
           };
         }(mini.svg)
@@ -5608,25 +5587,9 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
 
       gGrid.
         selectAll(".grid-cell-outter").
-        on("mouseover", function (d, i) { 
-          var e = d3.event || window.event;
-          if (e) e.stopPropagation();
-          if (this.__mouseoverActive) return;
-          this.__mouseoverActive = true;
-          var self = this;
-          setTimeout(function() { self.__mouseoverActive = false; }, 100);
-          ehVisGridBoxMouseOver(e, d3.select(this), gridData, null, null); 
-        }).
-        on("mouseout", function (d, i) { 
-          var e = d3.event || window.event;
-          if (e) e.stopPropagation();
-          ehVisGridBoxMouseOut(e, d3.select(this), null); 
-        }).
-        on("click", function (d, i) { 
-          var e = d3.event || window.event;
-          if (e) e.stopPropagation();
-          ehVisGridBoxClick(e, d3.select(this)); 
-        });
+        on("mouseover", function (e) { ehVisGridBoxMouseOver(e, d3.select(this), gridData, null, null); }).
+        on("mouseout", function (e) { ehVisGridBoxMouseOut(e, d3.select(this), null); }).
+        on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
 
       $('.recommendation').click(function (event) {
         if ($(event.target).is('img') == false) {
@@ -5653,31 +5616,19 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         selectAll(".grid-cell-outter").
         on("mouseover",
           function (gridData, miniSvg, miniSeries) {
-            return function (d, i) {
-              var e = d3.event || window.event;
-              if (e) e.stopPropagation();
-              if (this.__mouseoverActive) return;
-              this.__mouseoverActive = true;
-              var self = this;
-              setTimeout(function() { self.__mouseoverActive = false; }, 100);
+            return function (e) {
               ehVisGridBoxMouseOver(e, d3.select(this), gridData, miniSvg, miniSeries);
             };
           }(gridData, mini.svg, mini.series)
         ).
         on("mouseout",
           function (miniSvg) {
-            return function (d, i) {
-              var e = d3.event || window.event;
-              if (e) e.stopPropagation();
+            return function (e) {
               ehVisGridBoxMouseOut(e, d3.select(this), miniSvg);
             };
           }(mini.svg)
         ).
-        on("click", function (d, i) { 
-          var e = d3.event || window.event;
-          if (e) e.stopPropagation();
-          ehVisGridBoxClick(e, d3.select(this)); 
-        });
+        on("click", function (e) { ehVisGridBoxClick(e, d3.select(this)); });
 
       $('.recommendation').click(function (event) {
         if ($(event.target).is('img') == false) {
@@ -6296,10 +6247,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
   }
   //end of code added by @Jordan
 
-  var cx = parseFloat(box.attr("width")) || 0;
-  var cy = parseFloat(box.attr("height")) || 0;
-  cx = cx / 2;
-  cy = cy / 2;
+  var cx = box.attr("width") / 2;
+  var cy = box.attr("height") / 2;
 
   /*
   for (var i=0, ni=box.node().parentNode.childNodes.length; i < ni; i++) {
@@ -6316,14 +6265,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       transition().delay(0).duration(100).ease("easeInOutQuart").
       attrTween("transform", function (d, i, a) {
         if (!visDoVaryCellW()) {
-          var current = d3.select(this).attr("transform");
-          var currentAngle = 0;
-          if (current && current.indexOf("rotate") !== -1) {
-            var match = current.match(/rotate\(([^,]+)/);
-            if (match) currentAngle = parseFloat(match[1]) || 0;
-          }
-          var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-          return d3.interpolateString(start, "rotate(45," + cx + "," + cy + ")");
+          return d3.interpolateString("rotateX(0," + cx + "," + cy + ")", "rotate(45," + cx + "," + cy + ")");
         }
       });
 
@@ -6341,14 +6283,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 0;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 0;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(45," + cx + "," + cy + ")");
+            return d3.interpolateString("rotateX(0," + cx + "," + cy + ")", "rotate(45," + cx + "," + cy + ")");
           }
         });
 
@@ -6364,14 +6299,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 0;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 0;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(45," + cx + "," + cy + ")");
+            return d3.interpolateString("rotateX(0," + cx + "," + cy + ")", "rotate(45," + cx + "," + cy + ")");
           }
         });
 
@@ -6383,7 +6311,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
   if (miniSvg) {
     miniSvg.
-      setVis(true, 0, 250).
       setTitle(grpOutter.attr("data-var-name")).
       updSeries("pri", gridData, parseInt(grpOutter.attr("data-series-idx"))).
       setSeriesItemClass("pri", "").
@@ -6474,14 +6401,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 45;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 45;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(0," + cx + "," + cy + ")");
+            return d3.interpolateString("rotate(45," + cx + "," + cy + ")", "rotate(0," + cx + "," + cy + ")");
           }
         });
 
@@ -6494,14 +6414,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 45;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 45;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(0," + cx + "," + cy + ")");
+            return d3.interpolateString("rotate(45," + cx + "," + cy + ")", "rotate(0," + cx + "," + cy + ")");
           }
         });
 
@@ -6521,14 +6434,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 45;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 45;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(0," + cx + "," + cy + ")");
+            return d3.interpolateString("rotate(45," + cx + "," + cy + ")", "rotate(0," + cx + "," + cy + ")");
           }
         });
 
@@ -6544,14 +6450,7 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
         transition().delay(0).duration(100).ease("easeInOutQuart").
         attrTween("transform", function (d, i, a) {
           if (!visDoVaryCellW()) {
-            var current = d3.select(this).attr("transform");
-            var currentAngle = 45;
-            if (current && current.indexOf("rotate") !== -1) {
-              var match = current.match(/rotate\(([^,]+)/);
-              if (match) currentAngle = parseFloat(match[1]) || 45;
-            }
-            var start = "rotate(" + currentAngle + "," + cx + "," + cy + ")";
-            return d3.interpolateString(start, "rotate(0," + cx + "," + cy + ")");
+            return d3.interpolateString("rotate(45," + cx + "," + cy + ")", "rotate(0," + cx + "," + cy + ")");
           }
         });
 
@@ -6561,10 +6460,6 @@ function ehVisGridBoxMouseOut(e, grpOutter, miniSvg) {
     }
   }
 
-  if (miniSvg) {
-    miniSvg.setVis(false, 0, 250);
-  }
-  
   if (miniSvg) {
     miniSvg.
       //zeroSeries("pri", { sepX: data.sepX, series: miniSeries[grpOutter.attr("data-var-id")] }).
