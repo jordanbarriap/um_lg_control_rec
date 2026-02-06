@@ -1,0 +1,39 @@
+{
+    "topicTime": [
+        {"topicOrder":1, "focusDate": "2026-01-04T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":2, "focusDate": "2026-01-11T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":3, "focusDate": "2026-01-18T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":4, "focusDate": "2026-01-25T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":5, "focusDate": "2026-02-01T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":6, "focusDate": "2026-02-01T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":7, "focusDate": "2026-02-01T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":8, "focusDate": "2026-02-01T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":9, "focusDate": "2026-02-04T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":10, "focusDate": "2026-02-11T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":11, "focusDate": "2026-02-16T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":12, "focusDate": "2026-02-23T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":13, "focusDate": "2026-02-28T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":14, "focusDate": "2026-03-06T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":15, "focusDate": "2026-04-13T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"},
+        {"topicOrder":16, "focusDate": "2026-04-20T07:00:00+0100", "releaseDate": "2026-01-01T07:00:00+0100", "dueDate": "2026-04-30T00:00:01+0100"}
+    ],
+    "incentives": {
+        "report_mode": "topic_level",
+        "topic_overall": {
+            "resource_ids":["Coding Problems"],
+            "mode": "resource_type",
+            "activity_per_resource": [2],
+            "total_activity_per_topic": 2,
+            "points_per_activity": 1,
+            "completion_progress_limit": 1
+        },
+        "topic_specific": [],
+        "text_messages": {
+            "help_title": "Requirements per Topic",
+            "full_credit_text": "means that you completed the required exercises in that topic.",
+            "half_credit_text": "means that you completed half of the required exercises in that topic.",
+            "no_credit_text": "means that you have not completed the required exercises in that topic."
+            
+        }
+    }
+}
