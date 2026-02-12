@@ -5888,14 +5888,13 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
 
     //Added by @Jordan for rec_exp
     if (data.configprops.agg_proactiverec_enabled && state.args.recExp) {
-
+      //alert("rec exp testing");
       var seq = grpOutterNode.__data__["seq"];
       var isRecommended = seq > 0 && actIdx != -1;
       var recScore = -1;
       $('div[id=rec-tooltip-content]').remove()
       if (isRecommended) {
         recScore = seq;
-        var explanationTxt = ""
         if (resource == "Challenges") {
           var lastActRes = last.act.resId;
           if ($.isEmptyObject(last.act) == false) {
@@ -5930,9 +5929,6 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         }
 
 
-
-        $('#kcs_act_info').prepend(explanationTxt)
-
         if (state.args.uiRecExpOnDemand) {
           $('#rec-tooltip-content').hide()
         }
@@ -5948,9 +5944,19 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
       }
 
       if (data.configprops.agg_proactiverec_method == "remedial" || data.configprops.agg_proactiverec_method == "km") {//Changed by @Jordan before it was only data.configprops.agg_kc_student_modeling=="cumulate"
+        console.log("METHOD: "+data.configprops.agg_proactiverec_method)
+        //console.log(grpOutterNode)
         $('div[id=rec-tooltip-content]').remove();
         if (d3.select(grpOutterNode).classed('recommended_act')) {
-          let recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
+          let recommended_activity_arr = ""
+          //checks if e is a MouseEvent
+          if (e instanceof MouseEvent) {
+            recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.target.__data__.actName || rec_act.id == e.target.__data__.id);
+          }else{ 
+            recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
+          }
+          console.log("Rec acts")
+          console.log(top_recommended_activities);
           recommended_activities = recommended_activity_arr;
           if (recommended_activity_arr.length > 0) {
             var explanationTxt = ""
@@ -6036,20 +6042,20 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
               //this part should show rec-tooltip in the list part of the interface
 
             } else {
-
-              explanationTxt += "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
-              
+              //alert('rec exp text')
+              explanationTxt = "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
+              console.log("TEST: explanation text is: " + explanationTxt);
               $('#kcs_act_info').prepend(explanationTxt)
             }
 
             /*recTooltip.transition()    
               .duration(200)    
-              .style("opacity",.95);    */
-            /*recTooltip.html(explanationTxt)
+              .style("opacity",.95);
+            recTooltip.html(explanationTxt)
               .style("left",(grpOutter.node().getBoundingClientRect().x + 17)+"px")  
-              .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-45)+"px")  */
-            //.style("z-index","150");
-            //recTooltip.moveToFront();
+              .style("top",(grpOutter.node().getBoundingClientRect().y-d3.select("#act-lst").node().getBoundingClientRect().y-45)+"px")
+            .style("z-index","150");
+            recTooltip.moveToFront();*/
 
             document.querySelector('#rec-tooltip-content').classList.add(state.args.learningGoalForRec)
 
@@ -6057,6 +6063,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
         }
       }
     }
+
+    $('#kcs_act_info').prepend(explanationTxt)
 
     //console.log("The value of the percent for the gauge is: "+percent);
     if (resource == "Challenges") {
@@ -8604,6 +8612,7 @@ function generateLearningRecommendations() {
   const generateRecFunction = "generate" + state.args.learningGoal;
 
   if (typeof window[generateRecFunction] === 'function') {
+    //alert(state.args.learningGoal + " recommendations are being generated based on your selection. This may take a few seconds.");
     if (state.args.learningGoal != "") {
       state.args.learningGoalForRec = state.args.learningGoal;
       if (state.args.learningGoal == "RemedialRecommendations") {
@@ -8629,6 +8638,8 @@ function generateLearningRecommendations() {
       }
       console.log("Recommended activities before filtering and limiting:")
       console.log(recommended_activities)
+      //show how many recommendations were generated before filtering and limiting
+      //alert(recommended_activities.length + " recommendations were generated based on your selection. Now they will be filtered and limited to show you the most relevant ones.")
 
       //Remove recommended activities from the future topics
       recommended_activities = removeActivitiesFromFutureTopics(recommended_activities)

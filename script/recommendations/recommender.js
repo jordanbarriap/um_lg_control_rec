@@ -231,6 +231,7 @@ function prepareKeepMeUpWithTheClassRecommendations(){
 }
 
 function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_state, kc_topic_weights, weight_kcs, weight_proficiency,selected_kcs_ids){
+	//alert("Generating Fill Knowledge Gaps recommendations...")
 	var recommendations = [];
 	var topics = data_topics_acts_kcs;
 	var n_topics = topics.length;
@@ -303,6 +304,7 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 			}
 		}
 	}
+	//alert("checking the list of recommended activities before sorting and filtering: " + unique_list_rec_activities.length);
 	
 	//sort each of the activities per source based on different criteria
 	//0. if not an example and not a quizpet, the candidate for recommendation should be activities that have not been solved correctly in the past (p different than 1)
@@ -326,19 +328,23 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		if (non_target_kcs.length > 0) {
 			var sum_uk = 0;
 			for (var nt = 0; nt < non_target_kcs.length; nt++) {
+				console.log("Non-target KC " + non_target_kcs[nt] + " for activity " + activity.id);
 				var kc_obj = data.kcs.find(function(d) { return d.id == non_target_kcs[nt]; });
-				var tf_idf_kc_topic = 1
-				if (kc_obj.topics.hasOwnProperty(activity_topic)) {
-					//console.log("KC " + kc_obj.id + " has topic " + activity_topic);
-					tf_idf_kc_topic = kc_obj.topics[activity_topic].weight;
+				if(kc_obj!=undefined){
+					var tf_idf_kc_topic = 1
+					console.log(kc_obj)
+					if (kc_obj.topics.hasOwnProperty(activity_topic)) {
+						//console.log("KC " + kc_obj.id + " has topic " + activity_topic);
+						tf_idf_kc_topic = kc_obj.topics[activity_topic].weight;
+					}
+					sum_tfidf_weights += tf_idf_kc_topic;
+					if(tf_idf_kc_topic!=undefined && tf_idf_kc_topic>0){
+						sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? tf_idf_kc_topic*kc_obj.uk : 0;
+					}else{
+						sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? kc_obj.uk : 0;
+					}
+					sum_tfidf_weights += tf_idf_kc_topic;
 				}
-				sum_tfidf_weights += tf_idf_kc_topic;
-				if(tf_idf_kc_topic!=undefined && tf_idf_kc_topic>0){
-					sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? tf_idf_kc_topic*kc_obj.uk : 0;
-				}else{
-					sum_uk += kc_obj && typeof kc_obj.uk === 'number' ? kc_obj.uk : 0;
-				}
-				sum_tfidf_weights += tf_idf_kc_topic;
 				
 			}
 			avg_uk_non_target = sum_uk /sum_tfidf_weights;
@@ -362,15 +368,18 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 		}
 		//Add the explanations about the concepts covered and overall proficiency in other topics
 		activity.explanation = explanation_other_kcs_part;
+		console.log("Final explanation for activity " + activity.id + ": " + activity.explanation);
 
 		// Calculate weighted rank score
 		activity.rec_score = weight_kcs * activity.ratio_covered_selected_kcs + weight_proficiency * avg_uk_non_target;
+		console.log("Rec score for activity " + activity.id + ": " + activity.rec_score);
 	});
 
 	// Now sort by rec_score descending
 	unique_list_rec_activities.sort(function(a, b) {
 		return (b.rec_score || 0) - (a.rec_score || 0);
 	});
+	console.log("Unique list of recommended activities for fill knowledge gaps : " + unique_list_rec_activities.length);
 
 
 	// for (var resource_id in ranking_acts_per_type){
@@ -446,8 +455,8 @@ function generateFillKnowledgeGapsRecommendations(data_topics_acts_kcs, user_sta
 	// 	recs_obj["recs"]=resource_rec_acts
 	// 	final_recs[resource_id]=recs_obj
 	// }
-	// console.log("Final recommendations for fill knowledge gaps:");
-	// console.log(final_recs)
+	console.log("Final recommendations for fill knowledge gaps:");
+	console.log(unique_list_rec_activities)
 	return unique_list_rec_activities
 
 }
@@ -2140,7 +2149,7 @@ function calculateKcDifficultyScores(kc_levels, weight_kcs, weight_sr) {
 // }
 
 function addRecommendationsToUI(){
-	//console.log("Add recommendation to UI...");
+	//alert("Add recommendation to UI...");
 	//console.log(top_recommended_activities);
 	if(state.args.learningGoal!="" && state.args.learningGoalForRec!="" && (top_recommended_activities==undefined || (top_recommended_activities && top_recommended_activities.length==0))){
 		console.log("No recommendations to add to UI");
