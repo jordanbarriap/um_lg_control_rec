@@ -2485,6 +2485,8 @@ function loadStaticData() {
         var topic_order = json.topicTime[i].topicOrder - 1;
         var releaseDate = new Date(json.topicTime[i].releaseDate)
         var focusDate = new Date(json.topicTime[i].focusDate)
+        console.log(topic_order + " " + releaseDate + " " + focusDate)
+        console.log(data.topics[topic_order])
         data.topics[topic_order].unlockTime = releaseDate
         data.topics[topic_order].locked = new Date() < releaseDate
         var covered = new Date() >= focusDate
@@ -5955,8 +5957,8 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
           }else{ 
             recommended_activity_arr = top_recommended_activities.filter(rec_act => rec_act.name == e.actName || rec_act.id == e.id);
           }
-          console.log("Rec acts")
-          console.log(top_recommended_activities);
+          //console.log("Rec acts")
+          //console.log(top_recommended_activities);
           recommended_activities = recommended_activity_arr;
           if (recommended_activity_arr.length > 0) {
             var explanationTxt = ""
@@ -6044,7 +6046,7 @@ function ehVisGridBoxMouseOver(e, grpOutter, gridData, miniSvg, miniSeries) {
             } else {
               //alert('rec exp text')
               explanationTxt = "<div id='rec-tooltip-content'>" + recommended_activity_arr[0].explanation + "</i></b></div>";
-              console.log("TEST: explanation text is: " + explanationTxt);
+              //console.log("TEST: explanation text is: " + explanationTxt);
               $('#kcs_act_info').prepend(explanationTxt)
             }
 
