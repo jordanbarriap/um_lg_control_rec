@@ -2739,7 +2739,7 @@ function addRecencyDataToKCs(){
 	data.kcs.forEach(function(kc) {
 		//assign priority to the current concept based on its recency
 		//first check if the concept belongs to the current topic
-		console.log(kc);
+		//console.log(kc);
 		//kc.t is the topic id of the concept kc, and underscores must be replaced by spaces to match the topic names in data.topics
 		//also, if an underscore is present in the topic name, the following character should be capitalized to match the topic names in data.topics
 		var topicName = kc.t;
@@ -2749,8 +2749,8 @@ function addRecencyDataToKCs(){
 		var topic = data.topics.find(t => t.name == kc.t || t.name == topicNameWithCapitalizedUnderscore || t.name == kc.t.replace(/_/g, ' '));
 		var recencyPriority = 0
 		if(Object.hasOwn(topic,'timeline')){
-			console.log("Topic timeline found for concept: ");
-			console.log(topic)
+			//console.log("Topic timeline found for concept: ");
+			//console.log(topic)
 			if(topic.timeline.current){
 				recencyPriority = 2 //2 ->current topic
 			}else{
