@@ -4637,6 +4637,7 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
     var recommendationtr = $$("td", tr, null, 'rec-list');
 
     if (data.configprops.agg_proactiverec_method == "remedial" || data.configprops.agg_proactiverec_method == "km") {
+
       //console.log("Add recommendation classes to cells...");
       //console.log(top_recommended_activities);
       if (top_recommended_activities && top_recommended_activities.length > 0) {
@@ -4648,11 +4649,21 @@ function visGenGrid(cont, gridData, settings, title, tbar, doShowYAxis, doShowXL
         $(recommendationtr).append(recommendation);
 
         ///var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic == getTopic().id)
-        var topic_rec_activities = top_recommended_activities.filter(activity => activity.topic_name == getTopic().name)
-        // console.log("Rec activities in THIS topic: ");
-        // console.log(topic_rec_activities);
-        // console.log(top_recommended_activities);
-        // console.log(getTopic());
+        //alert("Get recommended activities in this topic: "+getTopic().name);
+        //needs to also check topic_name where underscore is replaced with space, and also where the letter after underscore is capitalized, as the topic name in recommended activities may be in different format from the topic name in the topic list
+        var topic_rec_activities = top_recommended_activities.filter(activity => {
+        var topicName = getTopic().name;
+        var actTopicName = activity.topic_name;
+        return topicName == actTopicName || 
+                topicName == actTopicName.replace(/_/g, ' ') ||
+                topicName == actTopicName.replace(/_([a-z])/g, function(match, letter) {
+                  return ' ' + letter.toUpperCase();
+                });
+      });
+        console.log("Rec activities in THIS topic: ");
+        console.log(topic_rec_activities);
+        console.log(top_recommended_activities);
+        console.log(getTopic());
 
         if (topic_rec_activities.length > 0) {
           topic_rec_activities//.sort((a,b) => b.rec_score - a.rec_score)
