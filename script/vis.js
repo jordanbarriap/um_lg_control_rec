@@ -575,6 +575,16 @@ function actClose() {
   // Hide programming concepts when activity window closes
   hideProgrammingConcepts();
 
+  //Regenerate recommendations based on the current learning goal
+  //if learning goal is different than null, generate recommendations based on the learning goal, otherwise, generate remedial recommendations based on the problematic concepts
+  if (state.args.learningGoal != undefined && state.args.learningGoal != null) {
+    //alert("new recs generated")
+    //re-generate recommendations based on the learning goal
+    //after the kcs have been updated based on the activity outcome, we can generate new recommendations based on the learning goal selected by the student. This will allow the student to get updated recommendations based on their current learning goal and their updated knowledge state after completing the activity.
+    generateLearningRecommendations();
+    //addRecommendationsToUI();
+  }
+
 }
 
 
@@ -802,39 +812,42 @@ function actDone_cb(rsp) {
 
     //@Jordan
     //Generate recommendations based on problematic concepts (added by @Jordan)
-    if (data.configprops.agg_proactiverec_enabled) {
-      if (data.configprops.agg_proactiverec_method == "remedial") {
-        recommended_activities = [];
-        map_topic_max_rank_rec_act = {};
-        rank_recommended_activities = {};
-        var usr_index = data.learners.indexOf(data.learners.filter(function (d) { return d.id == state.curr.usr })[0]);
-        recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.6, 0.4);
-        // var top_rec_list_first_index = recommended_activities.length/2 - max_total_recs/2;
-        // if (top_rec_list_first_index<0){
-        //  top_rec_list_first_index=0;
-        // }
-        // var top_rec_list_last_index = recommended_activities.length/2 + max_total_recs/2;
-        // if(top_rec_list_last_index > recommended_activities.length-1){
-        //  top_rec_list_last_index = recommended_activities.length-1;
-        // }
-        // top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
+    if (data.configprops.agg_proactiverec_enabled && !(state.args.learningGoal != undefined && state.args.learningGoal != null)) {
+      
+        // If no learning goal is set, do nothing or handle appropriately
+        if (data.configprops.agg_proactiverec_method == "remedial") {
+          recommended_activities = [];
+          map_topic_max_rank_rec_act = {};
+          rank_recommended_activities = {};
+          var usr_index = data.learners.indexOf(data.learners.filter(function (d) { return d.id == state.curr.usr })[0]);
+          recommended_activities = generateRemedialRecommendations(data.topics, data.learners[usr_index].state, data.kcs, 0.6, 0.4);
+          // var top_rec_list_first_index = recommended_activities.length/2 - max_total_recs/2;
+          // if (top_rec_list_first_index<0){
+          //  top_rec_list_first_index=0;
+          // }
+          // var top_rec_list_last_index = recommended_activities.length/2 + max_total_recs/2;
+          // if(top_rec_list_last_index > recommended_activities.length-1){
+          //  top_rec_list_last_index = recommended_activities.length-1;
+          // }
+          // top_recommended_activities = recommended_activities.slice(top_rec_list_first_index,top_rec_list_last_index);
 
-        //Keep at most max_recommendations_per_topic per potential recommmendations per topic
-        var recommended_activities_temp = []
-        var recommendations_per_topic = {}
-        for (var i = 0; i < recommended_activities.length; i++) {
-          var act_topic = recommended_activities[i].topic;
-          if (!(act_topic in recommendations_per_topic)) {
-            recommendations_per_topic[act_topic] = 1;
-          } else {
-            recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+          //Keep at most max_recommendations_per_topic per potential recommmendations per topic
+          var recommended_activities_temp = []
+          var recommendations_per_topic = {}
+          for (var i = 0; i < recommended_activities.length; i++) {
+            var act_topic = recommended_activities[i].topic;
+            if (!(act_topic in recommendations_per_topic)) {
+              recommendations_per_topic[act_topic] = 1;
+            } else {
+              recommendations_per_topic[act_topic] = recommendations_per_topic[act_topic] + 1;
+            }
+            if (recommendations_per_topic[act_topic] <= max_recommendations_per_topic) {
+              recommended_activities_temp.push(recommended_activities[i]);
+            }
           }
-          if (recommendations_per_topic[act_topic] <= max_recommendations_per_topic) {
-            recommended_activities_temp.push(recommended_activities[i]);
-          }
+
+          recommended_activities = recommended_activities_temp;
         }
-
-        recommended_activities = recommended_activities_temp;
 
         if (recommended_activities.length > max_total_recs) {
 
@@ -901,7 +914,7 @@ function actDone_cb(rsp) {
             contentType: "application/json"
           });
         }
-      }
+      
     }
 
     //Draw bipartite graph
